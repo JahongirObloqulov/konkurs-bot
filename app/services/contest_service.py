@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Contest, Participant, Winner
+from app.db.models import Contest, Participant, Referral, Winner
 
 
 async def create_contest(
@@ -15,6 +15,9 @@ async def create_contest(
     winners_count: int,
     created_by: int,
     require_subscription: bool = True,
+    media_file_id: str | None = None,
+    media_type: str | None = None,
+    end_time: datetime | None = None,
 ) -> Contest:
     contest = Contest(
         title=title,
@@ -23,6 +26,9 @@ async def create_contest(
         winners_count=winners_count,
         created_by=created_by,
         require_subscription=require_subscription,
+        media_file_id=media_file_id,
+        media_type=media_type,
+        end_time=end_time,
     )
     session.add(contest)
     await session.commit()
@@ -72,6 +78,7 @@ async def add_participant(
     user_id: int,
     username: str | None,
     full_name: str,
+    referred_by: int | None = None,
 ) -> Participant | None:
     existing = await session.execute(
         select(Participant).where(
@@ -87,8 +94,18 @@ async def add_participant(
         user_id=user_id,
         username=username,
         full_name=full_name,
+        referred_by=referred_by,
     )
     session.add(participant)
+
+    if referred_by:
+        referral = Referral(
+            contest_id=contest_id,
+            referrer_id=referred_by,
+            referred_id=user_id,
+        )
+        session.add(referral)
+
     await session.commit()
     await session.refresh(participant)
     return participant
@@ -165,5 +182,27 @@ async def get_user_contests(session: AsyncSession, user_id: int) -> list[Contest
         .join(Participant, Participant.contest_id == Contest.id)
         .where(Participant.user_id == user_id)
         .order_by(Contest.created_at.desc())
+    )
+    return list(result.scalars().all())
+
+
+async def get_referral_count(session: AsyncSession, contest_id: int, user_id: int) -> int:
+    result = await session.execute(
+        select(func.count(Referral.id)).where(
+            Referral.contest_id == contest_id,
+            Referral.referrer_id == user_id,
+        )
+    )
+    return result.scalar_one()
+
+
+async def get_contests_ending_soon(session: AsyncSession) -> list[Contest]:
+    now = datetime.now(timezone.utc)
+    result = await session.execute(
+        select(Contest).where(
+            Contest.is_active.is_(True),
+            Contest.end_time.isnot(None),
+            Contest.end_time <= now,
+        )
     )
     return list(result.scalars().all())

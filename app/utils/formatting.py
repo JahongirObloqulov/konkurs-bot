@@ -3,7 +3,7 @@ from app.db.models import Contest, Winner
 
 def format_contest_view(contest: Contest, participants_count: int) -> str:
     status = "\u2705 Faol" if contest.is_active else "\u274c Tugagan"
-    return (
+    text = (
         f"\U0001f3c6 <b>{contest.title}</b>\n\n"
         f"\U0001f4dd {contest.description}\n\n"
         f"\U0001f381 <b>Sovg'a:</b> {contest.prize}\n"
@@ -11,6 +11,9 @@ def format_contest_view(contest: Contest, participants_count: int) -> str:
         f"\U0001f3c5 <b>G'oliblar soni:</b> {contest.winners_count}\n"
         f"\U0001f4ca <b>Holat:</b> {status}\n"
     )
+    if contest.end_time and contest.is_active:
+        text += f"\u23f0 <b>Tugash vaqti:</b> {contest.end_time.strftime('%Y-%m-%d %H:%M')} UTC\n"
+    return text
 
 
 def format_results_view(contest: Contest, winners: list[Winner]) -> str:

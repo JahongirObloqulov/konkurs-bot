@@ -7,6 +7,7 @@ from app.keyboards.inline import (
     get_contest_detail_kb,
     get_contest_list_kb,
     get_main_menu_kb,
+    get_referral_share_kb,
     get_subscription_kb,
 )
 from app.services.contest_service import (
@@ -14,6 +15,7 @@ from app.services.contest_service import (
     get_active_contests,
     get_contest_by_id,
     get_participants_count,
+    get_referral_count,
     get_user_contests,
     get_winners,
     is_participant,
@@ -57,6 +59,11 @@ async def show_contest_detail(
     participants_count = await get_participants_count(session, contest_id)
     text = format_contest_view(contest, participants_count)
 
+    if already_joined:
+        ref_count = await get_referral_count(session, contest_id, user_id)
+        if ref_count > 0:
+            text += f"\U0001f517 <b>Sizning takliflaringiz:</b> {ref_count}\n"
+
     await callback.message.edit_text(
         text,
         reply_markup=get_contest_detail_kb(contest, already_joined),
@@ -65,7 +72,7 @@ async def show_contest_detail(
 
 
 async def _join_contest_core(
-    session: AsyncSession, contest_id: int, user
+    session: AsyncSession, contest_id: int, user, referred_by: int | None = None
 ) -> tuple | None:
     contest = await get_contest_by_id(session, contest_id)
     if not contest or not contest.is_active:
@@ -77,6 +84,7 @@ async def _join_contest_core(
         user_id=user.id,
         username=user.username,
         full_name=user.full_name,
+        referred_by=referred_by,
     )
     participants_count = await get_participants_count(session, contest_id)
     joined_now = participant is not None
@@ -171,6 +179,38 @@ async def check_subscription_callback(
     await callback.message.edit_text(
         text,
         reply_markup=get_contest_detail_kb(contest, True),
+        parse_mode="HTML",
+    )
+
+
+@router.callback_query(F.data.startswith("referral_"))
+async def show_referral_link(
+    callback: CallbackQuery, session: AsyncSession, bot: Bot
+):
+    contest_id = int(callback.data.split("_")[1])
+    user = callback.from_user
+
+    already_joined = await is_participant(session, contest_id, user.id)
+    if not already_joined:
+        await callback.answer("Avval konkursga ishtirok eting!", show_alert=True)
+        return
+
+    ref_count = await get_referral_count(session, contest_id, user.id)
+    bot_info = await bot.get_me()
+    ref_link = f"https://t.me/{bot_info.username}?start=ref_{contest_id}_{user.id}"
+
+    text = (
+        "\U0001f517 <b>Referral tizimi</b>\n\n"
+        "Do'stlaringizni konkursga taklif qiling!\n\n"
+        f"\U0001f4ce <b>Sizning havolangiz:</b>\n<code>{ref_link}</code>\n\n"
+        f"\U0001f465 <b>Taklif qilganlaringiz:</b> {ref_count} ta\n\n"
+        "<i>Havolani do'stlaringizga yuboring. Ular shu havola orqali "
+        "konkursga qo'shilganda sizning taklif hisobingizga qo'shiladi.</i>"
+    )
+
+    await callback.message.edit_text(
+        text,
+        reply_markup=get_referral_share_kb(bot_info.username, contest_id, user.id),
         parse_mode="HTML",
     )
 

@@ -30,3 +30,8 @@ async def get_users_count(session: AsyncSession) -> int:
 
     result = await session.execute(select(func.count(User.id)))
     return result.scalar_one()
+
+
+async def get_all_users(session: AsyncSession) -> list[User]:
+    result = await session.execute(select(User))
+    return list(result.scalars().all())

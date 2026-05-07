@@ -21,6 +21,9 @@ class Contest(Base):
     winners_count: Mapped[int] = mapped_column(Integer, default=1)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     require_subscription: Mapped[bool] = mapped_column(Boolean, default=True)
+    media_file_id: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    media_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    end_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
@@ -45,6 +48,7 @@ class Participant(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    referred_by: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     joined_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
@@ -78,5 +82,19 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     registered_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+
+
+class Referral(Base):
+    __tablename__ = "referrals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    contest_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("contests.id", ondelete="CASCADE"), nullable=False
+    )
+    referrer_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    referred_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
