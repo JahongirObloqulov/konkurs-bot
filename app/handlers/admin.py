@@ -24,6 +24,10 @@ from app.services.contest_service import (
     get_winners,
     select_winners,
 )
+from app.services.settings_service import (
+    get_required_chats,
+    set_required_chats,
+)
 from app.services.user_service import get_users_count
 from app.utils.formatting import format_contest_view, format_results_view
 
@@ -36,6 +40,12 @@ class CreateContestState(StatesGroup):
     prize = State()
     winners_count = State()
     require_subscription = State()
+
+
+class ChatManageState(StatesGroup):
+    chat_id = State()
+    chat_username = State()
+    chat_type = State()
 
 
 def admin_check(callback: CallbackQuery, config: Config) -> bool:
@@ -52,17 +62,36 @@ def admin_message_check(message: Message, config: Config) -> bool:
 @router.callback_query(F.data == "admin_stats", admin_check)
 async def show_stats(callback: CallbackQuery, session: AsyncSession):
     from app.services.contest_service import get_active_contests
+    from app.services.settings_service import get_required_chats
+    from sqlalchemy import func, select
+    from app.db.models import Participant, Winner
 
     active = await get_active_contests(session)
     all_contests = await get_all_contests(session)
     users_count = await get_users_count(session)
+    
+    # Additional stats
+    required_chats = await get_required_chats(session)
+    
+    total_participants = await session.execute(select(func.count(Participant.id)))
+    total_participants = total_participants.scalar_one()
+    
+    total_winners = await session.execute(select(func.count(Winner.id)))
+    total_winners = total_winners.scalar_one()
 
     text = (
         "\U0001f4ca <b>Bot statistikasi</b>\n\n"
         f"\U0001f465 Foydalanuvchilar: {users_count}\n"
         f"\U0001f3c6 Jami konkurslar: {len(all_contests)}\n"
-        f"\u2705 Faol konkurslar: {len(active)}\n"
-        f"\u274c Tugagan konkurslar: {len(all_contests) - len(active)}\n"
+        f"✅ Faol konkurslar: {len(active)}\n"
+        f"❌ Tugagan konkurslar: {len(all_contests) - len(active)}\n"
+        f"\U0001f465 Jami ishtirokchilar: {total_participants}\n"
+        f"\U0001f3c5 Jami g'oliblar: {total_winners}\n"
+        f"\U0001f4e2 Majburiy kanallar: {len(required_chats)}\n"
+    )
+
+    await callback.message.edit_text(
+        text, reply_markup=get_admin_menu_kb(), parse_mode="HTML"
     )
 
     await callback.message.edit_text(
@@ -85,9 +114,13 @@ async def start_create_contest(callback: CallbackQuery, state: FSMContext):
 
 @router.message(CreateContestState.title, admin_message_check)
 async def process_title(message: Message, state: FSMContext):
-    await state.update_data(title=message.text)
+    title = message.text.strip() if message.text else ""
+    if not title:
+        await message.answer("❌ Nom bo'sh bo'lishi mumkin emas! Qaytadan kiriting:")
+        return
+    await state.update_data(title=title)
     await message.answer(
-        "\U0001f4dd Konkurs tavsifini yozing:\n\n"
+        "\U0001f4DD Konkurs tavsifini yozing:\n\n"
         "<i>(Konkurs haqida batafsil ma'lumot)</i>",
         parse_mode="HTML",
     )
@@ -96,7 +129,11 @@ async def process_title(message: Message, state: FSMContext):
 
 @router.message(CreateContestState.description, admin_message_check)
 async def process_description(message: Message, state: FSMContext):
-    await state.update_data(description=message.text)
+    description = message.text.strip() if message.text else ""
+    if not description:
+        await message.answer("❌ Tavsif bo'sh bo'lishi mumkin emas! Qaytadan kiriting:")
+        return
+    await state.update_data(description=description)
     await message.answer(
         "\U0001f381 Sovg'ani yozing:\n\n"
         "<i>(G'olibga beriladigan sovg'a)</i>",
@@ -107,7 +144,11 @@ async def process_description(message: Message, state: FSMContext):
 
 @router.message(CreateContestState.prize, admin_message_check)
 async def process_prize(message: Message, state: FSMContext):
-    await state.update_data(prize=message.text)
+    prize = message.text.strip() if message.text else ""
+    if not prize:
+        await message.answer("❌ Sovg'a nomi bo'sh bo'lishi mumkin emas! Qaytadan kiriting:")
+        return
+    await state.update_data(prize=prize)
     await message.answer(
         "\U0001f3c5 G'oliblar sonini tanlang:",
         reply_markup=get_winners_count_kb(),
@@ -189,6 +230,28 @@ async def _finish_create_contest(
         winners_count=data["winners_count"],
         created_by=callback.from_user.id,
         require_subscription=data.get("require_subscription", True),
+    )
+    await state.clear()
+
+    if not contest:
+        await callback.message.edit_text(
+            "❌ Konkurs yaratishda xatolik yuz berdi!",
+            reply_markup=get_admin_menu_kb(),
+        )
+        return
+
+    sub_status = "✅ Ha" if contest.require_subscription else "❌ Yo'q"
+    text = (
+        "✅ <b>Konkurs muvaffaqiyatli yaratildi!</b>\n\n"
+        f"📝 <b>Nomi:</b> {contest.title}\n"
+        f"📋 <b>Tavsif:</b> {contest.description}\n"
+        f"🎁 <b>Sovg'a:</b> {contest.prize}\n"
+        f"🏅 <b>G'oliblar soni:</b> {contest.winners_count}\n"
+        f"📢 <b>Obuna shart:</b> {sub_status}\n"
+    )
+
+    await callback.message.edit_text(
+        text, reply_markup=get_admin_contest_kb(contest), parse_mode="HTML"
     )
     await state.clear()
 
@@ -342,6 +405,8 @@ async def confirm_end_contest(callback: CallbackQuery, session: AsyncSession):
             reply_markup=get_admin_contest_kb(contest),
             parse_mode="HTML",
         )
+    else:
+        await callback.answer("Xatolik yuz berdi!", show_alert=True)
 
 
 @router.callback_query(F.data.startswith("cancel_end_"), admin_check)
@@ -424,3 +489,143 @@ async def show_participants(callback: CallbackQuery, session: AsyncSession):
     await callback.message.edit_text(
         text, reply_markup=get_admin_contest_kb(contest), parse_mode="HTML"
     )
+
+
+# ===== Chat Management =====
+
+
+@router.callback_query(F.data == "manage_chats", admin_check)
+async def show_chat_management(callback: CallbackQuery, session: AsyncSession):
+    from app.keyboards.inline import get_chat_list_kb, get_chat_manage_kb
+    
+    chats = await get_required_chats(session)
+    text = "\U0001f4e2 <b>Majburiy obuna kanallari/gruhlari</b>\n\n"
+    
+    if not chats:
+        text += "Hozircha kanallar mavjud emas.\n"
+        kb = get_chat_manage_kb()
+    else:
+        for i, chat in enumerate(chats, 1):
+            chat_type = "📢 Kanal" if chat.get("type") == "channel" else "👥 Guruh"
+            username = chat.get("username", "Noma'lum")
+            text += f"{i}. {chat_type} - @{username} (ID: {chat['id']})\n"
+        text += "\n❗ <i>Biror kanalni o'chirish uchun ustiga bosing</i>"
+        kb = get_chat_list_kb(chats)
+    
+    await callback.message.edit_text(
+        text, reply_markup=kb, parse_mode="HTML"
+    )
+
+
+@router.callback_query(F.data == "add_chat", admin_check)
+async def start_add_chat(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(ChatManageState.chat_id)
+    await callback.message.edit_text(
+        "\U0001f4e2 <b>Yangi kanal/guruh qo'shish</b>\n\n"
+        "Kanal yoki guruh ID raqamini kiriting:\n\n"
+        "<i>Masalan: -1001234567890</i>\n\n"
+        "ID ni olish uchun @username_to_id_bot dan foydalaning.",
+        parse_mode="HTML",
+    )
+
+
+@router.message(ChatManageState.chat_id, admin_message_check)
+async def process_chat_id(message: Message, state: FSMContext):
+    try:
+        chat_id = int(message.text.strip())
+    except ValueError:
+        await message.answer("❌ Noto'g'ri ID formati! Qaytadan kiriting:")
+        return
+    
+    await state.update_data(chat_id=chat_id)
+    await message.answer(
+        "Kanal/guruh username ini kiriting (ixtiyoriy):\n\n"
+        "<i>Masalan: @my_channel</i>\n\n"
+        "Agar username bo'lmasa, '-' belgisini yuboring.",
+        parse_mode="HTML",
+    )
+    await state.set_state(ChatManageState.chat_username)
+
+
+@router.message(ChatManageState.chat_username, admin_message_check)
+async def process_chat_username(message: Message, state: FSMContext):
+    username = message.text.strip()
+    if username == "-":
+        username = ""
+    await state.update_data(chat_username=username)
+    await message.answer(
+        "Kanal turini tanlang:",
+        reply_markup=get_chat_type_kb(),
+    )
+    await state.set_state(ChatManageState.chat_type)
+
+
+@router.callback_query(
+    ChatManageState.chat_type, F.data.startswith("chat_type_"), admin_check
+)
+async def process_chat_type(
+    callback: CallbackQuery, state: FSMContext, session: AsyncSession
+):
+    chat_type = callback.data.split("_")[2]
+    data = await state.get_data()
+    
+    new_chat = {
+        "id": data["chat_id"],
+        "username": data.get("chat_username", ""),
+        "type": chat_type,
+    }
+    
+    chats = await get_required_chats(session)
+    chats.append(new_chat)
+    
+    success = await set_required_chats(session, chats)
+    await state.clear()
+    
+    if success:
+        await callback.message.edit_text(
+            f"✅ Kanal/Guruh muvaffaqiyatli qo'shildi!\n\n"
+            f"ID: {new_chat['id']}\n"
+            f"Username: @{new_chat.get('username') or 'yoq'}\n"
+            f"Turi: {'Kanal' if chat_type == 'channel' else 'Guruh'}",
+            reply_markup=get_back_to_chats_kb(),
+            parse_mode="HTML",
+        )
+    else:
+        await callback.answer("Xatolik yuz berdi!", show_alert=True)
+
+
+@router.callback_query(F.data.startswith("remove_chat_"), admin_check)
+async def remove_chat(callback: CallbackQuery, session: AsyncSession):
+    chat_id = int(callback.data.split("_")[2])
+    chats = await get_required_chats(session)
+    chats = [c for c in chats if c["id"] != chat_id]
+    
+    success = await set_required_chats(session, chats)
+    if success:
+        await callback.answer("✅ Kanal o'chirildi!", show_alert=True)
+        await show_chat_management(callback, session)
+    else:
+        await callback.answer("Xatolik yuz berdi!", show_alert=True)
+
+
+@router.callback_query(F.data == "back_to_chats", admin_check)
+async def back_to_chats(callback: CallbackQuery, session: AsyncSession):
+    await show_chat_management(callback, session)
+
+
+@router.callback_query(F.data == "back_to_admin_menu", admin_check)
+async def back_to_admin_menu(callback: CallbackQuery):
+    from app.keyboards.inline import get_admin_menu_kb
+    
+    await callback.message.edit_text(
+        "\U0001f6e0 <b>Admin panel</b>\n\n"
+        "Quyidagi amallardan birini tanlang:",
+        reply_markup=get_admin_menu_kb(),
+        parse_mode="HTML",
+    )
+
+
+@router.callback_query(F.data == "cancel_add_chat", admin_check)
+async def cancel_add_chat(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+    await state.clear()
+    await show_chat_management(callback, session)

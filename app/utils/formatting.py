@@ -20,7 +20,3 @@ def format_results_view(contest: Contest, winners: list[Winner]) -> str:
         text += f"{i}. {mention} ({winner.full_name})\n"
     text += f"\n\U0001f381 <b>Sovg'a:</b> {contest.prize}"
     return text
-
-
-def format_winner_mention(winner: Winner) -> str:
-    return f"@{winner.username}" if winner.username else winner.full_name

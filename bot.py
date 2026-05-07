@@ -31,6 +31,14 @@ async def main():
     engine = create_engine(config.db_url)
     await init_db(engine)
     session_pool = create_session_pool(engine)
+    
+    # Load settings from database
+    async with session_pool() as session:
+        from app.services.settings_service import get_required_chats
+        db_chats = await get_required_chats(session)
+        if db_chats:
+            config.required_chats = db_chats
+            logger.info(f"Loaded {len(db_chats)} required chats from database")
 
     bot = Bot(
         token=config.bot_token,

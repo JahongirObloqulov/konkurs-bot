@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Config
 from app.keyboards.inline import (
+    get_admin_menu_kb,
     get_contest_detail_kb,
     get_contest_list_kb,
     get_main_menu_kb,
@@ -18,7 +19,7 @@ from app.services.contest_service import (
     get_winners,
     is_participant,
 )
-from app.services.subscription_service import check_subscription
+from app.services.subscription_service import check_all_subscriptions
 from app.utils.formatting import format_contest_view, format_results_view
 
 router = Router()
@@ -95,14 +96,13 @@ async def join_contest(
 
     user = callback.from_user
 
-    if contest.require_subscription and config.channel_id:
-        is_subscribed = await check_subscription(bot, config.channel_id, user.id)
-        if not is_subscribed:
+    if contest.require_subscription and config.required_chats:
+        all_subscribed, unsubscribed = await check_all_subscriptions(bot, config, user.id)
+        if not all_subscribed:
             await callback.message.edit_text(
-                "\u26a0\ufe0f <b>Ishtirok etish uchun kanalimizga obuna bo'ling!</b>\n\n"
-                "Quyidagi tugmani bosib kanalga obuna bo'ling, "
-                "so'ng \"Obunani tekshirish\" tugmasini bosing.",
-                reply_markup=get_subscription_kb(config.channel_username, contest_id),
+                "⚠️ <b>Ishtirok etish uchun quyidagi kanallarga/guruhlarga obuna bo'ling!</b>\n\n"
+                "Barcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.",
+                reply_markup=get_subscription_kb(unsubscribed, contest_id),
                 parse_mode="HTML",
             )
             return
@@ -115,7 +115,7 @@ async def join_contest(
     contest, joined_now, participants_count = result
     await callback.answer(
         (
-            f"\u2705 Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {participants_count})"
+            f"✅ Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {participants_count})"
             if joined_now
             else "Siz allaqachon ushbu konkursda ishtirok etyapsiz!"
         ),
@@ -137,20 +137,14 @@ async def check_subscription_callback(
     contest_id = int(callback.data.split("_")[2])
     user = callback.from_user
 
-    if not config.channel_id:
-        await callback.answer(
-            "Kanal sozlanmagan. Administrator bilan bog'laning.",
-            show_alert=True,
-        )
-        return
-
-    is_subscribed = await check_subscription(bot, config.channel_id, user.id)
-    if not is_subscribed:
-        await callback.answer(
-            "\u274c Siz hali kanalga obuna bo'lmagansiz! Iltimos, avval obuna bo'ling.",
-            show_alert=True,
-        )
-        return
+    if config.required_chats:
+        all_subscribed, unsubscribed = await check_all_subscriptions(bot, config, user.id)
+        if not all_subscribed:
+            await callback.answer(
+                "❌ Hali barcha kanallarga obuna bo'lmagansiz! Iltimos, avval obuna bo'ling.",
+                show_alert=True,
+            )
+            return
 
     result = await _join_contest_core(session, contest_id, user)
     if not result:
@@ -160,7 +154,7 @@ async def check_subscription_callback(
     contest, joined_now, participants_count = result
     await callback.answer(
         (
-            f"\u2705 Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {participants_count})"
+            f"✅ Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {participants_count})"
             if joined_now
             else "Siz allaqachon ushbu konkursda ishtirok etyapsiz!"
         ),
@@ -224,8 +218,6 @@ async def back_to_main(callback: CallbackQuery, config: Config):
         "Quyidagi tugmalardan birini tanlang:"
     )
     if config.is_admin(user.id):
-        from app.keyboards.inline import get_admin_menu_kb
-
         kb = get_admin_menu_kb()
     else:
         kb = get_main_menu_kb()

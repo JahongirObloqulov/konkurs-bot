@@ -16,12 +16,15 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config):
     if not user:
         return
 
-    await get_or_create_user(
+    user_obj = await get_or_create_user(
         session,
         user_id=user.id,
         username=user.username,
         full_name=user.full_name,
     )
+    if not user_obj:
+        await message.answer("Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")
+        return
 
     text = (
         f"Assalomu alaykum, {user.full_name}! \U0001f44b\n\n"

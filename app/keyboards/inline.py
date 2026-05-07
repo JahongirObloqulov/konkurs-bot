@@ -21,21 +21,26 @@ def get_admin_menu_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="\u2795 Konkurs yaratish", callback_data="create_contest"
+            text="➕ Konkurs yaratish", callback_data="create_contest"
         )
     )
     builder.row(
         InlineKeyboardButton(
-            text="\U0001f4cb Barcha konkurslar", callback_data="admin_all_contests"
+            text="📋 Barcha konkurslar", callback_data="admin_all_contests"
         )
     )
     builder.row(
         InlineKeyboardButton(
-            text="\U0001f4ca Statistika", callback_data="admin_stats"
+            text="📢 Kanal/Guruh boshqaruvi", callback_data="manage_chats"
         )
     )
     builder.row(
-        InlineKeyboardButton(text="\U0001f519 Orqaga", callback_data="back_to_main")
+        InlineKeyboardButton(
+            text="📊 Statistika", callback_data="admin_stats"
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_main")
     )
     return builder.as_markup()
 
@@ -146,17 +151,28 @@ def get_confirm_kb(action: str, contest_id: int) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_subscription_kb(channel_username: str, contest_id: int) -> InlineKeyboardMarkup:
+def get_subscription_kb(unsubscribed_chats: list[dict], contest_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    for chat in unsubscribed_chats:
+        chat_username = chat.get("username", "")
+        chat_name = f"Kanalga obuna bo'lish" if chat.get("type") == "channel" else f"Guruhga qo'shilish"
+        if chat_username:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"📢 {chat_name}",
+                    url=f"https://t.me/{chat_username.lstrip('@')}",
+                )
+            )
+        else:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"📢 {chat_name} (ID: {chat['id']})",
+                    url=f"https://t.me/c/{str(chat['id']).replace('-100', '')}",
+                )
+            )
     builder.row(
         InlineKeyboardButton(
-            text="\U0001f4e2 Kanalga obuna bo'lish",
-            url=f"https://t.me/{channel_username.lstrip('@')}",
-        )
-    )
-    builder.row(
-        InlineKeyboardButton(
-            text="\u2705 Obunani tekshirish",
+            text="✅ Obunani tekshirish",
             callback_data=f"check_sub_{contest_id}",
         )
     )
@@ -167,8 +183,116 @@ def get_skip_subscription_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="\u23e9 O'tkazib yuborish (obunasiz)",
+            text="⏩ O'tkazib yuborish (obunasiz)",
             callback_data="skip_subscription",
+        )
+    )
+    return builder.as_markup()
+
+
+def get_winners_count_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for i in [1, 2, 3, 5, 10]:
+        builder.add(
+            InlineKeyboardButton(text=str(i), callback_data=f"winners_count_{i}")
+        )
+    builder.adjust(5)
+    builder.row(
+        InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_create")
+    )
+    return builder.as_markup()
+
+
+def get_subscription_toggle_kb(require: bool) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text="🔄 Obunasiz qilish" if require else "🔄 Obuna shart qilish",
+            callback_data=f"toggle_sub_{'off' if require else 'on'}",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="➡️ Davom etish",
+            callback_data="confirm_create",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_create")
+    )
+    return builder.as_markup()
+
+
+def get_chat_manage_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text="➕ Kanal/Guruh qo'shish",
+            callback_data="add_chat",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="🏠 Admin menyu",
+            callback_data="back_to_admin_menu",
+        )
+    )
+    return builder.as_markup()
+
+
+def get_chat_list_kb(chats: list[dict]) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for chat in chats:
+        chat_type = "📢" if chat.get("type") == "channel" else "👥"
+        username = chat.get("username", "no_username")
+        builder.row(
+            InlineKeyboardButton(
+                text=f"{chat_type} @{username} ({chat['id']})",
+                callback_data=f"remove_chat_{chat['id']}",
+            )
+        )
+    builder.row(
+        InlineKeyboardButton(
+            text="➕ Qo'shish",
+            callback_data="add_chat",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="🏠 Admin menyu",
+            callback_data="back_to_admin_menu",
+        )
+    )
+    return builder.as_markup()
+
+
+def get_chat_type_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text="📢 Kanal",
+            callback_data="chat_type_channel",
+        ),
+        InlineKeyboardButton(
+            text="👥 Guruh",
+            callback_data="chat_type_group",
+        ),
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="❌ Bekor qilish",
+            callback_data="cancel_add_chat",
+        )
+    )
+    return builder.as_markup()
+
+
+def get_back_to_chats_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text="🔙 Orqaga",
+            callback_data="back_to_chats",
         )
     )
     return builder.as_markup()
