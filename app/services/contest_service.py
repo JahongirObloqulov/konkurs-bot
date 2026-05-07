@@ -109,8 +109,12 @@ async def get_participants(session: AsyncSession, contest_id: int) -> list[Parti
 
 
 async def select_winners(session: AsyncSession, contest_id: int) -> list[Winner]:
+    existing_winners = await get_winners(session, contest_id)
+    if existing_winners:
+        return existing_winners
+
     contest = await get_contest_by_id(session, contest_id)
-    if not contest:
+    if not contest or not contest.is_active:
         return []
 
     participants = await get_participants(session, contest_id)
@@ -153,3 +157,13 @@ async def is_participant(session: AsyncSession, contest_id: int, user_id: int) -
         )
     )
     return result.scalar_one_or_none() is not None
+
+
+async def get_user_contests(session: AsyncSession, user_id: int) -> list[Contest]:
+    result = await session.execute(
+        select(Contest)
+        .join(Participant, Participant.contest_id == Contest.id)
+        .where(Participant.user_id == user_id)
+        .order_by(Contest.created_at.desc())
+    )
+    return list(result.scalars().all())

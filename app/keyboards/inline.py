@@ -191,7 +191,7 @@ def get_subscription_toggle_kb(require: bool) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="\u2705 Ha, obuna shart" if not require else "\u274c Yo'q, obuna shart emas",
+            text="\U0001f504 Obunasiz qilish" if require else "\U0001f504 Obuna shart qilish",
             callback_data=f"toggle_sub_{'off' if require else 'on'}",
         )
     )

@@ -14,10 +14,12 @@ from app.services.contest_service import (
     get_active_contests,
     get_contest_by_id,
     get_participants_count,
+    get_user_contests,
     get_winners,
     is_participant,
 )
 from app.services.subscription_service import check_subscription
+from app.utils.formatting import format_contest_view, format_results_view
 
 router = Router()
 
@@ -53,22 +55,32 @@ async def show_contest_detail(
     user_id = callback.from_user.id
     already_joined = await is_participant(session, contest_id, user_id)
     participants_count = await get_participants_count(session, contest_id)
-
-    status = "\u2705 Faol" if contest.is_active else "\u274c Tugagan"
-    text = (
-        f"\U0001f3c6 <b>{contest.title}</b>\n\n"
-        f"\U0001f4dd {contest.description}\n\n"
-        f"\U0001f381 <b>Sovg'a:</b> {contest.prize}\n"
-        f"\U0001f465 <b>Ishtirokchilar:</b> {participants_count}\n"
-        f"\U0001f3c5 <b>G'oliblar soni:</b> {contest.winners_count}\n"
-        f"\U0001f4ca <b>Holat:</b> {status}\n"
-    )
+    text = format_contest_view(contest, participants_count)
 
     await callback.message.edit_text(
         text,
         reply_markup=get_contest_detail_kb(contest, already_joined),
         parse_mode="HTML",
     )
+
+
+async def _join_contest_core(
+    session: AsyncSession, contest_id: int, user
+) -> tuple | None:
+    contest = await get_contest_by_id(session, contest_id)
+    if not contest or not contest.is_active:
+        return None
+
+    participant = await add_participant(
+        session,
+        contest_id=contest_id,
+        user_id=user.id,
+        username=user.username,
+        full_name=user.full_name,
+    )
+    participants_count = await get_participants_count(session, contest_id)
+    joined_now = participant is not None
+    return contest, joined_now, participants_count
 
 
 @router.callback_query(F.data.startswith("join_"))
@@ -95,41 +107,25 @@ async def join_contest(
             )
             return
 
-    participant = await add_participant(
-        session,
-        contest_id=contest_id,
-        user_id=user.id,
-        username=user.username,
-        full_name=user.full_name,
+    result = await _join_contest_core(session, contest_id, user)
+    if not result:
+        await callback.answer("Konkurs topilmadi yoki tugagan!", show_alert=True)
+        return
+
+    contest, joined_now, participants_count = result
+    await callback.answer(
+        (
+            f"\u2705 Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {participants_count})"
+            if joined_now
+            else "Siz allaqachon ushbu konkursda ishtirok etyapsiz!"
+        ),
+        show_alert=True,
     )
 
-    if participant:
-        count = await get_participants_count(session, contest_id)
-        await callback.answer(
-            f"\u2705 Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {count})",
-            show_alert=True,
-        )
-    else:
-        await callback.answer(
-            "Siz allaqachon ushbu konkursda ishtirok etyapsiz!",
-            show_alert=True,
-        )
-
-    already_joined = await is_participant(session, contest_id, user.id)
-    participants_count = await get_participants_count(session, contest_id)
-
-    text = (
-        f"\U0001f3c6 <b>{contest.title}</b>\n\n"
-        f"\U0001f4dd {contest.description}\n\n"
-        f"\U0001f381 <b>Sovg'a:</b> {contest.prize}\n"
-        f"\U0001f465 <b>Ishtirokchilar:</b> {participants_count}\n"
-        f"\U0001f3c5 <b>G'oliblar soni:</b> {contest.winners_count}\n"
-        f"\U0001f4ca <b>Holat:</b> \u2705 Faol\n"
-    )
-
+    text = format_contest_view(contest, participants_count)
     await callback.message.edit_text(
         text,
-        reply_markup=get_contest_detail_kb(contest, already_joined),
+        reply_markup=get_contest_detail_kb(contest, True),
         parse_mode="HTML",
     )
 
@@ -141,6 +137,13 @@ async def check_subscription_callback(
     contest_id = int(callback.data.split("_")[2])
     user = callback.from_user
 
+    if not config.channel_id:
+        await callback.answer(
+            "Kanal sozlanmagan. Administrator bilan bog'laning.",
+            show_alert=True,
+        )
+        return
+
     is_subscribed = await check_subscription(bot, config.channel_id, user.id)
     if not is_subscribed:
         await callback.answer(
@@ -149,46 +152,25 @@ async def check_subscription_callback(
         )
         return
 
-    contest = await get_contest_by_id(session, contest_id)
-    if not contest or not contest.is_active:
+    result = await _join_contest_core(session, contest_id, user)
+    if not result:
         await callback.answer("Konkurs topilmadi yoki tugagan!", show_alert=True)
         return
 
-    participant = await add_participant(
-        session,
-        contest_id=contest_id,
-        user_id=user.id,
-        username=user.username,
-        full_name=user.full_name,
+    contest, joined_now, participants_count = result
+    await callback.answer(
+        (
+            f"\u2705 Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {participants_count})"
+            if joined_now
+            else "Siz allaqachon ushbu konkursda ishtirok etyapsiz!"
+        ),
+        show_alert=True,
     )
 
-    if participant:
-        count = await get_participants_count(session, contest_id)
-        await callback.answer(
-            f"\u2705 Siz muvaffaqiyatli ro'yxatdan o'tdingiz! (Jami: {count})",
-            show_alert=True,
-        )
-    else:
-        await callback.answer(
-            "Siz allaqachon ushbu konkursda ishtirok etyapsiz!",
-            show_alert=True,
-        )
-
-    already_joined = True
-    participants_count = await get_participants_count(session, contest_id)
-
-    text = (
-        f"\U0001f3c6 <b>{contest.title}</b>\n\n"
-        f"\U0001f4dd {contest.description}\n\n"
-        f"\U0001f381 <b>Sovg'a:</b> {contest.prize}\n"
-        f"\U0001f465 <b>Ishtirokchilar:</b> {participants_count}\n"
-        f"\U0001f3c5 <b>G'oliblar soni:</b> {contest.winners_count}\n"
-        f"\U0001f4ca <b>Holat:</b> \u2705 Faol\n"
-    )
-
+    text = format_contest_view(contest, participants_count)
     await callback.message.edit_text(
         text,
-        reply_markup=get_contest_detail_kb(contest, already_joined),
+        reply_markup=get_contest_detail_kb(contest, True),
         parse_mode="HTML",
     )
 
@@ -206,13 +188,7 @@ async def show_results(callback: CallbackQuery, session: AsyncSession):
         await callback.answer("G'oliblar hali tanlanmagan!", show_alert=True)
         return
 
-    text = f"\U0001f3c6 <b>{contest.title} - Natijalar</b>\n\n\U0001f3c5 <b>G'oliblar:</b>\n\n"
-    for i, winner in enumerate(winners, 1):
-        mention = f"@{winner.username}" if winner.username else winner.full_name
-        text += f"{i}. {mention} ({winner.full_name})\n"
-
-    text += f"\n\U0001f381 <b>Sovg'a:</b> {contest.prize}"
-
+    text = format_results_view(contest, winners)
     await callback.message.edit_text(
         text,
         reply_markup=get_contest_detail_kb(contest, False),
@@ -222,18 +198,8 @@ async def show_results(callback: CallbackQuery, session: AsyncSession):
 
 @router.callback_query(F.data == "my_contests")
 async def show_my_contests(callback: CallbackQuery, session: AsyncSession):
-    from sqlalchemy import select
-
-    from app.db.models import Contest, Participant
-
     user_id = callback.from_user.id
-    result = await session.execute(
-        select(Contest)
-        .join(Participant, Participant.contest_id == Contest.id)
-        .where(Participant.user_id == user_id)
-        .order_by(Contest.created_at.desc())
-    )
-    contests = list(result.scalars().all())
+    contests = await get_user_contests(session, user_id)
 
     if not contests:
         await callback.message.edit_text(

@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy.types import DateTime as _DateTime
+
+DateTime = _DateTime(timezone=True)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
