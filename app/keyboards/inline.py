@@ -35,6 +35,11 @@ def get_admin_menu_kb() -> InlineKeyboardMarkup:
         )
     )
     builder.row(
+        InlineKeyboardButton(
+            text="\U0001f4e3 Broadcast", callback_data="admin_broadcast"
+        )
+    )
+    builder.row(
         InlineKeyboardButton(text="\U0001f519 Orqaga", callback_data="back_to_main")
     )
     return builder.as_markup()
@@ -76,6 +81,13 @@ def get_contest_detail_kb(
                 callback_data="already_joined",
             )
         )
+    if is_participant and contest.is_active:
+        builder.row(
+            InlineKeyboardButton(
+                text="\U0001f517 Do'stlarni taklif qilish",
+                callback_data=f"referral_{contest.id}",
+            )
+        )
     if not contest.is_active:
         builder.row(
             InlineKeyboardButton(
@@ -115,6 +127,12 @@ def get_admin_contest_kb(contest: Contest) -> InlineKeyboardMarkup:
         InlineKeyboardButton(
             text="\U0001f4ca Ishtirokchilar",
             callback_data=f"participants_{contest.id}",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="\U0001f4e5 CSV Export",
+            callback_data=f"export_csv_{contest.id}",
         )
     )
     builder.row(
@@ -203,5 +221,49 @@ def get_subscription_toggle_kb(require: bool) -> InlineKeyboardMarkup:
     )
     builder.row(
         InlineKeyboardButton(text="\u274c Bekor qilish", callback_data="cancel_create")
+    )
+    return builder.as_markup()
+
+
+def get_timer_kb(
+    skip_text: str = "\u23e9 O'tkazib yuborish (vaqt limitsiz)",
+    skip_data: str = "timer_none",
+) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="1 soat", callback_data="timer_1"),
+        InlineKeyboardButton(text="6 soat", callback_data="timer_6"),
+    )
+    builder.row(
+        InlineKeyboardButton(text="12 soat", callback_data="timer_12"),
+        InlineKeyboardButton(text="24 soat", callback_data="timer_24"),
+    )
+    builder.row(
+        InlineKeyboardButton(text="48 soat", callback_data="timer_48"),
+        InlineKeyboardButton(text="72 soat", callback_data="timer_72"),
+    )
+    builder.row(
+        InlineKeyboardButton(text="\u270f\ufe0f Boshqa vaqt", callback_data="timer_custom"),
+    )
+    builder.row(
+        InlineKeyboardButton(text=skip_text, callback_data=skip_data),
+    )
+    builder.row(
+        InlineKeyboardButton(text="\u274c Bekor qilish", callback_data="cancel_create"),
+    )
+    return builder.as_markup()
+
+
+def get_referral_share_kb(bot_username: str, contest_id: int, user_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    ref_link = f"https://t.me/{bot_username}?start=ref_{contest_id}_{user_id}"
+    builder.row(
+        InlineKeyboardButton(
+            text="\U0001f4e4 Havolani ulashish",
+            switch_inline_query=f"Konkursga qo'shiling! {ref_link}",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(text="\U0001f519 Orqaga", callback_data=f"contest_{contest_id}")
     )
     return builder.as_markup()

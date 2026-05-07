@@ -9,8 +9,9 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from app.config import Config
 from app.db.engine import create_engine, create_session_pool, init_db
-from app.handlers import admin, start, user
+from app.handlers import admin, inline, start, user
 from app.middlewares.db_middleware import DbSessionMiddleware
+from app.services.scheduler_service import setup_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -45,13 +46,18 @@ async def main():
         start.router,
         admin.router,
         user.router,
+        inline.router,
     )
+
+    scheduler = setup_scheduler(bot, session_pool)
+    scheduler.start()
 
     logger.info("Bot ishga tushdi!")
 
     try:
         await dp.start_polling(bot)
     finally:
+        scheduler.shutdown()
         await bot.session.close()
         await engine.dispose()
 
