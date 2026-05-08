@@ -832,3 +832,37 @@ async def back_to_admin_menu(callback: CallbackQuery):
 async def cancel_add_chat(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
     await state.clear()
     await show_chat_management(callback, session)
+
+
+# ===== Media ID Detector (Utility for Admin) =====
+
+
+@router.message(admin_message_check, F.photo | F.video | F.document | F.audio | F.voice)
+async def detect_media_id(message: Message):
+    file_id = None
+    media_type = None
+    
+    if message.photo:
+        file_id = message.photo[-1].file_id
+        media_type = "Rasm (photo)"
+    elif message.video:
+        file_id = message.video.file_id
+        media_type = "Video"
+    elif message.document:
+        file_id = message.document.file_id
+        media_type = "Hujjat (document)"
+    elif message.audio:
+        file_id = message.audio.file_id
+        media_type = "Audio"
+    elif message.voice:
+        file_id = message.voice.file_id
+        media_type = "Ovozli xabar (voice)"
+
+    if file_id:
+        await message.reply(
+            f"<b>\U0001f50d Media ma'lumotlari aniqlandi:</b>\n\n"
+            f"<b>Turi:</b> {media_type}\n"
+            f"<b>File ID:</b> <code>{file_id}</code>\n\n"
+            f"<i>Ushbu ID-ni nusxalab, konkurs yaratishda ishlatishingiz mumkin.</i>",
+            parse_mode="HTML"
+        )
