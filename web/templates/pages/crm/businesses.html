@@ -1,58 +1,82 @@
 {% extends "layouts/base.html" %}
-{% block title %}Bizneslar{% endblock %}
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-building me-2"></i> Bizneslar</h2>
-    <a href="/crm/businesses/new" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> Yangi biznes
-    </a>
-</div>
 
-<div class="card">
-    <div class="card-body">
-        {% if businesses %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
+{% block title %}Bizneslar{% endblock %}
+{% block header_title %}CRM Bizneslar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="relative max-w-sm w-full">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" placeholder="Biznes nomini qidirish..." class="block w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm transition-all">
+        </div>
+        <a href="/crm/businesses/new" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm transition-all hover:bg-secondary shadow-lg shadow-primary/20">
+            <i class="bi bi-plus-lg"></i>
+            Yangi Biznes Qo'shish
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 border-b border-slate-200">
                     <tr>
-                        <th>#</th>
-                        <th>Nomi</th>
-                        <th>Telefon</th>
-                        <th>Email</th>
-                        <th>Yaratilgan</th>
-                        <th>Harakatlar</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Biznes Nomi</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Kontakt</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Manzil</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Sana</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Amallar</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                     {% for business in businesses %}
-                    <tr>
-                        <td>{{ business.id }}</td>
-                        <td>{{ business.name }}</td>
-                        <td>{{ business.phone or '-' }}</td>
-                        <td>{{ business.email or '-' }}</td>
-                        <td>{{ business.created_at }}</td>
-                        <td>
-                            <a href="/crm/businesses/{{ business.id }}" class="btn btn-sm btn-outline-info" title="Ko'rish">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="/crm/businesses/{{ business.id }}/edit" class="btn btn-sm btn-outline-warning" title="Tahrirlash">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="/crm/businesses/{{ business.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Biznesni o\'chirishni tasdiqlaysizmi?');">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="O'chirish">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-800">{{ business.name }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">ID: #{{ business.id }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium text-slate-600">
+                            <div>{{ business.phone or '-' }}</div>
+                            <div class="text-xs text-slate-400 font-normal">{{ business.email or '' }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-slate-600 line-clamp-1">{{ business.address or '-' }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-slate-500 font-medium">
+                            {{ business.created_at.strftime('%d.%m.%Y') }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="/crm/businesses/{{ business.id }}" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="/crm/businesses/{{ business.id }}/edit" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all shadow-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
+                    
+                    {% if not businesses %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-24 text-center">
+                            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-4">
+                                <i class="bi bi-building fs-1"></i>
+                            </div>
+                            <h4 class="text-slate-800 font-bold">Bizneslar mavjud emas</h4>
+                            <p class="text-slate-500 text-sm mt-1">Siz hali hech qanday hamkor biznesni qo'shmagansiz</p>
+                            <a href="/crm/businesses/new" class="inline-flex mt-6 px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm hover:bg-secondary transition-all">
+                                Birinchi biznesni qo'shish
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <p class="text-muted mb-0">Hozircha bizneslar mavjud emas.</p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

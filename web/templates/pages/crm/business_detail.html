@@ -1,101 +1,116 @@
 {% extends "layouts/base.html" %}
+
 {% block title %}{{ business.name }}{% endblock %}
+{% block header_title %}Biznes Profili{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-building me-2"></i> {{ business.name }}</h2>
-    <div>
-        <a href="/crm/businesses" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Orqaga
-        </a>
-        <a href="/crm/businesses/{{ business.id }}/edit" class="btn btn-warning">
-            <i class="bi bi-pencil me-1"></i> Tahrirlash
-        </a>
-        <a href="/crm/customers/new?business_id={{ business.id }}" class="btn btn-success">
-            <i class="bi bi-person-plus me-1"></i> Mijoz qo'shish
-        </a>
-    </div>
-</div>
-
-<div class="row g-4 mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Biznes ma'lumotlari</h5>
+<div class="space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-primary rounded-2xl shadow-lg flex items-center justify-center text-white text-2xl font-black">
+                {{ business.name[:1] }}
             </div>
-            <div class="card-body">
-                <table class="table table-borderless">
-                    <tr>
-                        <th class="text-muted" style="width:120px;">Nomi:</th>
-                        <td>{{ business.name }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Telefon:</th>
-                        <td>{{ business.phone or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Email:</th>
-                        <td>{{ business.email or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Manzil:</th>
-                        <td>{{ business.address or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Tavsif:</th>
-                        <td>{{ business.description or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Yaratilgan:</th>
-                        <td>{{ business.created_at }}</td>
-                    </tr>
-                </table>
+            <div>
+                <h2 class="text-3xl font-black text-slate-800">{{ business.name }}</h2>
+                <p class="text-sm font-medium text-slate-400">Biznes ID: #{{ business.id }}</p>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Mijozlar ({{ customers|length }})</h5>
-    </div>
-    <div class="card-body">
-        {% if customers %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>F.I.O.</th>
-                        <th>Telefon</th>
-                        <th>Email</th>
-                        <th>Yaratilgan</th>
-                        <th>Harakatlar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for customer in customers %}
-                    <tr>
-                        <td>{{ customer.id }}</td>
-                        <td>{{ customer.full_name }}</td>
-                        <td>{{ customer.phone or '-' }}</td>
-                        <td>{{ customer.email or '-' }}</td>
-                        <td>{{ customer.created_at }}</td>
-                        <td>
-                            <a href="/crm/customers/{{ customer.id }}" class="btn btn-sm btn-outline-info" title="Ko'rish">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="/crm/customers/{{ customer.id }}/edit" class="btn btn-sm btn-outline-warning" title="Tahrirlash">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="flex flex-wrap gap-3">
+            <a href="/crm/businesses" class="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">
+                <i class="bi bi-arrow-left"></i>
+                Orqaga
+            </a>
+            <a href="/crm/businesses/{{ business.id }}/edit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20">
+                <i class="bi bi-pencil"></i>
+                Tahrirlash
+            </a>
+            <a href="/crm/customers/new?business_id={{ business.id }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20">
+                <i class="bi bi-person-plus"></i>
+                Mijoz qo'shish
+            </a>
         </div>
-        {% else %}
-        <p class="text-muted mb-0">Bu biznesda hali mijozlar yo'q.</p>
-        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Details Card -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-lg font-bold text-slate-800">Biznes ma'lumotlari</h3>
+                </div>
+                <div class="p-8 space-y-6">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Telefon</p>
+                        <p class="text-slate-700 font-bold">{{ business.phone or '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email</p>
+                        <p class="text-slate-700 font-bold">{{ business.email or '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Manzil</p>
+                        <p class="text-slate-700 font-bold">{{ business.address or '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Qo'shilgan sana</p>
+                        <p class="text-slate-700 font-bold">{{ business.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-indigo-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+                <h4 class="text-lg font-bold mb-4">Tavsif</h4>
+                <p class="text-indigo-100 text-sm leading-relaxed">{{ business.description or 'Tavsif mavjud emas.' }}</p>
+            </div>
+        </div>
+
+        <!-- Customers List -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-slate-800">Ushbu biznes mijozlari</h3>
+                    <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase rounded-lg">Jami: {{ customers|length }}</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50/50 border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mijoz</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kontakt</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Amal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            {% for customer in customers %}
+                            <tr class="hover:bg-slate-50/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="font-bold text-slate-800">{{ customer.full_name }}</div>
+                                    <div class="text-[10px] text-slate-400 font-mono">#{{ customer.id }}</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <p class="text-sm font-bold text-slate-700">{{ customer.phone or '-' }}</p>
+                                    <p class="text-[10px] text-slate-400">{{ customer.email or '' }}</p>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="/crm/customers/{{ customer.id }}" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not customers %}
+                            <tr>
+                                <td colspan="3" class="px-6 py-20 text-center">
+                                    <p class="text-slate-400 font-medium">Bu biznesda hali mijozlar yo'q</p>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

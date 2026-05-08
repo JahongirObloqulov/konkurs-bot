@@ -1,95 +1,82 @@
 {% extends "layouts/base.html" %}
-{% block title %}Teglar{% endblock %}
+
+{% block title %}Teglar boshqaruvi{% endblock %}
+{% block header_title %}CRM Teglar va Kategoriyalar{% endblock %}
+
 {% block content %}
-<div class="row g-4">
-    <div class="col-md-5">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-tag-plus me-1"></i> Yangi teg qo'shish</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" action="/crm/tags/new">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Teg nomi <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="color" class="form-label">Rangi</label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="color" class="form-control form-control-color" id="color" name="color" value="#3498db" style="width:70px;">
-                            <span class="text-muted" id="color_hex">#3498db</span>
+<div class="max-w-6xl mx-auto space-y-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- New Tag Form -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden sticky top-24">
+                <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-lg font-bold text-slate-800">Yangi teg</h3>
+                    <p class="text-xs text-slate-400 font-medium uppercase mt-1 tracking-wider">Mijozlarni ajratish uchun</p>
+                </div>
+                <div class="p-8">
+                    <form method="post" action="/crm/tags/new" class="space-y-6">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Teg nomi <span class="text-rose-500">*</span></label>
+                            <input type="text" name="name" required 
+                                class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                                placeholder="Masalan: VIP">
                         </div>
-                    </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i> Qo'shish
-                    </button>
-                </form>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Rangi</label>
+                            <div class="flex items-center gap-3">
+                                <input type="color" name="color" value="#6366f1" 
+                                    class="w-12 h-12 bg-transparent border-0 p-0 cursor-pointer">
+                                <span class="text-sm font-medium text-slate-500 font-mono">Rang tanlang</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" 
+                            class="w-full py-4 bg-primary text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-secondary transition-all flex items-center justify-center gap-2">
+                            <i class="bi bi-plus-lg"></i>
+                            Tegni qo'shish
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-7">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-tags me-1"></i> Teglar ro'yxati</h5>
-            </div>
-            <div class="card-body">
-                {% if tags %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nomi</th>
-                                <th>Rangi</th>
-                                <th>Harakatlar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for tag in tags %}
-                            <tr>
-                                <td>{{ tag.id }}</td>
-                                <td>{{ tag.name }}</td>
-                                <td>
-                                    <span class="badge me-2" style="background-color: {{ tag.color }};">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                    <code>{{ tag.color }}</code>
-                                </td>
-                                <td>
-                                    <form action="/crm/tags/{{ tag.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Tegni o\'chirishni tasdiqlaysizmi?');">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="O'chirish">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- Tags List -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-slate-800">Mavjud teglar</h3>
+                    <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase rounded-lg">Jami: {{ tags|length }}</span>
                 </div>
-                {% else %}
-                <p class="text-muted mb-0">Hozircha teglar mavjud emas. Yuqoridagi forma orqali yangi teg qo'shing.</p>
-                {% endif %}
+                <div class="p-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for tag in tags %}
+                    <div class="flex items-center justify-between p-4 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/50 transition-all group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full shadow-sm" style="background-color: {{ tag.color }};"></div>
+                            <span class="font-bold text-slate-700">{{ tag.name }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button class="w-8 h-8 flex items-center justify-center bg-white text-slate-400 rounded-lg hover:text-rose-500 hover:bg-rose-50 transition-all shadow-sm">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not tags %}
+                    <div class="col-span-2 py-20 text-center">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4">
+                            <i class="bi bi-tags fs-2"></i>
+                        </div>
+                        <h4 class="text-slate-800 font-bold">Teglar mavjud emas</h4>
+                        <p class="text-slate-500 text-sm">Yangi teg qo'shish uchun chapdagi formadan foydalaning</p>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var colorInput = document.getElementById('color');
-        var colorHex = document.getElementById('color_hex');
-        if (colorInput && colorHex) {
-            colorInput.addEventListener('input', function() {
-                colorHex.textContent = this.value;
-            });
-        }
-    });
-</script>
 {% endblock %}
