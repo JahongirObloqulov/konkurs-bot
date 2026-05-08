@@ -1,0 +1,91 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Media Gallery{% endblock %}
+{% block header_title %}Media Gallery{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <!-- Add Media Form -->
+    <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yangi Media Qo'shish</h3>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Telegram File ID orqali media fayllarni tizimga kiriting</p>
+        </div>
+        
+        <form action="/api/media/add" method="POST" class="p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">File ID</label>
+                <input type="text" name="file_id" required 
+                    class="block w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white font-mono"
+                    placeholder="AgACAgIAAxkBAA...">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Tur</label>
+                <select name="file_type" required 
+                    class="block w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white appearance-none">
+                    <option value="photo">Rasm (Photo)</option>
+                    <option value="video">Video</option>
+                    <option value="document">Hujjat (Document)</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Tavsif (Ixtiyoriy)</label>
+                <div class="flex gap-2">
+                    <input type="text" name="description"
+                        class="block w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white"
+                        placeholder="Masalan: Start rasm">
+                    <button type="submit" class="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Media Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in media_items %}
+        <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden group">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400">
+                            {% if item.file_type == 'photo' %}<i class="bi bi-image text-xl"></i>
+                            {% elif item.file_type == 'video' %}<i class="bi bi-play-circle text-xl"></i>
+                            {% else %}<i class="bi bi-file-earmark-text text-xl"></i>{% endif %}
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-900 dark:text-white text-sm">{{ item.description or 'Nomsiz fayl' }}</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">{{ item.file_type }}</p>
+                        </div>
+                    </div>
+                    <button onclick="copyToClipboard('{{ item.file_id }}')" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Nusxa olish">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+                <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 font-mono text-[10px] text-slate-500 break-all">
+                    {{ item.file_id }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if not media_items %}
+        <div class="col-span-full py-20 text-center ui-card rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
+                <i class="bi bi-images text-3xl"></i>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 font-bold">Hozircha media fayllar yo'q</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert("File ID nusxalandi!");
+    });
+}
+</script>
+{% endblock %}

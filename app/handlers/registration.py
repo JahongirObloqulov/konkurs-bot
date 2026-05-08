@@ -114,6 +114,12 @@ async def process_location(message: Message, state: FSMContext, session: AsyncSe
     )
     await session.commit()
     
+    try:
+        from web.routes import notify_sse
+        await notify_sse("user_registered")
+    except Exception as e:
+        logger.error(f"Failed to notify SSE: {e}")
+    
     # Check mandatory subscription after registration
     is_subscribed, unsubscribed_chats = await check_all_subscriptions(bot, message.from_user.id, session)
     

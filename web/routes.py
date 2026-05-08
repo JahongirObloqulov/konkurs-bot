@@ -421,6 +421,104 @@ async def chats_page(request: Request, user: dict = Depends(require_auth)):
     )
 
 
+@router.get("/media-gallery", response_class=HTMLResponse)
+async def media_gallery_page(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import Media
+    async with async_session_maker() as session:
+        res = await session.execute(select(Media).order_by(Media.created_at.desc()))
+        media_items = res.scalars().all()
+        
+    return templates.TemplateResponse(
+        "pages/media_gallery.html",
+        {"request": request, "user": user, "media_items": media_items}
+    )
+
+
+@router.post("/api/media/add")
+async def api_media_add(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import Media
+    from app.services.audit_service import log_action
+    
+    form = await request.form()
+    file_id = form.get("file_id")
+    file_type = form.get("file_type")
+    description = form.get("description")
+    
+    if not file_id or not file_type:
+        return JSONResponse({"status": "error", "message": "Missing fields"}, status_code=400)
+        
+    async with async_session_maker() as session:
+        media = Media(file_id=file_id, file_type=file_type, description=description)
+        session.add(media)
+        await session.commit()
+        await log_action(session, user['sub'], "Add Media", f"File ID: {file_id}, Type: {file_type}")
+        
+    return RedirectResponse(url="/media-gallery", status_code=302)
+
+
+import asyncio
+from typing import List
+
+sse_queues: List[asyncio.Queue] = []
+
+@router.get("/api/sse")
+async def sse_endpoint(request: Request):
+    queue = asyncio.Queue()
+    sse_queues.append(queue)
+    
+    async def event_generator():
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                
+                try:
+                    # Wait with timeout to occasionally check for disconnect
+                    data = await asyncio.wait_for(queue.get(), timeout=20.0)
+                    yield f"data: {data}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keep-alive\n\n"
+        finally:
+            if queue in sse_queues:
+                sse_queues.remove(queue)
+            
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+async def notify_sse(message: str):
+    for queue in sse_queues:
+        await queue.put(message)
+
+
+@router.post("/api/ai/draft")
+async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
+    import google.generativeai as genai
+    import os
+    
+    try:
+        data = await request.json()
+        prompt = data.get("prompt")
+        lang = data.get("lang", "uz")
+        
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return JSONResponse({"status": "error", "message": "AI API key not configured"}, status_code=500)
+            
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        system_instruction = f"You are a helpful telegram bot administrator. Draft a short, engaging broadcast message in {lang}. Use HTML tags like <b>, <i> if needed. Keep it concise."
+        full_prompt = f"{system_instruction}\n\nTopic: {prompt}"
+        
+        response = model.generate_content(full_prompt)
+        
+        return JSONResponse({
+            "status": "success",
+            "draft": response.text.strip()
+        })
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
+
 @router.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request, user: dict = Depends(require_auth)):
     from app.services.settings_service import get_setting

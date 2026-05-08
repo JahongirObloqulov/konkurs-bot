@@ -16,8 +16,14 @@
                 <div class="p-8">
                     <form method="post" action="/broadcast" class="space-y-6">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 ml-1">{{ _('message_text') }} <span class="text-rose-500">*</span></label>
-                            <textarea name="message" rows="6" required 
+                            <div class="flex items-center justify-between mb-2 ml-1">
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{{ _('message_text') }} <span class="text-rose-500">*</span></label>
+                                <button type="button" onclick="showAIModal()" class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest hover:opacity-80 transition-all">
+                                    <i class="bi bi-stars"></i>
+                                    AI Yordamchi
+                                </button>
+                            </div>
+                            <textarea id="broadcast_message" name="message" rows="6" required 
                                 class="block w-full px-5 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white text-sm leading-relaxed"
                                 placeholder="{{ _('message_text') }}..."></textarea>
                         </div>
@@ -87,4 +93,98 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- AI Assistant Modal -->
+<div id="aiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                        <i class="bi bi-stars text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 dark:text-white">AI Yordamchi</h4>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Xabar matnini tayyorlash</p>
+                    </div>
+                </div>
+                <button onclick="hideAIModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-8 space-y-6">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest ml-1">Mavzu yoki kalit so'zlar</label>
+                <input type="text" id="aiPrompt" 
+                    class="block w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-4 focus:ring-indigo-600/10 outline-none transition-all text-sm dark:text-white"
+                    placeholder="Masalan: Yangi konkurs boshlandi, 1-o'ringa iPhone...">
+            </div>
+            <button onclick="generateDraft()" id="generateBtn" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
+                <span>Generatsiya qilish</span>
+                <i class="bi bi-magic"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+const aiModal = document.getElementById('aiModal');
+const aiPrompt = document.getElementById('aiPrompt');
+const generateBtn = document.getElementById('generateBtn');
+const messageArea = document.getElementById('broadcast_message');
+
+function showAIModal() {
+    aiModal.classList.remove('hidden');
+    aiModal.classList.add('flex');
+    aiPrompt.focus();
+}
+
+function hideAIModal() {
+    aiModal.classList.add('hidden');
+    aiModal.classList.remove('flex');
+}
+
+async function generateDraft() {
+    const prompt = aiPrompt.value.trim();
+    if (!prompt) return;
+
+    const originalBtnText = generateBtn.innerHTML;
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin"></i> Tayyorlanmoqda...';
+
+    try {
+        const res = await fetch('/api/ai/draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, lang: 'uz' })
+        });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            messageArea.value = data.draft;
+            hideAIModal();
+            // Subtle animation on the textarea to show it updated
+            messageArea.classList.add('ring-4', 'ring-emerald-500/20', 'border-emerald-500');
+            setTimeout(() => {
+                messageArea.classList.remove('ring-4', 'ring-emerald-500/20', 'border-emerald-500');
+            }, 2000);
+        } else {
+            alert("Xatolik: " + data.message);
+        }
+    } catch (e) {
+        alert("Texnik xatolik yuz berdi.");
+    } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = originalBtnText;
+    }
+}
+
+// Close on escape
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideAIModal();
+});
+</script>
 {% endblock %}
