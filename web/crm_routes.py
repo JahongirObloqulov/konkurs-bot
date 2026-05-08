@@ -22,6 +22,7 @@ from app.services.crm_service import (
     update_business,
     update_customer,
 )
+from app.db.models import Customer, CustomerTag
 from web.app import templates, async_session_maker
 from web.routes import require_auth, get_current_user
 
@@ -41,7 +42,7 @@ async def crm_dashboard(request: Request, user: dict = Depends(require_auth)):
         for b in businesses[:3]:
             recent_activity.append({"type": "business", "description": f"Yangi biznes: {b.name}", "created_at": b.created_at})
         
-        from app.db.models import Customer
+        from app.db.models import Business
         res = await session.execute(select(Customer).order_by(Customer.created_at.desc()).limit(3))
         for c in res.scalars().all():
             recent_activity.append({"type": "customer", "description": f"Yangi mijoz: {c.full_name}", "created_at": c.created_at})
