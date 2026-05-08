@@ -1,7 +1,7 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Konkurslar{% endblock %}
-{% block header_title %}Konkurslar Ro'yxati{% endblock %}
+{% block header_title %}{{ _('contests') }}{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
@@ -10,11 +10,11 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <i class="bi bi-search"></i>
             </span>
-            <input type="text" placeholder="Search contests..." class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm dark:text-white transition-all">
+            <input type="text" placeholder="{{ _('search') }}" class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm dark:text-white transition-all">
         </div>
         <a href="/contests/new" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 btn-primary rounded-xl font-bold text-sm transition-all shadow-sm">
             <i class="bi bi-plus-lg"></i>
-            Create New Contest
+            {{ _('create_new') }}
         </a>
     </div>
 
@@ -24,9 +24,9 @@
             <div class="p-6 flex-1">
                 <div class="flex items-center justify-between mb-4">
                     {% if contest.is_active %}
-                    <span class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
+                    <span class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-md">{{ _('active') }}</span>
                     {% else %}
-                    <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Finished</span>
+                    <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-md">{{ _('finished') }}</span>
                     {% endif %}
                     <span class="text-slate-400 text-xs font-medium">{{ contest.created_at.strftime('%b %d, %Y') }}</span>
                 </div>
@@ -36,11 +36,11 @@
                 
                 <div class="flex items-center gap-6 py-4 border-t border-slate-100 dark:border-slate-700">
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Prize</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{{ _('prize') }}</p>
                         <p class="text-sm font-bold text-amber-600 dark:text-amber-500">{{ contest.prize }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Participants</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{{ _('participants') }}</p>
                         <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ contest.participants_count }}</p>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
             <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-400">#{{ contest.id }}</span>
                 <a href="/contests/{{ contest.id }}" class="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary-hover transition-colors">
-                    Manage
+                    {{ _('manage') }}
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </div>
@@ -62,9 +62,9 @@
         <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mb-4">
             <i class="bi bi-trophy text-3xl"></i>
         </div>
-        <h4 class="text-lg font-bold text-slate-900 dark:text-white">No contests found</h4>
+        <h4 class="text-lg font-bold text-slate-900 dark:text-white">{{ _('no_contests') }}</h4>
         <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 max-w-xs text-center">Get started by creating your first contest for your audience.</p>
-        <a href="/contests/new" class="btn-primary px-8 py-2.5 rounded-lg font-bold shadow-sm">Get Started</a>
+        <a href="/contests/new" class="btn-primary px-8 py-2.5 rounded-lg font-bold shadow-sm">{{ _('create_new') }}</a>
     </div>
     {% endif %}
 </div>

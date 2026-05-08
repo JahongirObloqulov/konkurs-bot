@@ -1,7 +1,7 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Mijozlar{% endblock %}
-{% block header_title %}CRM Mijozlar{% endblock %}
+{% block header_title %}{{ _('customers') }}{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
@@ -10,11 +10,11 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <i class="bi bi-search text-sm"></i>
             </span>
-            <input type="text" placeholder="Search customers..." class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm dark:text-white transition-all">
+            <input type="text" placeholder="{{ _('search') }}" class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm dark:text-white transition-all">
         </div>
         <a href="/crm/customers/new" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm">
             <i class="bi bi-person-plus text-lg"></i>
-            Add Customer
+            {{ _('add_customer') }}
         </a>
     </div>
 
@@ -23,11 +23,11 @@
             <table class="w-full text-left">
                 <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                     <tr>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Customer</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contact</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Business</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tags</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ _('customers') }}</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ _('contact') }}</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ _('business') }}</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ _('tags') }}</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">{{ _('actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
@@ -47,7 +47,7 @@
                                 {{ customer.business.name }}
                             </a>
                             {% else %}
-                            <span class="text-slate-400 text-xs italic">Unassigned</span>
+                            <span class="text-slate-400 text-xs italic">{{ _('unassigned') }}</span>
                             {% endif %}
                         </td>
                         <td class="px-6 py-4">
@@ -82,7 +82,7 @@
                             <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
                                 <i class="bi bi-person-badge text-3xl"></i>
                             </div>
-                            <h4 class="text-slate-900 dark:text-white font-bold text-lg">No customers found</h4>
+                            <h4 class="text-slate-900 dark:text-white font-bold text-lg">{{ _('no_customers') }}</h4>
                             <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Start adding customers to your CRM system.</p>
                         </td>
                     </tr>

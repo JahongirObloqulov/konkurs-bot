@@ -127,47 +127,47 @@
                 <div class="space-y-1">
                     <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/dashboard' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-grid text-lg"></i>
-                        <span>Overview</span>
+                        <span>{{ _('dashboard') }}</span>
                     </a>
                     <a href="/contests" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/contests' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-trophy text-lg"></i>
-                        <span>Contests</span>
+                        <span>{{ _('contests') }}</span>
                     </a>
                     <a href="/chats" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/chats' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-megaphone text-lg"></i>
-                        <span>Channels</span>
+                        <span>{{ _('channels') }}</span>
                     </a>
                     <a href="/users" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/users' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-people text-lg"></i>
-                        <span>Users</span>
+                        <span>{{ _('users') }}</span>
                     </a>
                     <a href="/broadcast" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/broadcast' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-broadcast text-lg"></i>
-                        <span>Broadcast</span>
+                        <span>{{ _('broadcast') }}</span>
                     </a>
                     <a href="/settings" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/settings' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-sliders text-lg"></i>
-                        <span>Settings</span>
+                        <span>{{ _('settings') }}</span>
                     </a>
                 </div>
 
                 <div class="pt-6">
-                    <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">CRM Modules</p>
+                    <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{{ _('crm_modules') }}</p>
                     <a href="/crm" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/crm' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-pie-chart text-lg"></i>
-                        <span>Analytics</span>
+                        <span>{{ _('analytics') }}</span>
                     </a>
                     <a href="/crm/businesses" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/crm/businesses' in request.url.path and not '/crm/businesses/' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-building text-lg"></i>
-                        <span>Businesses</span>
+                        <span>{{ _('businesses') }}</span>
                     </a>
                     <a href="/crm/customers" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/crm/customers' in request.url.path and not '/crm/customers/' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-person-badge text-lg"></i>
-                        <span>Customers</span>
+                        <span>{{ _('customers') }}</span>
                     </a>
                     <a href="/crm/tags" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/crm/tags' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-tags text-lg"></i>
-                        <span>Tags</span>
+                        <span>{{ _('tags') }}</span>
                     </a>
                 </div>
             </nav>
@@ -175,7 +175,7 @@
             <div class="p-4 mt-auto">
                 <a href="/logout" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 transition-all text-sm font-medium">
                     <i class="bi bi-box-arrow-right text-lg"></i>
-                    <span>Sign Out</span>
+                    <span>{{ _('sign_out') }}</span>
                 </a>
             </div>
         </aside>
@@ -184,8 +184,21 @@
         <main class="flex-1 lg:ml-64 flex flex-col min-w-0 overflow-hidden">
             <header class="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border sticky top-0 z-40">
                 <div class="px-8 py-4 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{% block header_title %}Overview{% endblock %}</h2>
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{% block header_title %}{{ _('overview') }}{% endblock %}</h2>
                     <div class="flex items-center gap-4">
+                        <!-- Language Switcher -->
+                        <div class="relative group">
+                            <button class="flex items-center gap-2 p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <span class="text-xs font-bold uppercase">{{ current_lang }}</span>
+                                <i class="bi bi-chevron-down text-[10px]"></i>
+                            </button>
+                            <div class="absolute right-0 top-full mt-1 w-24 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                <button onclick="setLanguage('uz')" class="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-t-xl transition-colors">UZBEK</button>
+                                <button onclick="setLanguage('ru')" class="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">RUSSIAN</button>
+                                <button onclick="setLanguage('en')" class="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-b-xl transition-colors">ENGLISH</button>
+                            </div>
+                        </div>
+
                         <button id="theme-toggle" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                             <i id="theme-toggle-dark-icon" class="bi bi-moon-fill hidden"></i>
                             <i id="theme-toggle-light-icon" class="bi bi-sun-fill hidden"></i>
@@ -194,7 +207,7 @@
                         <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-700">
                             <div class="text-right hidden sm:block">
                                 <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ user.username or 'Admin' }}</p>
-                                <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Super Administrator</p>
+                                <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{{ _('super_admin') }}</p>
                             </div>
                             <div class="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-700">
                                 {{ (user.username[:1] if user.username else 'A') | upper }}
@@ -211,6 +224,12 @@
     </div>
     {% else %}
         <div class="min-h-full flex items-center justify-center p-6 bg-slate-50 dark:bg-dark-bg transition-colors duration-300">
+            <!-- Login Language Switcher -->
+            <div class="absolute top-8 right-8 flex items-center gap-2">
+                <button onclick="setLanguage('uz')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white transition-all">UZ</button>
+                <button onclick="setLanguage('ru')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white transition-all">RU</button>
+                <button onclick="setLanguage('en')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white transition-all">EN</button>
+            </div>
             <div class="w-full max-w-md">
                 {% block login_content %}{% endblock %}
             </div>
@@ -218,6 +237,12 @@
     {% endif %}
 
     <script>
+        // Language switching
+        function setLanguage(lang) {
+            document.cookie = "lang=" + lang + "; path=/; max-age=" + (30 * 24 * 60 * 60);
+            window.location.reload();
+        }
+
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeToggleLoginBtn = document.getElementById('theme-toggle-login');
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');

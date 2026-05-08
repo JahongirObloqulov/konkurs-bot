@@ -20,14 +20,14 @@ config = Config.from_env()
 engine = create_engine(config.db_url)
 async_session_maker = create_session_pool(engine)
 
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+from web.translations import translate
 
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
     await engine.dispose()
-
 
 app = FastAPI(
     title="Konkurs Bot Admin",
@@ -35,6 +35,26 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+@app.middleware("http")
+async def add_translation_helper(request: Request, call_next):
+    lang = request.cookies.get("lang", "uz")
+    if lang not in ["uz", "ru", "en"]:
+        lang = "uz"
+    
+    # Add translation function to request state
+    request.state.lang = lang
+    
+    # Define the translation function for this request
+    def _(key):
+        return translate(key, lang)
+    
+    # Add to template context
+    templates.env.globals["_"] = _
+    templates.env.globals["current_lang"] = lang
+    
+    response = await call_next(request)
+    return response
 
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
