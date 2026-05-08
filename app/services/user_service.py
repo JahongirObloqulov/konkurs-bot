@@ -81,3 +81,13 @@ async def get_all_user_ids(session: AsyncSession) -> list[int]:
     except Exception as e:
         logger.error(f"Failed to get all user IDs: {e}")
         return []
+
+
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+    """Foydalanuvchini Telegram ID orqali olish."""
+    try:
+        result = await session.execute(select(User).where(User.user_id == user_id))
+        return result.scalar_one_or_none()
+    except Exception as e:
+        logger.error(f"Failed to get user by id {user_id}: {e}")
+        return None
