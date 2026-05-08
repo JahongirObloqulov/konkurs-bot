@@ -1,0 +1,59 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Audit Logs{% endblock %}
+{% block header_title %}Audit Logs{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Tizim Amallari Tarixi</h3>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Adminlar tomonidan amalga oshirilgan oxirgi 100 ta amal</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Vaqt</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Admin</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Amal</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Tafsilotlar</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    {% for log in logs %}
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-4 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase">
+                                <i class="bi bi-person-badge"></i>
+                                {{ log.admin_username }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ log.action }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-xs text-slate-600 dark:text-slate-400 max-w-md truncate" title="{{ log.details }}">
+                                {{ log.details or '-' }}
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    {% if not logs %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-20 text-center">
+                            <p class="text-slate-500 dark:text-slate-400 font-bold">Hozircha amallar tarixi bo'sh</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

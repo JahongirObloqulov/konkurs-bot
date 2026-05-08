@@ -178,6 +178,50 @@ async def export_dashboard(format: str, user: dict = Depends(require_auth)):
             )
 
 
+@router.get("/api/stats/growth")
+async def api_stats_growth(user: dict = Depends(require_auth)):
+    from app.db.models import User
+    from datetime import datetime, timedelta, timezone
+    
+    async with async_session_maker() as session:
+        today = datetime.now(timezone.utc).date()
+        dates = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
+        
+        labels = [d.strftime('%b %d') for d in dates]
+        values = []
+        
+        for d in dates:
+            res = await session.execute(
+                select(func.count(User.id)).where(
+                    func.date(User.registered_at) == d
+                )
+            )
+            values.append(res.scalar_one() or 0)
+            
+    return JSONResponse({
+        "labels": labels,
+        "values": values
+    })
+
+
+@router.post("/api/contests/{contest_id}/pick-winners")
+async def api_pick_winners(contest_id: int, user: dict = Depends(require_auth)):
+    from app.services.contest_service import select_winners
+    from app.services.audit_service import log_action
+    
+    async with async_session_maker() as session:
+        winners = await select_winners(session, contest_id)
+        if not winners:
+            return JSONResponse({"status": "error", "message": "Winners already selected or contest not found"}, status_code=400)
+            
+        await log_action(session, user['sub'], "Pick Winners", f"Contest ID: {contest_id}, {len(winners)} winners selected.")
+        
+        return JSONResponse({
+            "status": "success",
+            "winners": [{"name": w.full_name, "id": w.user_id} for w in winners]
+        })
+
+
 @router.get("/export/contest/{contest_id}/{format}")
 async def export_contest_participants(contest_id: int, format: str, user: dict = Depends(require_auth)):
     from app.db.models import Participant, Contest
@@ -282,15 +326,27 @@ async def contest_detail(request: Request, contest_id: int, user: dict = Depends
         
         from app.db.models import User
         query = (
-            select(Participant, User.referral_count)
+            select(Participant, User.referral_count, User.added_users_count)
             .join(User, User.user_id == Participant.user_id)
             .where(Participant.contest_id == contest_id)
+            .order_by(Participant.joined_at.desc())
         )
         result = await session.execute(query)
-        participants_data = result.all()
+        rows = result.all()
+        
+        # Format for template: list of dicts or objects with combined attributes
+        participants = []
+        for p, ref_count, add_count in rows:
+            participants.append({
+                "user_id": p.user_id,
+                "user_name": p.full_name,
+                "referral_count": ref_count,
+                "addition_count": add_count,
+                "joined_at": p.joined_at
+            })
         
         winners = await get_winners(session, contest_id)
-        participants_count = await get_participants_count(session, contest_id)
+        participants_count = len(participants)
 
     return templates.TemplateResponse(
         "pages/contest_detail.html",
@@ -298,7 +354,7 @@ async def contest_detail(request: Request, contest_id: int, user: dict = Depends
             "request": request,
             "user": user,
             "contest": contest,
-            "participants_data": participants_data,
+            "participants": participants,
             "winners": winners,
             "participants_count": participants_count,
         }

@@ -25,6 +25,35 @@
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+function confirmPickWinners() {
+    if (confirm("G'oliblarni aniqlashni tasdiqlaysizmi? Bu jarayon tasodifiy (weighted) tanlov asosida amalga oshiriladi va konkurs avtomatik ravishda yakunlanadi.")) {
+        pickWinners();
+    }
+}
+
+async function pickWinners() {
+    try {
+        const res = await fetch('/api/contests/{{ contest.id }}/pick-winners', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            alert("G'oliblar muvaffaqiyatli aniqlandi!");
+            window.location.reload();
+        } else {
+            alert("Xatolik: " + data.message);
+        }
+    } catch (e) {
+        alert("Texnik xatolik yuz berdi.");
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="space-y-8">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -112,11 +141,43 @@
             </div>
         </div>
 
-        <!-- Main Content: Participants -->
-        <div class="lg:col-span-2">
+        <!-- Main Content: Winners & Participants -->
+        <div class="lg:col-span-2 space-y-8">
+            {% if winners %}
+            <div class="ui-card rounded-2xl shadow-sm border-2 border-amber-500/20 dark:border-amber-500/10 overflow-hidden bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-900/10 dark:to-slate-900/50">
+                <div class="p-8 border-b border-amber-100 dark:border-amber-900/30 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30">
+                            <i class="bi bi-trophy-fill text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-amber-600 dark:text-amber-400 uppercase tracking-tight">G'oliblar</h3>
+                    </div>
+                </div>
+                <div class="p-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for w in winners %}
+                    <div class="p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-amber-200/50 dark:border-amber-900/20 flex items-center gap-4 shadow-sm">
+                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400 font-black text-lg">
+                            {{ loop.index }}
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-900 dark:text-white">{{ w.full_name }}</p>
+                            <p class="text-xs font-mono text-slate-500 dark:text-slate-400">ID: {{ w.user_id }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                 <div class="p-8 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-800/50">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ _('participants') }}</h3>
+                    {% if contest.is_active and participants %}
+                    <button onclick="confirmPickWinners()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-trophy"></i>
+                        G'oliblarni aniqlash
+                    </button>
+                    {% endif %}
                 </div>
                 
                 <div class="overflow-x-auto">
