@@ -553,8 +553,8 @@ async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
                 timeout=30.0
             )
             
-            # Fallback if rate limited or provider error
-            if response.status_code == 429 or "rate-limited" in response.text:
+            # Fallback if rate limited (429), not found (404), or provider error
+            if response.status_code in [404, 429] or "rate-limited" in response.text or "No endpoints found" in response.text:
                 fallback_model = "google/gemini-flash-1.5-8b-exp:free"
                 if model != fallback_model:
                     payload["model"] = fallback_model
@@ -566,7 +566,11 @@ async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
                     )
             
         if response.status_code != 200:
-            return JSONResponse({"status": "error", "message": f"OpenRouter Error: {response.text}"}, status_code=response.status_code)
+            return JSONResponse({
+                "status": "error", 
+                "message": f"OpenRouter Error ({response.status_code}): {response.text}",
+                "tip": "Model nomini tekshiring yoki OpenRouter-da limit tugagan bo'lishi mumkin."
+            }, status_code=response.status_code)
             
         res_data = response.json()
         if 'choices' not in res_data or not res_data['choices']:
