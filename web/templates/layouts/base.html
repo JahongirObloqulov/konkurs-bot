@@ -357,11 +357,11 @@
 
                         <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-700">
                             <div class="text-right hidden sm:block">
-                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ user.username or 'Admin' }}</p>
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ user.sub if user else 'Admin' }}</p>
                                 <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{{ _('super_admin') }}</p>
                             </div>
                             <div class="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-700">
-                                {{ (user.username[:1] if user.username else 'A') | upper }}
+                                {{ (user.sub[:1] if user and user.sub else 'A') | upper }}
                             </div>
                         </div>
                     </div>

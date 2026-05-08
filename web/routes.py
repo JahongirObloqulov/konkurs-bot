@@ -129,8 +129,9 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
         {
             "request": request,
             "user": user,
-            "active_contests": len(active_contests),
+            "active_contests_count": len(active_contests),
             "total_contests": len(all_contests),
+            "contests": all_contests,
             "total_users": users_count,
             "total_participants": total_participants,
             "total_winners": total_winners,
