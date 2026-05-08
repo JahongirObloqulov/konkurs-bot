@@ -21,7 +21,7 @@
 
         <div class="card">
             <div class="card-body">
-                <form method="post" action="/crm/customers/{{ customer.id }}/interactions/create">
+                <form method="post" action="/crm/customers/{{ customer.id }}/interactions/new">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
                     <div class="mb-3">

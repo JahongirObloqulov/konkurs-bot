@@ -13,7 +13,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="post" action="{% if business %}/crm/businesses/{{ business.id }}/edit{% else %}/crm/businesses/create{% endif %}">
+        <form method="post" action="{% if business %}/crm/businesses/{{ business.id }}/edit{% else %}/crm/businesses/new{% endif %}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
             <div class="mb-3">
