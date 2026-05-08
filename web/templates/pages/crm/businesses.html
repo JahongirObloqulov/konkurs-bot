@@ -1,58 +1,58 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Bizneslar{% endblock %}
-{% block header_title %}CRM Bizneslar{% endblock %}
+{% block title %}{{ _('businesses') }}{% endblock %}
+{% block header_title %}{{ _('businesses') }}{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div class="relative max-w-sm w-full group">
-            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-dark-muted group-focus-within:text-primary transition-colors">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                 <i class="bi bi-search"></i>
             </span>
-            <input type="text" placeholder="Biznes nomini qidirish..." class="block w-full pl-11 pr-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm transition-all dark:text-white">
+            <input type="text" placeholder="{{ _('search') }}" class="block w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm transition-all dark:text-white">
         </div>
-        <a href="/crm/businesses/new" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 btn-primary-gradient text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:scale-[1.02] shadow-xl shadow-primary/20">
+        <a href="/crm/businesses/new" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 btn-primary rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-lg shadow-indigo-200 dark:shadow-none">
             <i class="bi bi-plus-lg"></i>
-            Yangi Biznes Qo'shish
+            {{ _('create_new') }}
         </a>
     </div>
 
-    <div class="glass-card rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
+    <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
-                <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-dark-border">
+                <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                     <tr>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Biznes Nomi</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Kontakt</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Manzil</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Sana</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px] text-right">Amallar</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('business') }}</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('contact') }}</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('overview') }}</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('date') }}</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">{{ _('actions') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                     {% for business in businesses %}
-                    <tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
                         <td class="px-6 py-5">
-                            <div class="font-extrabold text-slate-800 dark:text-white group-hover:text-primary transition-colors">{{ business.name }}</div>
-                            <div class="text-[10px] text-slate-400 dark:text-dark-muted font-black uppercase tracking-wider mt-0.5">ID: #{{ business.id }}</div>
+                            <div class="font-bold text-slate-900 dark:text-white text-sm">{{ business.name }}</div>
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">ID: #{{ business.id }}</div>
                         </td>
                         <td class="px-6 py-5">
-                            <div class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ business.phone or '-' }}</div>
-                            <div class="text-[10px] text-slate-400 dark:text-dark-muted font-bold">{{ business.email or '' }}</div>
+                            <div class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ business.phone or '-' }}</div>
+                            <div class="text-[10px] text-slate-400 font-medium">{{ business.email or '' }}</div>
                         </td>
                         <td class="px-6 py-5">
-                            <span class="text-sm font-bold text-slate-600 dark:text-dark-muted line-clamp-1 max-w-[200px]">{{ business.address or '-' }}</span>
+                            <span class="text-xs font-medium text-slate-600 dark:text-slate-400 line-clamp-1 max-w-[200px]">{{ business.address or '-' }}</span>
                         </td>
-                        <td class="px-6 py-5 text-[10px] text-slate-500 dark:text-dark-muted font-black uppercase tracking-wider">
+                        <td class="px-6 py-5 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                             {{ business.created_at.strftime('%d.%m.%Y') }}
                         </td>
                         <td class="px-6 py-5 text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="/crm/businesses/{{ business.id }}" class="inline-flex items-center justify-center w-9 h-9 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
-                                    <i class="bi bi-eye-fill"></i>
+                                <a href="/crm/businesses/{{ business.id }}" class="w-9 h-9 inline-flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                                    <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="/crm/businesses/{{ business.id }}/edit" class="inline-flex items-center justify-center w-9 h-9 bg-amber-500/10 text-amber-500 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm">
+                                <a href="/crm/businesses/{{ business.id }}/edit" class="w-9 h-9 inline-flex items-center justify-center bg-amber-50 dark:bg-amber-500/10 text-amber-500 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                             </div>
@@ -63,14 +63,10 @@
                     {% if not businesses %}
                     <tr>
                         <td colspan="5" class="px-6 py-24 text-center">
-                            <div class="w-20 h-20 bg-slate-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center text-slate-200 dark:text-slate-700 mx-auto mb-6">
-                                <i class="bi bi-building fs-1"></i>
+                            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
+                                <i class="bi bi-building text-3xl"></i>
                             </div>
-                            <h4 class="text-slate-800 dark:text-white font-extrabold text-xl">Bizneslar mavjud emas</h4>
-                            <p class="text-slate-500 dark:text-dark-muted text-sm mt-2 font-bold">Siz hali hech qanday hamkor biznesni qo'shmagansiz</p>
-                            <a href="/crm/businesses/new" class="inline-flex mt-8 px-8 py-3.5 btn-primary-gradient text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-primary/20">
-                                Birinchi biznesni qo'shish
-                            </a>
+                            <h4 class="text-slate-900 dark:text-white font-bold text-lg">Bizneslar mavjud emas</h4>
                         </td>
                     </tr>
                     {% endif %}

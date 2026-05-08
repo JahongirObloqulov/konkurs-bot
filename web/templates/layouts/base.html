@@ -81,13 +81,31 @@
 
         .btn-primary {
             background-color: #4f46e5;
-            color: white;
+            color: #ffffff !important;
             transition: all 0.2s ease;
         }
         .btn-primary:hover {
             background-color: #4338ca;
             transform: translateY(-1px);
             box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #ffffff !important;
+            transition: all 0.2s ease;
+        }
+        .btn-primary-gradient:hover {
+            filter: brightness(110%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Ensure all submit buttons with bg-primary or similar have white text */
+        [type="submit"].bg-primary, 
+        [type="submit"].btn-primary,
+        [type="submit"].btn-primary-gradient {
+            color: white !important;
         }
 
         /* Custom Scrollbar */
@@ -224,11 +242,27 @@
     </div>
     {% else %}
         <div class="min-h-full flex items-center justify-center p-6 bg-slate-50 dark:bg-dark-bg transition-colors duration-300">
-            <!-- Login Language Switcher -->
-            <div class="absolute top-8 right-8 flex items-center gap-2">
-                <button onclick="setLanguage('uz')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white transition-all">UZ</button>
-                <button onclick="setLanguage('ru')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white transition-all">RU</button>
-                <button onclick="setLanguage('en')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white transition-all">EN</button>
+            <!-- Login Theme & Language Header -->
+            <div class="absolute top-8 right-8 flex items-center gap-6">
+                <!-- Theme Switcher (3-state) -->
+                <div class="inline-flex p-1 bg-slate-200/50 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700">
+                    <button onclick="setTheme('system')" id="theme-system" class="p-2 rounded-full transition-all duration-200 hover:text-primary">
+                        <i class="bi bi-display text-sm"></i>
+                    </button>
+                    <button onclick="setTheme('light')" id="theme-light" class="p-2 rounded-full transition-all duration-200 hover:text-primary">
+                        <i class="bi bi-sun text-sm"></i>
+                    </button>
+                    <button onclick="setTheme('dark')" id="theme-dark" class="p-2 rounded-full transition-all duration-200 hover:text-primary">
+                        <i class="bi bi-moon-stars text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Language Switcher -->
+                <div class="flex items-center gap-1 p-1 bg-slate-200/50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <button onclick="setLanguage('uz')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold {% if current_lang == 'uz' %}bg-white dark:bg-slate-700 shadow-sm text-primary{% else %}text-slate-500 hover:text-primary{% endif %} transition-all">UZ</button>
+                    <button onclick="setLanguage('ru')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold {% if current_lang == 'ru' %}bg-white dark:bg-slate-700 shadow-sm text-primary{% else %}text-slate-500 hover:text-primary{% endif %} transition-all">RU</button>
+                    <button onclick="setLanguage('en')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold {% if current_lang == 'en' %}bg-white dark:bg-slate-700 shadow-sm text-primary{% else %}text-slate-500 hover:text-primary{% endif %} transition-all">EN</button>
+                </div>
             </div>
             <div class="w-full max-w-md">
                 {% block login_content %}{% endblock %}
@@ -243,37 +277,68 @@
             window.location.reload();
         }
 
+        // Theme management
+        function setTheme(mode) {
+            const root = document.documentElement;
+            const themeSystemBtn = document.getElementById('theme-system');
+            const themeLightBtn = document.getElementById('theme-light');
+            const themeDarkBtn = document.getElementById('theme-dark');
+            
+            // Remove active classes
+            [themeSystemBtn, themeLightBtn, themeDarkBtn].forEach(btn => {
+                if (btn) {
+                    btn.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
+                    btn.classList.add('text-slate-500');
+                }
+            });
+
+            if (mode === 'system') {
+                localStorage.removeItem('theme');
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                isDark ? root.classList.add('dark') : root.classList.remove('dark');
+                if (themeSystemBtn) themeSystemBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
+            } else if (mode === 'dark') {
+                localStorage.setItem('theme', 'dark');
+                root.classList.add('dark');
+                if (themeDarkBtn) themeDarkBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
+            } else {
+                localStorage.setItem('theme', 'light');
+                root.classList.remove('dark');
+                if (themeLightBtn) themeLightBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
+            }
+            
+            if (typeof updateIcons === 'function') updateIcons();
+        }
+
+        // Initialize theme switcher UI
+        const savedTheme = localStorage.getItem('theme');
+        if (!savedTheme) {
+            setTheme('system');
+        } else {
+            setTheme(savedTheme);
+        }
+
         const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeToggleLoginBtn = document.getElementById('theme-toggle-login');
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-        const themeToggleDarkIconLogin = document.querySelector('.theme-toggle-dark-icon-login');
-        const themeToggleLightIconLogin = document.querySelector('.theme-toggle-light-icon-login');
 
         function updateIcons() {
             const isDark = document.documentElement.classList.contains('dark');
             if (themeToggleDarkIcon) isDark ? themeToggleDarkIcon.classList.add('hidden') : themeToggleDarkIcon.classList.remove('hidden');
             if (themeToggleLightIcon) isDark ? themeToggleLightIcon.classList.remove('hidden') : themeToggleLightIcon.classList.add('hidden');
-            if (themeToggleDarkIconLogin) isDark ? themeToggleDarkIconLogin.classList.add('hidden') : themeToggleDarkIconLogin.classList.remove('hidden');
-            if (themeToggleLightIconLogin) isDark ? themeToggleLightIconLogin.classList.remove('hidden') : themeToggleLightIconLogin.classList.add('hidden');
         }
 
-        // Initialize icons
         updateIcons();
 
         function toggleTheme() {
             if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
+                setTheme('light');
             } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
+                setTheme('dark');
             }
-            updateIcons();
         }
 
         if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
-        if (themeToggleLoginBtn) themeToggleLoginBtn.addEventListener('click', toggleTheme);
     </script>
     {% block extra_js %}{% endblock %}
 </body>

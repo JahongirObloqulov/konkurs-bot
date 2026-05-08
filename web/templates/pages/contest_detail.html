@@ -1,46 +1,46 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Konkurs: {{ contest.title }}{% endblock %}
-{% block header_title %}Konkurs Tafsilotlari{% endblock %}
+{% block title %}{{ _('contests') }}: {{ contest.title }}{% endblock %}
+{% block header_title %}{{ _('contests') }}{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-amber-500/10 rounded-2xl shadow-xl shadow-amber-500/5 flex items-center justify-center text-amber-500 text-2xl font-black">
+            <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 text-2xl font-black">
                 <i class="bi bi-trophy"></i>
             </div>
             <div>
-                <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{{ contest.title }}</h2>
-                <div class="flex items-center gap-3 mt-1.5">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ contest.title }}</h2>
+                <div class="flex items-center gap-3 mt-1">
                     {% if contest.is_active %}
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                         <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        Faol
+                        {{ _('active') }}
                     </span>
                     {% else %}
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-dark-muted">
-                        Yakunlangan
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                        {{ _('finished') }}
                     </span>
                     {% endif %}
-                    <span class="text-xs font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider">ID: #{{ contest.id }}</span>
+                    <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">ID: #{{ contest.id }}</span>
                 </div>
             </div>
         </div>
         <div class="flex flex-wrap gap-3">
-            <a href="/contests" class="inline-flex items-center gap-2 px-6 py-2.5 glass-card text-slate-600 dark:text-dark-muted rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+            <a href="/contests" class="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold text-sm transition-all border border-slate-100 dark:border-slate-700">
                 <i class="bi bi-arrow-left"></i>
-                Orqaga
+                {{ _('manage') }}
             </a>
-            <a href="/contests/{{ contest.id }}/edit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary/10 text-primary rounded-xl font-bold text-sm hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5">
+            <a href="/contests/{{ contest.id }}/edit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-sm transition-all shadow-sm">
                 <i class="bi bi-pencil"></i>
-                Tahrirlash
+                {{ _('edit') }}
             </a>
             {% if contest.is_active %}
-            <form action="/contests/{{ contest.id }}/finish" method="post" onsubmit="return confirm('Konkursni yakunlash va g\'oliblarni aniqlashni tasdiqlaysizmi?');">
-                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500/10 text-rose-500 rounded-xl font-bold text-sm hover:bg-rose-500 hover:text-white transition-all shadow-lg shadow-rose-500/5">
+            <form action="/contests/{{ contest.id }}/finish" method="post" onsubmit="return confirm('{{ _('manage') }}?');">
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-xl font-bold text-sm transition-all shadow-sm">
                     <i class="bi bi-flag-fill"></i>
-                    Yakunlash (G'oliblarni tanlash)
+                    {{ _('finished') }}
                 </button>
             </form>
             {% endif %}
@@ -50,91 +50,81 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Sidebar: Stats & Info -->
         <div class="lg:col-span-1 space-y-6">
-            <div class="glass-card rounded-[2rem] shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
-                <div class="p-8 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5">
-                    <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">Konkurs ma'lumotlari</h3>
+            <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ _('overview') }}</h3>
                 </div>
                 <div class="p-8 space-y-6">
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-widest mb-1">Sovg'a</p>
-                        <p class="text-amber-500 font-black text-xl">{{ contest.prize }}</p>
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{{ _('prize') }}</p>
+                        <p class="text-amber-500 font-bold text-xl">{{ contest.prize }}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-widest mb-1">G'oliblar</p>
-                            <p class="text-slate-800 dark:text-white font-extrabold">{{ contest.winners_count }} ta</p>
+                            <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">G'oliblar</p>
+                            <p class="text-slate-900 dark:text-white font-bold">{{ contest.winners_count }} ta</p>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-widest mb-1">Ishtirokchilar</p>
-                            <p class="text-slate-800 dark:text-white font-extrabold text-xl">{{ participants|length }} kishi</p>
+                            <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{{ _('participants') }}</p>
+                            <p class="text-slate-900 dark:text-white font-bold text-xl">{{ participants|length }}</p>
                         </div>
                     </div>
-                    <div class="space-y-4 pt-6 border-t border-slate-100 dark:border-white/5">
-                        <h4 class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-[2px]">Shartlar:</h4>
+                    <div class="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-700">
+                        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Shartlar:</h4>
                         <div class="space-y-2">
-                            <div class="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-primary/20 transition-all">
-                                <span class="text-xs font-bold text-slate-500 dark:text-dark-muted">Min. Referallar</span>
-                                <span class="text-xs font-black text-slate-800 dark:text-white">{{ contest.min_referrals }}</span>
+                            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Min. Referallar</span>
+                                <span class="text-xs font-bold text-slate-900 dark:text-white">{{ contest.min_referrals }}</span>
                             </div>
-                            <div class="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-primary/20 transition-all">
+                            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                                 <span class="text-xs font-bold text-slate-500 dark:text-dark-muted">Min. Qo'shilganlar</span>
-                                <span class="text-xs font-black text-slate-800 dark:text-white">{{ contest.min_additions }}</span>
+                                <span class="text-xs font-bold text-slate-900 dark:text-white">{{ contest.min_additions }}</span>
                             </div>
-                            <div class="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-primary/20 transition-all">
-                                <span class="text-xs font-bold text-slate-500 dark:text-dark-muted">Majburiy obuna</span>
-                                <span class="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase">{{ 'Ha' if contest.require_subscription else 'Yo\'q' }}</span>
+                            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                <span class="text-xs font-bold text-slate-500 dark:text-dark-muted">{{ _('force_subscribe') }}</span>
+                                <span class="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase">{{ 'Ha' if contest.require_subscription else 'Yo\'q' }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {% if contest.media_file_id %}
-            <div class="glass-card rounded-[2rem] shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden p-8 transition-all hover:border-primary/20">
-                <h4 class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-[2px] mb-4">Biriktirilgan Media</h4>
-                <div class="p-6 bg-slate-100 dark:bg-white/5 rounded-[2rem] flex items-center justify-center flex-col gap-3 group">
-                    <i class="bi {% if contest.media_type == 'video' %}bi-camera-video{% else %}bi-image{% endif %} fs-2 text-slate-400 dark:text-dark-muted transition-transform group-hover:scale-110"></i>
-                    <p class="text-[10px] font-mono text-slate-400 dark:text-dark-muted break-all text-center leading-relaxed">{{ contest.media_file_id }}</p>
-                </div>
-            </div>
-            {% endif %}
         </div>
 
         <!-- Main Content: Participants -->
         <div class="lg:col-span-2">
-            <div class="glass-card rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
-                <div class="p-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-white/50 dark:bg-white/5">
-                    <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">Ishtirokchilar Ro'yxati</h3>
+            <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-800/50">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ _('participants') }}</h3>
                 </div>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-dark-border">
+                        <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                             <tr>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Foydalanuvchi</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Referallar</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Qo'shilganlar</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px] text-right">Amal</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('users') }}</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Referallar</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Qo'shilganlar</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">{{ _('action') }}</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                             {% for p in participants %}
-                            <tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <div class="font-extrabold text-slate-800 dark:text-white">{{ p.user_name }}</div>
-                                    <div class="text-[10px] text-slate-400 dark:text-dark-muted font-mono font-bold">ID: {{ p.user_id }}</div>
+                                    <div class="font-bold text-slate-900 dark:text-white text-sm">{{ p.user_name }}</div>
+                                    <div class="text-[10px] text-slate-400 font-mono font-bold">ID: {{ p.user_id }}</div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/10 text-primary font-black text-xs">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold text-xs">
                                         <i class="bi bi-people"></i>
                                         {{ p.referral_count }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-sm font-extrabold text-slate-700 dark:text-slate-300">
+                                <td class="px-6 py-4 text-sm font-bold text-slate-700 dark:text-slate-300">
                                     {{ p.addition_count }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="/users/{{ p.user_id }}" class="inline-flex items-center justify-center w-9 h-9 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-dark-muted rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
+                                    <a href="/users/{{ p.user_id }}" class="w-9 h-9 inline-flex items-center justify-center bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>
@@ -144,10 +134,10 @@
                             {% if not participants %}
                             <tr>
                                 <td colspan="4" class="px-6 py-20 text-center">
-                                    <div class="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center text-slate-200 dark:text-slate-700 mx-auto mb-4">
-                                        <i class="bi bi-people fs-2"></i>
+                                    <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
+                                        <i class="bi bi-people text-3xl"></i>
                                     </div>
-                                    <p class="text-slate-400 dark:text-dark-muted font-extrabold">Hozircha ishtirokchilar mavjud emas</p>
+                                    <p class="text-slate-500 dark:text-slate-400 font-bold text-sm">Hozircha ishtirokchilar mavjud emas</p>
                                 </td>
                             </tr>
                             {% endif %}

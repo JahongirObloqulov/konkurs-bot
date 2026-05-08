@@ -1,6 +1,7 @@
 
 TRANSLATIONS = {
     'uz': {
+        # Sidebar & Common
         'dashboard': 'Dashboard',
         'contests': 'Konkurslar',
         'channels': 'Kanallar',
@@ -48,8 +49,77 @@ TRANSLATIONS = {
         'no_customers': 'Mijozlar topilmadi',
         'add_customer': 'Mijoz qo\'shish',
         'unassigned': 'Biriktirilmagan',
+        
+        # Channels Page
+        'force_sub_settings': 'Majburiy obuna sozlamalari',
+        'add_new_channel': 'Yangi qo\'shish',
+        'channel_by_id': 'Kanal yoki guruh ID bo\'yicha',
+        'chat_id': 'Chat ID',
+        'username_optional': 'Username (ixtiyoriy)',
+        'chat_type': 'Chat turi',
+        'channel': 'Kanal (Channel)',
+        'group': 'Guruh (Group)',
+        'add_btn': 'Qo\'shish',
+        'added_chats': 'Qo\'shilgan chatlar',
+        'total': 'Jami',
+        'no_chats_added': 'Hali hech qanday chat qo\'shilmagan',
+        'important_note': 'Muhim eslatma',
+        'bot_admin_note': 'Bot ushbu kanal yoki guruhda administrator bo\'lishi va xabar yuborish huquqiga ega bo\'lishi shart.',
+        
+        # Users Page
+        'users_management': 'Foydalanuvchilar boshqaruvi',
+        'search_users_placeholder': 'ID yoki Ism bo\'yicha qidirish...',
+        'telegram_id': 'Telegram ID',
+        'role': 'Roli',
+        'date': 'Sana',
+        'no_users_found': 'Foydalanuvchilar topilmadi',
+        'registered_at': 'Ro\'yxatdan o\'tgan',
+        
+        # Broadcast Page
+        'broadcast_management': 'Broadcast boshqaruvi',
+        'send_new_message': 'Yangi xabar yuborish',
+        'for_all_users': 'Barcha foydalanuvchilar uchun',
+        'message_text': 'Xabar matni',
+        'media_type': 'Media turi',
+        'no_media': 'Media yo\'q',
+        'photo': 'Rasm (Photo)',
+        'video': 'Video',
+        'file_id': 'Media File ID',
+        'start_broadcast': 'Yuborishni boshlash',
+        'broadcast_info': 'Xabar yuborishni boshlaganingizda, u navbatga qo\'yiladi va barcha foydalanuvchilarga yuboriladi.',
+        'useful_tips': 'Foydali maslahatlar',
+        'html_support': 'HTML formatlashdan foydalanishingiz mumkin.',
+        
+        # Settings Page
+        'bot_settings': 'Bot sozlamalari',
+        'bot_messages': 'Bot xabarlari',
+        'edit_messages_info': 'Ro\'yxatdan o\'tish va obuna jarayonidagi xabarlarni tahrirlash',
+        'reg_welcome': 'Ro\'yxatdan o\'tish (Xush kelibsiz)',
+        'reg_success': 'Ro\'yxatdan o\'tish (Muvaffaqiyatli)',
+        'sub_required_msg': 'Obuna so\'rash xabari',
+        'sub_success_msg': 'Obuna muvaffaqiyatli (Matn)',
+        'save_all': 'Barcha o\'zgarishlarni saqlash',
+        
+        # CRM Tags
+        'tags_management': 'Teglar boshqaruvi',
+        'new_tag': 'Yangi teg',
+        'tag_name': 'Teg nomi',
+        'color': 'Rangi',
+        'add_tag_btn': 'Tegni qo\'shish',
+        'existing_tags': 'Mavjud teglar',
+        'no_tags': 'Teglar mavjud emas',
+        
+        # CRM Analytics
+        'crm_analytics': 'CRM Analitika',
+        'quick_actions': 'Tezkor amallar',
+        'recent_activity': 'Oxirgi faoliyat',
+        'total_businesses': 'Jami bizneslar',
+        'total_customers': 'Jami mijozlar',
+        'edit': 'Tahrirlash',
+        'broadcast_speed': 'Yuborish tezligi',
     },
     'ru': {
+        # Sidebar & Common
         'dashboard': 'Дашборд',
         'contests': 'Конкурсы',
         'channels': 'Каналы',
@@ -97,8 +167,77 @@ TRANSLATIONS = {
         'no_customers': 'Клиенты не найдены',
         'add_customer': 'Добавить клиента',
         'unassigned': 'Не назначен',
+        
+        # Channels Page
+        'force_sub_settings': 'Настройки обязательной подписки',
+        'add_new_channel': 'Добавить новый',
+        'channel_by_id': 'По ID канала или группы',
+        'chat_id': 'ID чата',
+        'username_optional': 'Username (опционально)',
+        'chat_type': 'Тип чата',
+        'channel': 'Канал (Channel)',
+        'group': 'Группа (Group)',
+        'add_btn': 'Добавить',
+        'added_chats': 'Добавленные чаты',
+        'total': 'Всего',
+        'no_chats_added': 'Чаты пока не добавлены',
+        'important_note': 'Важное примечание',
+        'bot_admin_note': 'Бот должен быть администратором в этом канале или группе.',
+        
+        # Users Page
+        'users_management': 'Управление пользователями',
+        'search_users_placeholder': 'Поиск по ID или имени...',
+        'telegram_id': 'Telegram ID',
+        'role': 'Роль',
+        'date': 'Дата',
+        'no_users_found': 'Пользователи не найдены',
+        'registered_at': 'Зарегистрирован',
+        
+        # Broadcast Page
+        'broadcast_management': 'Управление рассылкой',
+        'send_new_message': 'Отправить новое сообщение',
+        'for_all_users': 'Для всех пользователей',
+        'message_text': 'Текст сообщения',
+        'media_type': 'Тип медиа',
+        'no_media': 'Без медиа',
+        'photo': 'Фото (Photo)',
+        'video': 'Видео',
+        'file_id': 'Media File ID',
+        'start_broadcast': 'Начать рассылку',
+        'broadcast_info': 'Когда вы начнете рассылку, она будет поставлена в очередь.',
+        'useful_tips': 'Полезные советы',
+        'html_support': 'Вы можете использовать HTML форматирование.',
+        
+        # Settings Page
+        'bot_settings': 'Настройки бота',
+        'bot_messages': 'Сообщения бота',
+        'edit_messages_info': 'Редактирование сообщений при регистрации',
+        'reg_welcome': 'Регистрация (Приветствие)',
+        'reg_success': 'Регистрация (Успешно)',
+        'sub_required_msg': 'Сообщение о подписке',
+        'sub_success_msg': 'Подписка успешна (Текст)',
+        'save_all': 'Сохранить все изменения',
+        
+        # CRM Tags
+        'tags_management': 'Управление тегами',
+        'new_tag': 'Новый тег',
+        'tag_name': 'Название тега',
+        'color': 'Цвет',
+        'add_tag_btn': 'Добавить тег',
+        'existing_tags': 'Существующие теги',
+        'no_tags': 'Теги отсутствуют',
+        
+        # CRM Analytics
+        'crm_analytics': 'CRM Аналитика',
+        'quick_actions': 'Быстрые действия',
+        'recent_activity': 'Последняя активность',
+        'total_businesses': 'Всего бизнесов',
+        'total_customers': 'Всего клиентов',
+        'edit': 'Редактировать',
+        'broadcast_speed': 'Скорость рассылки',
     },
     'en': {
+        # Sidebar & Common
         'dashboard': 'Dashboard',
         'contests': 'Contests',
         'channels': 'Channels',
@@ -146,6 +285,74 @@ TRANSLATIONS = {
         'no_customers': 'No customers found',
         'add_customer': 'Add Customer',
         'unassigned': 'Unassigned',
+        
+        # Channels Page
+        'force_sub_settings': 'Force Subscription Settings',
+        'add_new_channel': 'Add New',
+        'channel_by_id': 'By Channel or Group ID',
+        'chat_id': 'Chat ID',
+        'username_optional': 'Username (optional)',
+        'chat_type': 'Chat Type',
+        'channel': 'Channel',
+        'group': 'Group',
+        'add_btn': 'Add',
+        'added_chats': 'Added Chats',
+        'total': 'Total',
+        'no_chats_added': 'No chats added yet',
+        'important_note': 'Important Note',
+        'bot_admin_note': 'The bot must be an administrator in this channel or group.',
+        
+        # Users Page
+        'users_management': 'Users Management',
+        'search_users_placeholder': 'Search by ID or Name...',
+        'telegram_id': 'Telegram ID',
+        'role': 'Role',
+        'date': 'Date',
+        'no_users_found': 'No users found',
+        'registered_at': 'Registered at',
+        
+        # Broadcast Page
+        'broadcast_management': 'Broadcast Management',
+        'send_new_message': 'Send New Message',
+        'for_all_users': 'For All Users',
+        'message_text': 'Message Text',
+        'media_type': 'Media Type',
+        'no_media': 'No Media',
+        'photo': 'Photo',
+        'video': 'Video',
+        'file_id': 'Media File ID',
+        'start_broadcast': 'Start Broadcast',
+        'broadcast_info': 'When you start the broadcast, it will be queued for all users.',
+        'useful_tips': 'Useful Tips',
+        'html_support': 'You can use HTML formatting.',
+        
+        # Settings Page
+        'bot_settings': 'Bot Settings',
+        'bot_messages': 'Bot Messages',
+        'edit_messages_info': 'Edit messages for registration and subscription',
+        'reg_welcome': 'Registration (Welcome)',
+        'reg_success': 'Registration (Success)',
+        'sub_required_msg': 'Subscription Required Msg',
+        'sub_success_msg': 'Subscription Success (Text)',
+        'save_all': 'Save All Changes',
+        
+        # CRM Tags
+        'tags_management': 'Tags Management',
+        'new_tag': 'New Tag',
+        'tag_name': 'Tag Name',
+        'color': 'Color',
+        'add_tag_btn': 'Add Tag',
+        'existing_tags': 'Existing Tags',
+        'no_tags': 'No tags available',
+
+        # CRM Analytics
+        'crm_analytics': 'CRM Analytics',
+        'quick_actions': 'Quick Actions',
+        'recent_activity': 'Recent Activity',
+        'total_businesses': 'Total Businesses',
+        'total_customers': 'Total Customers',
+        'edit': 'Edit',
+        'broadcast_speed': 'Broadcast Speed',
     }
 }
 
