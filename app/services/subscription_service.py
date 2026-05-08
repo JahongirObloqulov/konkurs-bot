@@ -1,3 +1,6 @@
+import logging
+from aiogram import Bot
+from aiogram.enums import ChatMemberStatus
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.settings_service import get_required_chats
 
