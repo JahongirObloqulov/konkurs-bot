@@ -1,5 +1,7 @@
 from aiogram import Bot, F, Router
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
@@ -320,3 +322,39 @@ async def show_results(callback: CallbackQuery, session: AsyncSession):
         reply_markup=get_contest_detail_kb(contest, False),
         parse_mode="HTML",
     )
+
+class AIState(StatesGroup):
+    chatting = State()
+
+@router.message(F.text == "🤖 AI Yordamchi")
+async def start_ai_chat(message: Message, state: FSMContext):
+    await state.set_state(AIState.chatting)
+    kb = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="❌ Chatni yakunlash")]],
+        resize_keyboard=True
+    )
+    await message.answer(
+        "🤖 <b>AI Yordamchi ishga tushdi!</b>\n\n"
+        "Menga bot haqida yoki boshqa savollaringizni yozishingiz mumkin. "
+        "Chatni to'xtatish uchun pastdagi tugmani bosing.",
+        reply_markup=kb,
+        parse_mode="HTML"
+    )
+
+@router.message(AIState.chatting, F.text == "❌ Chatni yakunlash")
+async def end_ai_chat(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer("Chat yakunlandi. Asosiy menyuga qaytamiz.", reply_markup=get_main_reply_kb())
+
+@router.message(AIState.chatting)
+async def process_ai_chat(message: Message):
+    from app.services.ai_service import get_ai_response
+    
+    # Show typing status
+    try:
+        await message.bot.send_chat_action(chat_id=message.chat.id, action="typing")
+    except:
+        pass
+    
+    response = await get_ai_response(message.text, message.from_user.id)
+    await message.answer(response)
