@@ -44,7 +44,7 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config):
         "Quyidagi tugmalardan birini tanlang:"
     )
 
-    if config.is_admin(user.id):
+    if config.is_admin(user.id) or user_obj.is_admin:
         text += "\n\n\U0001f6e0 <i>Siz admin sifatida kirgansiz</i>"
         kb = get_admin_menu_kb()
     else:

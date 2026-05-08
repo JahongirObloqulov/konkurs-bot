@@ -35,6 +35,7 @@ router = Router()
 
 
 class CreateContestState(StatesGroup):
+    media = State()
     title = State()
     description = State()
     prize = State()
@@ -44,6 +45,10 @@ class CreateContestState(StatesGroup):
     min_additions = State()
 
 
+class BroadcastState(StatesGroup):
+    message = State()
+
+
 class ChatManageState(StatesGroup):
     chat_id = State()
     chat_username = State()
@@ -51,12 +56,28 @@ class ChatManageState(StatesGroup):
     edit_mode = State()
 
 
-def admin_check(callback: CallbackQuery, config: Config) -> bool:
-    return config.is_admin(callback.from_user.id)
+async def admin_check(callback: CallbackQuery, config: Config, session: AsyncSession) -> bool:
+    if config.is_admin(callback.from_user.id):
+        return True
+    
+    from sqlalchemy import select
+    from app.db.models import User
+    result = await session.execute(select(User).where(User.user_id == callback.from_user.id))
+    user = result.scalar_one_or_none()
+    return user is not None and user.is_admin
 
 
-def admin_message_check(message: Message, config: Config) -> bool:
-    return message.from_user is not None and config.is_admin(message.from_user.id)
+async def admin_message_check(message: Message, config: Config, session: AsyncSession) -> bool:
+    if not message.from_user:
+        return False
+    if config.is_admin(message.from_user.id):
+        return True
+        
+    from sqlalchemy import select
+    from app.db.models import User
+    result = await session.execute(select(User).where(User.user_id == message.from_user.id))
+    user = result.scalar_one_or_none()
+    return user is not None and user.is_admin
 
 
 # ===== Admin Menu =====
@@ -115,12 +136,28 @@ async def show_stats(callback: CallbackQuery, session: AsyncSession):
 
 @router.callback_query(F.data == "create_contest", admin_check)
 async def start_create_contest(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(CreateContestState.title)
+    await state.set_state(CreateContestState.media)
     await callback.message.edit_text(
         "\u2795 <b>Yangi konkurs yaratish</b>\n\n"
-        "\U0001f4dd Konkurs nomini yozing:",
+        "\U0001f4f8 Konkurs uchun rasm yoki video yuboring (yoki /skip bosing):",
         parse_mode="HTML",
     )
+
+
+@router.message(CreateContestState.media, admin_message_check)
+async def process_media(message: Message, state: FSMContext):
+    if message.photo:
+        await state.update_data(media_type="photo", file_id=message.photo[-1].file_id)
+    elif message.video:
+        await state.update_data(media_type="video", file_id=message.video.file_id)
+    elif message.text == "/skip":
+        await state.update_data(media_type=None, file_id=None)
+    else:
+        await message.answer("❌ Iltimos, rasm yoki video yuboring yoki /skip bosing.")
+        return
+
+    await message.answer("\U0001f4dd Konkurs nomini yozing:")
+    await state.set_state(CreateContestState.title)
 
 
 @router.message(CreateContestState.title, admin_message_check)
@@ -268,6 +305,8 @@ async def _finish_create_contest(
         require_subscription=data.get("require_subscription", True),
         min_referrals=data.get("min_referrals", 0),
         min_additions=data.get("min_additions", 0),
+        media_type=data.get("media_type"),
+        file_id=data.get("file_id"),
     )
     await state.clear()
 
@@ -404,6 +443,21 @@ async def confirm_pick_winners(
     await callback.message.edit_text(
         text, reply_markup=get_admin_contest_kb(contest), parse_mode="HTML"
     )
+
+    # Notify all participants in background
+    async def notify_participants():
+        from app.services.contest_service import get_participants
+        all_participants = await get_participants(session, contest_id)
+        for p in all_participants:
+            try:
+                await bot.send_message(p.user_id, text, parse_mode="HTML")
+                await asyncio.sleep(0.05)
+            except Exception:
+                pass
+        logger.info(f"Notification sent to participants of contest {contest_id}")
+
+    import asyncio
+    asyncio.create_task(notify_participants())
 
 
 @router.callback_query(F.data.startswith("cancel_pick_"), admin_check)
@@ -670,6 +724,53 @@ async def remove_chat(callback: CallbackQuery, session: AsyncSession):
         await show_chat_management(callback, session)
     else:
         await callback.answer("Xatolik yuz berdi!", show_alert=True)
+# ===== Broadcast =====
+
+
+@router.callback_query(F.data == "admin_broadcast", admin_check)
+async def start_broadcast(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(BroadcastState.message)
+    await callback.message.edit_text(
+        "📢 <b>Xabar tarqatish</b>\n\n"
+        "Barcha foydalanuvchilarga yubormoqchi bo'lgan xabaringizni yuboring (matn, rasm, video bo'lishi mumkin):",
+        parse_mode="HTML"
+    )
+
+
+@router.message(BroadcastState.message, admin_message_check)
+async def process_broadcast(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
+    from app.services.user_service import get_all_user_ids
+    
+    user_ids = await get_all_user_ids(session)
+    if not user_ids:
+        await message.answer("❌ Foydalanuvchilar topilmadi.")
+        await state.clear()
+        return
+
+    await message.answer(f"⏳ <b>{len(user_ids)}</b> ta foydalanuvchiga xabar yuborish boshlandi...")
+    await state.clear()
+
+    count = 0
+    errors = 0
+    for user_id in user_ids:
+        try:
+            await bot.copy_message(
+                chat_id=user_id,
+                from_chat_id=message.chat.id,
+                message_id=message.message_id
+            )
+            count += 1
+            await asyncio.sleep(0.05)  # Flood limit avoidance
+        except Exception as e:
+            errors += 1
+            logger.error(f"Failed to send broadcast to {user_id}: {e}")
+
+    await message.answer(
+        f"✅ <b>Xabar tarqatish yakunlandi!</b>\n\n"
+        f"Yuborildi: {count}\n"
+        f"Xatoliklar: {errors}",
+        parse_mode="HTML"
+    )
 
 
 @router.callback_query(F.data == "back_to_chats", admin_check)

@@ -68,6 +68,9 @@
         <a href="/users" class="{% if '/users' in request.url.path %}active{% endif %}">
             <i class="bi bi-people me-2"></i> Foydalanuvchilar
         </a>
+        <a href="/broadcast" class="{% if request.url.path == '/broadcast' %}active{% endif %}">
+            <i class="bi bi-broadcast me-2"></i> Xabar tarqatish
+        </a>
         <div class="nav-header">CRM</div>
         <a href="/crm" class="{% if request.url.path == '/crm' %}active{% endif %}">
             <i class="bi bi-bar-chart me-2"></i> CRM Dashboard

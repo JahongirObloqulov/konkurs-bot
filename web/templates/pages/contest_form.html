@@ -41,6 +41,32 @@
                 </select>
             </div>
 
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Media turi</label>
+                    <select name="media_type" class="form-control">
+                        <option value="">Yo'q</option>
+                        <option value="photo">Rasm</option>
+                        <option value="video">Video</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Telegram File ID</label>
+                    <input type="text" name="file_id" class="form-control" placeholder="Agarda botga yuborilgan bo'lsa">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Min. Referallar</label>
+                    <input type="number" name="min_referrals" class="form-control" value="0" min="0">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Min. Qo'shilganlar</label>
+                    <input type="number" name="min_additions" class="form-control" value="0" min="0">
+                </div>
+            </div>
+
             <div class="mb-3 form-check">
                 <input type="checkbox" name="require_subscription" class="form-check-input" id="require_sub" checked>
                 <label class="form-check-label" for="require_sub">Obuna bo'lish shart</label>

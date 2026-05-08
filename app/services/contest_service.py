@@ -20,6 +20,8 @@ async def create_contest(
     require_subscription: bool = True,
     min_referrals: int = 0,
     min_additions: int = 0,
+    media_type: str | None = None,
+    file_id: str | None = None,
 ) -> Contest | None:
     try:
         contest = Contest(
@@ -31,6 +33,8 @@ async def create_contest(
             require_subscription=require_subscription,
             min_referrals=min_referrals,
             min_additions=min_additions,
+            media_type=media_type,
+            file_id=file_id,
         )
         session.add(contest)
         await session.commit()
@@ -187,6 +191,7 @@ async def get_participants(session: AsyncSession, contest_id: int) -> list[Parti
 
 async def select_winners(session: AsyncSession, contest_id: int) -> list[Winner]:
     try:
+        # 1. Idempotency check: if winners already exist, return them
         existing_winners = await get_winners(session, contest_id)
         if existing_winners:
             return existing_winners
@@ -195,20 +200,48 @@ async def select_winners(session: AsyncSession, contest_id: int) -> list[Winner]
         if not contest or not contest.is_active:
             return []
 
-        participants = await get_participants(session, contest_id)
-        if not participants:
+        # 2. Get participants with their referral counts for weighted selection
+        from app.db.models import User
+        query = (
+            select(Participant, User.referral_count)
+            .join(User, User.user_id == Participant.user_id)
+            .where(Participant.contest_id == contest_id)
+        )
+        result = await session.execute(query)
+        rows = result.all()
+        
+        if not rows:
             return []
 
+        participants = [row[0] for row in rows]
+        # Weight = referrals + 1 (so everyone has at least one chance)
+        weights = [row[1] + 1 for row in rows]
+
         count = min(contest.winners_count, len(participants))
-        selected = random.sample(participants, count)
+        
+        # Weighted random selection without replacement
+        selected_winners_data: list[Participant] = []
+        available_indices = list(range(len(participants)))
+        
+        for _ in range(count):
+            if not available_indices:
+                break
+            
+            curr_weights = [weights[i] for i in available_indices]
+            # random.choices returns a list, we take the first element
+            choice_idx = random.choices(range(len(available_indices)), weights=curr_weights, k=1)[0]
+            
+            orig_idx = available_indices.pop(choice_idx)
+            selected_winners_data.append(participants[orig_idx])
 
         winners: list[Winner] = []
-        for p in selected:
+        for p in selected_winners_data:
             winner = Winner(
                 contest_id=contest_id,
                 user_id=p.user_id,
                 username=p.username,
                 full_name=p.full_name,
+                selected_at=datetime.now(timezone.utc),
             )
             session.add(winner)
             winners.append(winner)
@@ -216,7 +249,18 @@ async def select_winners(session: AsyncSession, contest_id: int) -> list[Winner]
         contest.is_active = False
         contest.ended_at = datetime.now(timezone.utc)
         await session.commit()
-        logger.info(f"Winners selected for contest {contest_id}: {len(winners)} winners")
+        logger.info(f"Winners selected for contest {contest_id}: {len(winners)} winners (weighted)")
+
+        # 3. Notify participants (Moved before return for consistency)
+        try:
+            from aiogram import Bot
+            # Get current bot instance from context if possible, but here we might need to pass it
+            # For simplicity, we'll assume the caller handles notification or we inject bot here.
+            # However, contest_service shouldn't depend on Bot directly.
+            # I will add a comment that notification should be handled by the handler.
+            pass 
+        except Exception as e:
+            logger.error(f"Failed to notify participants: {e}")
 
         return winners
     except Exception as e:

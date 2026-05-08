@@ -45,6 +45,9 @@ dp.update.middleware(DbSessionMiddleware(session_pool=session_pool))
 dp["config"] = config
 dp.include_routers(start.router, admin.router, user.router, events.router)
 
+# Attach bot to web_app state for access in routes
+web_app.state.bot = bot
+
 async def run_bot():
     # Load settings from database for the bot config
     async with session_pool() as session:

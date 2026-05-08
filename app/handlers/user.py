@@ -57,10 +57,27 @@ async def show_contest_detail(
     already_joined = await is_participant(session, contest_id, user_id)
     participants_count = await get_participants_count(session, contest_id)
     text = format_contest_view(contest, participants_count)
+    kb = get_contest_detail_kb(contest, already_joined)
+
+    if contest.media_type and contest.file_id:
+        try:
+            # Delete old text message and send new one with media
+            await callback.message.delete()
+            if contest.media_type == "photo":
+                await callback.message.answer_photo(
+                    photo=contest.file_id, caption=text, reply_markup=kb, parse_mode="HTML"
+                )
+            elif contest.media_type == "video":
+                await callback.message.answer_video(
+                    video=contest.file_id, caption=text, reply_markup=kb, parse_mode="HTML"
+                )
+            return
+        except Exception as e:
+            logger.error(f"Failed to send media: {e}")
 
     await callback.message.edit_text(
         text,
-        reply_markup=get_contest_detail_kb(contest, already_joined),
+        reply_markup=kb,
         parse_mode="HTML",
     )
 

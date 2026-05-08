@@ -43,6 +43,11 @@ def get_admin_menu_kb() -> InlineKeyboardMarkup:
         )
     )
     builder.row(
+        InlineKeyboardButton(
+            text="📢 Xabar tarqatish", callback_data="admin_broadcast"
+        )
+    )
+    builder.row(
         InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_main")
     )
     return builder.as_markup()

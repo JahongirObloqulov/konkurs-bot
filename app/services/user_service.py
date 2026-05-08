@@ -74,3 +74,10 @@ async def get_users_count(session: AsyncSession) -> int:
     except Exception as e:
         logger.error(f"Failed to get users count: {e}")
         return 0
+async def get_all_user_ids(session: AsyncSession) -> list[int]:
+    try:
+        result = await session.execute(select(User.user_id))
+        return list(result.scalars().all())
+    except Exception as e:
+        logger.error(f"Failed to get all user IDs: {e}")
+        return []

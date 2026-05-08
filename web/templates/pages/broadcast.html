@@ -1,0 +1,71 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Xabar tarqatish{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-broadcast"></i> Xabar tarqatish</h2>
+</div>
+
+{% if success %}
+<div class="alert alert-success">{{ success }}</div>
+{% endif %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/broadcast">
+                    <div class="mb-3">
+                        <label class="form-label">Xabar matni <span class="text-danger">*</span></label>
+                        <textarea name="message" class="form-control" rows="6" required placeholder="Foydalanuvchilarga yuboriladigan xabar..."></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Media turi (ixtiyoriy)</label>
+                            <select name="media_type" class="form-control">
+                                <option value="">Yo'q</option>
+                                <option value="photo">Rasm</option>
+                                <option value="video">Video</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Media File ID</label>
+                            <input type="text" name="file_id" class="form-control" placeholder="Telegram File ID">
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Xabar barcha foydalanuvchilarga yuboriladi. 
+                        Bu jarayon foydalanuvchilar soniga qarab bir necha daqiqa vaqt olishi mumkin.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" onclick="return confirm('Xabar tarqatishni boshlashni tasdiqlaysizmi?')">
+                        <i class="bi bi-send"></i> Yuborishni boshlash
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Ma'lumot</h5>
+            </div>
+            <div class="card-body">
+                <p>Ommaviy xabar yuborishda quyidagilarga e'tibor bering:</p>
+                <ul>
+                    <li>HTML teglaridan foydalanishingiz mumkin (b, i, a).</li>
+                    <li>Rasm yoki Video yuborish uchun botga avval yuborilgan faylning <b>File ID</b>si kerak bo'ladi.</li>
+                    <li>Xabar yuborish tezligi: sekundiga ~20-30 foydalanuvchi.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -113,6 +113,12 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
         total_winners = await session.execute(select(func.count(Winner.id)))
         total_winners = total_winners.scalar_one() or 0
         
+        total_referrals = await session.execute(select(func.sum(User.referral_count)))
+        total_referrals = total_referrals.scalar() or 0
+        
+        total_additions = await session.execute(select(func.sum(User.added_users_count)))
+        total_additions = total_additions.scalar() or 0
+        
         recent_participants = await session.execute(
             select(Participant).order_by(Participant.joined_at.desc()).limit(10)
         )
@@ -128,6 +134,8 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
             "total_users": users_count,
             "total_participants": total_participants,
             "total_winners": total_winners,
+            "total_referrals": total_referrals,
+            "total_additions": total_additions,
             "recent_participants": recent_participants,
         }
     )
@@ -155,6 +163,10 @@ async def contest_create(request: Request, user: dict = Depends(require_auth)):
             winners_count=int(form.get("winners_count", 1)),
             require_subscription=form.get("require_subscription") == "on",
             created_by=0,
+            media_type=form.get("media_type") or None,
+            file_id=form.get("file_id") or None,
+            min_referrals=int(form.get("min_referrals", 0)),
+            min_additions=int(form.get("min_additions", 0)),
         )
         if not contest:
             return templates.TemplateResponse(
@@ -188,7 +200,15 @@ async def contest_detail(request: Request, contest_id: int, user: dict = Depends
         if not contest:
             raise HTTPException(status_code=404, detail="Contest not found")
         
-        participants = await get_participants(session, contest_id)
+        from app.db.models import User
+        query = (
+            select(Participant, User.referral_count)
+            .join(User, User.user_id == Participant.user_id)
+            .where(Participant.contest_id == contest_id)
+        )
+        result = await session.execute(query)
+        participants_data = result.all()
+        
         winners = await get_winners(session, contest_id)
         participants_count = await get_participants_count(session, contest_id)
 
@@ -198,7 +218,7 @@ async def contest_detail(request: Request, contest_id: int, user: dict = Depends
             "request": request,
             "user": user,
             "contest": contest,
-            "participants": participants,
+            "participants_data": participants_data,
             "winners": winners,
             "participants_count": participants_count,
         }
@@ -225,10 +245,30 @@ async def contest_delete(request: Request, contest_id: int, user: dict = Depends
 
 @router.post("/contests/{contest_id}/pick-winners")
 async def contest_pick_winners(request: Request, contest_id: int, user: dict = Depends(require_auth)):
-    from app.services.contest_service import select_winners
+    from app.services.contest_service import select_winners, get_contest_by_id, get_winners, get_participants
+    from app.utils.formatting import format_results_view
+    import asyncio
+    bot = request.app.state.bot
 
     async with async_session_maker() as session:
-        await select_winners(session, contest_id)
+        winners = await select_winners(session, contest_id)
+        contest = await get_contest_by_id(session, contest_id)
+        participants = await get_participants(session, contest_id)
+
+    if winners and contest:
+        text = format_results_view(contest, winners) + "\n\n\U0001f389 Tabriklaymiz!"
+        
+        # Background notification
+        async def notify_participants():
+            for p in participants:
+                try:
+                    await bot.send_message(p.user_id, text, parse_mode="HTML")
+                    await asyncio.sleep(0.05)
+                except Exception:
+                    pass
+        
+        asyncio.create_task(notify_participants())
+
     return RedirectResponse(url=f"/contests/{contest_id}", status_code=302)
 
 
@@ -343,6 +383,52 @@ async def api_stats(user: dict = Depends(require_auth)):
         "total_winners": total_winners,
     })
 
+@router.get("/broadcast", response_class=HTMLResponse)
+async def broadcast_page(request: Request, user: dict = Depends(require_auth)):
+    success = request.query_params.get("success")
+    error = request.query_params.get("error")
+    return templates.TemplateResponse(
+        "pages/broadcast.html",
+        {"request": request, "user": user, "success": success, "error": error}
+    )
+
+
+@router.post("/broadcast")
+async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
+    from app.services.user_service import get_all_user_ids
+    bot = request.app.state.bot
+    import asyncio
+    
+    form = await request.form()
+    message_text = form.get("message")
+    media_type = form.get("media_type")
+    file_id = form.get("file_id")
+    
+    async with async_session_maker() as session:
+        user_ids = await get_all_user_ids(session)
+    
+    if not user_ids:
+        return RedirectResponse(url="/broadcast?error=Foydalanuvchilar topilmadi", status_code=302)
+
+    # Run broadcast in background
+    async def run_web_broadcast():
+        count = 0
+        for uid in user_ids:
+            try:
+                if media_type == "photo":
+                    await bot.send_photo(uid, file_id, caption=message_text, parse_mode="HTML")
+                elif media_type == "video":
+                    await bot.send_video(uid, file_id, caption=message_text, parse_mode="HTML")
+                else:
+                    await bot.send_message(uid, message_text, parse_mode="HTML")
+                count += 1
+                await asyncio.sleep(0.05)
+            except Exception:
+                pass
+    
+    asyncio.create_task(run_web_broadcast())
+    
+    return RedirectResponse(url=f"/broadcast?success={len(user_ids)} ta foydalanuvchiga yuborish boshlandi", status_code=302)
 
 @router.get("/api/contests")
 async def api_contests(user: dict = Depends(require_auth)):

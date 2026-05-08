@@ -27,6 +27,10 @@ class Contest(Base):
     )
     ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_by: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    
+    # Media support
+    media_type: Mapped[str | None] = mapped_column(String(20))  # photo or video
+    file_id: Mapped[str | None] = mapped_column(String(255))
 
     min_referrals: Mapped[int] = mapped_column(Integer, default=0)
     min_additions: Mapped[int] = mapped_column(Integer, default=0)

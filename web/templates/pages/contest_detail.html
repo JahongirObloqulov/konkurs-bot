@@ -31,6 +31,17 @@
                     <span class="badge bg-secondary">Yo'q</span>
                     {% endif %}
                 </p>
+                <p><strong>Min. Referallar:</strong> {{ contest.min_referrals }}</p>
+                <p><strong>Min. Qo'shilganlar:</strong> {{ contest.min_additions }}</p>
+                {% if contest.media_type %}
+                <p><strong>Media:</strong> 
+                    <span class="badge bg-primary">
+                        <i class="bi bi-{% if contest.media_type == 'photo' %}image{% else %}film{% endif %}"></i>
+                        {{ contest.media_type|capitalize }}
+                    </span>
+                    <br><small class="text-muted">File ID: {{ contest.file_id|truncate(20) }}</small>
+                </p>
+                {% endif %}
                 <p><strong>Yaratilgan:</strong> {{ contest.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
                 {% if contest.ended_at %}
                 <p><strong>Tugagan:</strong> {{ contest.ended_at.strftime('%d.%m.%Y %H:%M') }}</p>
@@ -44,7 +55,7 @@
             </div>
             <div class="card-body">
                 {% if contest.is_active %}
-                <form method="post" action="/contests/{{ contest.id }}/pick-winners" class="mb-2" onsubmit="return confirm('G'oliblarni tanlashni tasdiqlaysizmi? Bu konkursni tugatadi!')">
+                <form method="post" action="/contests/{{ contest.id }}/pick-winners" class="mb-2" onsubmit="return confirm('G\'oliblarni tanlashni tasdiqlaysizmi? Bu konkursni tugatadi!')">
                     <button type="submit" class="btn btn-warning w-100" {% if participants_count == 0 %}disabled{% endif %}>
                         <i class="bi bi-award"></i> G'oliblarni tanlash
                     </button>
@@ -72,22 +83,27 @@
                 <h5><i class="bi bi-people"></i> Ishtirokchilar ({{ participants_count }})</h5>
             </div>
             <div class="card-body p-0">
-                {% if participants %}
+                {% if participants_data %}
                 <div style="max-height: 400px; overflow-y: auto;">
                     <table class="table table-striped mb-0">
                         <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Ism</th>
-                                <th>Username</th>
+                                <th>Chiptalar</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for p in participants %}
+                            {% for row in participants_data %}
+                            {% set p = row[0] %}
+                            {% set refs = row[1] %}
                             <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ p.full_name }}</td>
-                                <td>{% if p.username %}@{{ p.username }}{% else %}-{% endif %}</td>
+                                <td>
+                                    {{ p.full_name }}<br>
+                                    <small class="text-muted">{% if p.username %}@{{ p.username }}{% else %}ID: {{ p.user_id }}{% endif %}</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">{{ refs + 1 }}</span>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
