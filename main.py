@@ -46,9 +46,6 @@ dp["config"] = config
 dp.include_routers(start.router, admin.router, user.router, events.router)
 
 async def run_bot():
-    # Ensure DB is initialized before bot starts polling
-    await init_db(engine)
-    
     # Load settings from database for the bot config
     async with session_pool() as session:
         from app.services.settings_service import get_required_chats
@@ -72,6 +69,9 @@ async def run_web():
     await server.serve()
 
 async def main():
+    # Ensure DB is initialized once before everything else
+    await init_db(engine)
+    
     # Run both concurrently
     await asyncio.gather(
         run_bot(),

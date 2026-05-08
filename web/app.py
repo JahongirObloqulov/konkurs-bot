@@ -25,7 +25,6 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db(engine)
     yield
     await engine.dispose()
 
