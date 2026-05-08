@@ -1,19 +1,20 @@
-from aiogram import Router
+from aiogram import Router, Bot
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.fsm.context import FSMContext
 
 from app.config import Config
-from app.keyboards.inline import get_admin_menu_kb, get_main_menu_kb
+from app.keyboards.inline import get_admin_menu_kb, get_main_menu_kb, get_subscription_kb
 from app.services.user_service import get_or_create_user
-
-from aiogram.fsm.context import FSMContext
+from app.services.subscription_service import check_all_subscriptions
+from app.services.settings_service import get_setting
+from app.handlers.registration import start_registration
 
 router = Router()
 
-
 @router.message(CommandStart())
-async def cmd_start(message: Message, session: AsyncSession, config: Config, state: FSMContext):
+async def cmd_start(message: Message, session: AsyncSession, config: Config, state: FSMContext, bot: Bot):
     user = message.from_user
     if not user:
         return
@@ -38,27 +39,23 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config, sta
         await message.answer("Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")
         return
 
-    # 1. Check subscriptions first
-    if config.required_chats:
-        from app.services.subscription_service import check_all_subscriptions
-        from app.keyboards.inline import get_subscription_kb
-        
-        all_subscribed, unsubscribed = await check_all_subscriptions(message.bot, config, user.id)
-        if not all_subscribed:
-            await message.answer(
-                "⚠️ <b>Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling!</b>\n\n"
-                "Barcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.",
-                reply_markup=get_subscription_kb(unsubscribed, 0), # 0 means start check
-                parse_mode="HTML"
-            )
-            return
-
-    # 2. Check if registered
+    # 1. Check if registered
     if not user_obj.is_registered:
-        from app.handlers.registration import start_registration
-        await start_registration(message, state)
+        await start_registration(message, state, session)
         return
 
+    # 2. Check subscriptions
+    is_subscribed, unsubscribed_chats = await check_all_subscriptions(bot, user.id, session)
+    if not is_subscribed:
+        sub_required_text = await get_setting(session, "subscription_required", "⚠️ <b>Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling!</b>\n\nBarcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.")
+        await message.answer(
+            sub_required_text,
+            reply_markup=get_subscription_kb(unsubscribed_chats),
+            parse_mode="HTML"
+        )
+        return
+
+    # 3. Main Menu
     text = (
         f"Assalomu alaykum, {user.full_name}! \U0001f44b\n\n"
         "\U0001f3c6 <b>Konkurs Bot</b>ga xush kelibsiz!\n\n"

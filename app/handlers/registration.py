@@ -9,6 +9,7 @@ from app.config import Config
 from app.db.models import User
 from app.keyboards.inline import get_main_menu_kb, get_subscription_kb
 from app.services.subscription_service import check_all_subscriptions
+from app.services.settings_service import get_setting
 
 router = Router()
 
@@ -17,16 +18,19 @@ class RegistrationState(StatesGroup):
     last_name = State()
     phone = State()
     location = State()
+    check_sub = State()
 
 @router.callback_query(F.data == "start_registration")
-async def start_registration_cb(callback: CallbackQuery, state: FSMContext):
+async def start_registration_cb(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:")
     await state.set_state(RegistrationState.first_name)
-    await callback.message.answer("Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:", reply_markup=ReplyKeyboardRemove())
+    await callback.message.answer(welcome_text, reply_markup=ReplyKeyboardRemove())
     await callback.message.delete()
 
-async def start_registration(message: Message, state: FSMContext):
+async def start_registration(message: Message, state: FSMContext, session: AsyncSession):
+    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:")
     await state.set_state(RegistrationState.first_name)
-    await message.answer("Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:", reply_markup=ReplyKeyboardRemove())
+    await message.answer(welcome_text, reply_markup=ReplyKeyboardRemove())
 
 @router.message(RegistrationState.first_name)
 async def process_first_name(message: Message, state: FSMContext):
@@ -58,7 +62,7 @@ async def process_phone(message: Message, state: FSMContext):
     await message.answer("Yashash joyingizni kiriting (Viloyat, tuman):", reply_markup=ReplyKeyboardRemove())
 
 @router.message(RegistrationState.location)
-async def process_location(message: Message, state: FSMContext, session: AsyncSession):
+async def process_location(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     data = await state.get_data()
     location = message.text.strip()
     
@@ -76,8 +80,31 @@ async def process_location(message: Message, state: FSMContext, session: AsyncSe
     )
     await session.commit()
     
-    await state.clear()
-    await message.answer(
-        "✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!",
-        reply_markup=get_main_menu_kb()
-    )
+    # Check mandatory subscription after registration
+    is_subscribed, unsubscribed_chats = await check_all_subscriptions(bot, message.from_user.id, session)
+    
+    if not is_subscribed:
+        sub_required_text = await get_setting(session, "subscription_required", "✅ Ro'yxatdan o'tdingiz!\n\nLekin botdan foydalanish uchun quyidagi kanallarga obuna bo'lishingiz shart:")
+        await state.set_state(RegistrationState.check_sub)
+        await message.answer(
+            sub_required_text,
+            reply_markup=get_subscription_kb(unsubscribed_chats)
+        )
+    else:
+        success_text = await get_setting(session, "registration_success", "✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!")
+        await state.clear()
+        await message.answer(success_text, reply_markup=get_main_menu_kb())
+
+@router.callback_query(RegistrationState.check_sub, F.data == "check_sub")
+async def process_check_sub(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
+    is_subscribed, unsubscribed_chats = await check_all_subscriptions(bot, callback.from_user.id, session)
+    
+    if not is_subscribed:
+        await callback.answer("❌ Hali hamma kanallarga obuna bo'lmadingiz!", show_alert=True)
+        # Update keyboard if some channels were joined
+        await callback.message.edit_reply_markup(reply_markup=get_subscription_kb(unsubscribed_chats))
+    else:
+        success_text = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.")
+        await state.clear()
+        await callback.message.answer(success_text, reply_markup=get_main_menu_kb())
+        await callback.message.delete()

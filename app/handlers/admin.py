@@ -49,6 +49,10 @@ class BroadcastState(StatesGroup):
     message = State()
 
 
+class BotSettingsState(StatesGroup):
+    waiting_for_value = State()
+
+
 class ChatManageState(StatesGroup):
     chat_id = State()
     chat_username = State()
@@ -866,3 +870,99 @@ async def detect_media_id(message: Message):
             f"<i>Ushbu ID-ni nusxalab, konkurs yaratishda ishlatishingiz mumkin.</i>",
             parse_mode="HTML"
         )
+
+# ===== Media ID Detector =====
+
+@router.message(F.photo | F.video | F.video_note, admin_message_check)
+async def handle_media_id_detector(message: Message):
+    """Admin yuborgan medianing file_id sini qaytarish."""
+    file_id = None
+    media_type = None
+    
+    if message.photo:
+        file_id = message.photo[-1].file_id
+        media_type = "Photo (Rasm)"
+    elif message.video:
+        file_id = message.video.file_id
+        media_type = "Video"
+    elif message.video_note:
+        file_id = message.video_note.file_id
+        media_type = "Video Note (Dumaloq video)"
+    
+    if file_id:
+        text = (
+            f"<b>✅ {media_type} aniqlandi!</b>\n\n"
+            f"<code>{file_id}</code>\n\n"
+            f"Ushbu ID ni nusxalab oling va kerakli joyda foydalaning."
+        )
+        await message.reply(text, parse_mode="HTML")
+
+
+# ===== Bot Sozlamalari (Settings) =====
+
+@router.callback_query(F.data == "admin_settings", admin_check)
+async def show_bot_settings(callback: CallbackQuery, session: AsyncSession):
+    """Bot sozlamalari menyusi."""
+    from app.services.settings_service import get_setting
+    
+    # Hozirgi qiymatlarni olish
+    reg_welcome = await get_setting(session, "registration_welcome", "Xush kelibsiz! ...")
+    reg_success = await get_setting(session, "registration_success", "✅ Ro'yxatdan o'tish ...")
+    sub_required = await get_setting(session, "subscription_required", "⚠️ Obuna bo'ling ...")
+    sub_success = await get_setting(session, "subscription_success", "✅ Obuna tasdiqlandi ...")
+    
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📝 Ro'yxatdan o'tish (Xush kelibsiz)", callback_data="edit_setting_registration_welcome")],
+        [InlineKeyboardButton(text="✅ Ro'yxatdan o'tish (Muvaffaqiyatli)", callback_data="edit_setting_registration_success")],
+        [InlineKeyboardButton(text="⚠️ Obuna so'rash xabari", callback_data="edit_setting_subscription_required")],
+        [InlineKeyboardButton(text="🎉 Obuna muvaffaqiyatli xabari", callback_data="edit_setting_subscription_success")],
+        [InlineKeyboardButton(text="🔙 Orqaga", callback_data="admin_menu")]
+    ])
+    
+    text = (
+        "<b>⚙️ Bot Sozlamalari</b>\n\n"
+        "Quyidagi xabarlarni tahrirlashingiz mumkin. Tugmani bosing va yangi matnni yuboring.\n\n"
+        f"<b>1. Ro'yxatdan o'tish (Welcome):</b>\n<i>{reg_welcome[:50]}...</i>\n\n"
+        f"<b>2. Ro'yxatdan o'tish (Success):</b>\n<i>{reg_success[:50]}...</i>\n\n"
+        f"<b>3. Obuna so'rash:</b>\n<i>{sub_required[:50]}...</i>\n\n"
+        f"<b>4. Obuna muvaffaqiyatli:</b>\n<i>{sub_success[:50]}...</i>"
+    )
+    
+    await callback.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+
+@router.callback_query(F.data.startswith("edit_setting_"), admin_check)
+async def start_edit_setting(callback: CallbackQuery, state: FSMContext):
+    """Sozlamani tahrirlashni boshlash."""
+    setting_key = callback.data.replace("edit_setting_", "")
+    await state.update_data(editing_setting_key=setting_key)
+    await state.set_state(BotSettingsState.waiting_for_value)
+    
+    names = {
+        "registration_welcome": "Ro'yxatdan o'tish (Xush kelibsiz) xabari",
+        "registration_success": "Ro'yxatdan o'tish (Muvaffaqiyatli) xabari",
+        "subscription_required": "Obuna so'rash xabari",
+        "subscription_success": "Obuna muvaffaqiyatli xabari"
+    }
+    
+    await callback.message.edit_text(
+        f"<b>📝 {names.get(setting_key)}ni tahrirlash</b>\n\nYangi matnni yuboring:",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="❌ Bekor qilish", callback_data="admin_settings")]]),
+        parse_mode="HTML"
+    )
+
+@router.message(BotSettingsState.waiting_for_value, admin_message_check)
+async def process_setting_value(message: Message, state: FSMContext, session: AsyncSession):
+    """Yangi sozlama qiymatini saqlash."""
+    data = await state.get_data()
+    setting_key = data.get("editing_setting_key")
+    new_value = message.text
+    
+    from app.services.settings_service import set_setting
+    await set_setting(session, setting_key, new_value)
+    
+    await state.clear()
+    await message.answer(
+        f"✅ <b>Sozlama saqlandi!</b>",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⚙️ Sozlamalarga qaytish", callback_data="admin_settings")]]),
+        parse_mode="HTML"
+    )

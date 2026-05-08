@@ -285,6 +285,42 @@ async def chats_page(request: Request, user: dict = Depends(require_auth)):
     )
 
 
+@router.get("/settings", response_class=HTMLResponse)
+async def settings_page(request: Request, user: dict = Depends(require_auth)):
+    from app.services.settings_service import get_setting
+    async with async_session_maker() as session:
+        reg_welcome = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:")
+        reg_success = await get_setting(session, "registration_success", "✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!")
+        sub_required = await get_setting(session, "subscription_required", "⚠️ <b>Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling!</b>\n\nBarcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.")
+        sub_success = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.")
+
+    return templates.TemplateResponse(
+        "pages/settings.html",
+        {
+            "request": request,
+            "user": user,
+            "reg_welcome": reg_welcome,
+            "reg_success": reg_success,
+            "sub_required": sub_required,
+            "sub_success": sub_success,
+        }
+    )
+
+
+@router.post("/settings")
+async def update_settings(request: Request, user: dict = Depends(require_auth)):
+    from app.services.settings_service import set_setting
+    form = await request.form()
+    
+    async with async_session_maker() as session:
+        await set_setting(session, "registration_welcome", form.get("reg_welcome"))
+        await set_setting(session, "registration_success", form.get("reg_success"))
+        await set_setting(session, "subscription_required", form.get("sub_required"))
+        await set_setting(session, "subscription_success", form.get("sub_success"))
+    
+    return RedirectResponse(url="/settings?success=1", status_code=302)
+
+
 @router.post("/chats/add")
 async def chat_add(request: Request, user: dict = Depends(require_auth)):
     from app.services.settings_service import get_required_chats, set_required_chats
