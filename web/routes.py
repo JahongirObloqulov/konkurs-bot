@@ -744,31 +744,34 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
     
     form = await request.form()
     message_text = form.get("message")
-    media_type = form.get("media_type")
-    file_id_list = form.getlist("file_id")
+    media_types = form.getlist("media_type")
+    file_ids_raw = form.getlist("file_id")
     
-    file_ids = []
-    for fid_raw in file_id_list:
-        file_ids.extend([fid.strip() for fid in fid_raw.split(",") if fid.strip()])
+    media_items = []
+    for mtype, fid_raw in zip(media_types, file_ids_raw):
+        if not mtype: continue
+        for fid in fid_raw.split(","):
+            if fid.strip():
+                media_items.append({"type": mtype, "id": fid.strip()})
     
     async with async_session_maker() as session:
         user_ids = await get_all_user_ids(session)
         from app.services.audit_service import log_action
-        await log_action(session, user['sub'], "Broadcast", f"Users: {len(user_ids)}, Media: {media_type or 'None'} ({len(file_ids)} files)")
+        await log_action(session, user['sub'], "Broadcast", f"Users: {len(user_ids)}, Media: Mixed ({len(media_items)} files)")
     
     if not user_ids:
         return RedirectResponse(url="/broadcast?error=Foydalanuvchilar topilmadi", status_code=302)
 
     # Build media group once if needed
     album = None
-    if len(file_ids) > 1:
+    if len(media_items) > 1:
         from aiogram.utils.media_group import MediaGroupBuilder
         album_builder = MediaGroupBuilder(caption=message_text)
-        for fid in file_ids:
-            if media_type == "photo":
-                album_builder.add_photo(media=fid)
-            elif media_type == "video":
-                album_builder.add_video(media=fid)
+        for item in media_items:
+            if item["type"] == "photo":
+                album_builder.add_photo(media=item["id"])
+            elif item["type"] == "video":
+                album_builder.add_video(media=item["id"])
         album = album_builder.build()
 
     # Run broadcast in background
@@ -778,14 +781,12 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
             try:
                 if album:
                     await bot.send_media_group(uid, media=album)
-                elif len(file_ids) == 1:
-                    fid = file_ids[0]
-                    if media_type == "photo":
-                        await bot.send_photo(uid, fid, caption=message_text, parse_mode="HTML")
-                    elif media_type == "video":
-                        await bot.send_video(uid, fid, caption=message_text, parse_mode="HTML")
-                    else:
-                        await bot.send_message(uid, message_text, parse_mode="HTML")
+                elif len(media_items) == 1:
+                    item = media_items[0]
+                    if item["type"] == "photo":
+                        await bot.send_photo(uid, item["id"], caption=message_text, parse_mode="HTML")
+                    elif item["type"] == "video":
+                        await bot.send_video(uid, item["id"], caption=message_text, parse_mode="HTML")
                 else:
                     await bot.send_message(uid, message_text, parse_mode="HTML")
                 count += 1
