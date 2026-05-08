@@ -162,6 +162,9 @@ async def export_dashboard(format: str, user: dict = Depends(require_auth)):
                 "Joined At": u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else ""
             })
             
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Export Dashboard", f"Format: {format}")
+
         if format == "excel":
             content, filename = await generate_excel(data, "users_report")
             return Response(
@@ -247,6 +250,9 @@ async def export_contest_participants(contest_id: int, format: str, user: dict =
             })
             
         prefix = f"contest_{contest_id}_participants"
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Export Contest", f"Contest ID: {contest_id}, Format: {format}")
+
         title = f"Contest Participants: {contest.title}"
         
         if format == "excel":
@@ -297,6 +303,9 @@ async def contest_create(request: Request, user: dict = Depends(require_auth)):
                 "pages/contest_form.html",
                 {"request": request, "user": user, "contest": None, "error": "Xatolik yuz berdi!"}
             )
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Create Contest", f"Title: {form.get('title')}, Prize: {form.get('prize')}")
+
     return RedirectResponse(url=f"/contests/{contest.id}", status_code=302)
 
 
@@ -376,6 +385,9 @@ async def contest_delete(request: Request, contest_id: int, user: dict = Depends
 
     async with async_session_maker() as session:
         await delete_contest(session, contest_id)
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Delete Contest", f"Contest ID: {contest_id}")
+
     return RedirectResponse(url="/contests", status_code=302)
 
 
@@ -418,6 +430,19 @@ async def chats_page(request: Request, user: dict = Depends(require_auth)):
     return templates.TemplateResponse(
         "pages/chats.html",
         {"request": request, "user": user, "chats": chats}
+    )
+
+
+@router.get("/audit-logs", response_class=HTMLResponse)
+async def audit_logs_page(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import AuditLog
+    async with async_session_maker() as session:
+        res = await session.execute(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(100))
+        logs = res.scalars().all()
+        
+    return templates.TemplateResponse(
+        "pages/audit_logs.html",
+        {"request": request, "user": user, "logs": logs}
     )
 
 
@@ -705,6 +730,8 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
     
     async with async_session_maker() as session:
         user_ids = await get_all_user_ids(session)
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Broadcast", f"Users: {len(user_ids)}, Media: {media_type or 'None'}")
     
     if not user_ids:
         return RedirectResponse(url="/broadcast?error=Foydalanuvchilar topilmadi", status_code=302)

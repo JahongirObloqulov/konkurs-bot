@@ -87,6 +87,9 @@ async def export_crm(format: str, user: dict = Depends(require_auth)):
                 "Joined At": c.created_at.strftime('%Y-%m-%d %H:%M') if c.created_at else ""
             })
             
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Export CRM", f"Format: {format}")
+
         if format == "excel":
             content, filename = await generate_excel(data, "crm_customers_report")
             return Response(
@@ -178,6 +181,8 @@ async def crm_business_create(request: Request, user: dict = Depends(require_aut
             description=form.get("description"),
             created_by=user.get("user_id", 0),
         )
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Create Business", f"Name: {form.get('name')}")
     return RedirectResponse(url="/crm/businesses", status_code=302)
 
 
@@ -233,6 +238,8 @@ async def crm_business_update(request: Request, business_id: int, user: dict = D
 async def crm_business_delete(request: Request, business_id: int, user: dict = Depends(require_auth)):
     async with async_session_maker() as session:
         await delete_business(session, business_id)
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Delete Business", f"ID: {business_id}")
     return RedirectResponse(url="/crm/businesses", status_code=302)
 
 
@@ -289,6 +296,9 @@ async def crm_customer_create(request: Request, user: dict = Depends(require_aut
         tag_ids = form.getlist("tag_ids")
         for tag_id in tag_ids:
             await add_tag_to_customer(session, customer.id, int(tag_id))
+        
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Create Customer", f"Name: {customer.full_name}")
     
     return RedirectResponse(url=f"/crm/customers/{customer.id}", status_code=302)
 
@@ -411,6 +421,8 @@ async def crm_tag_create(request: Request, user: dict = Depends(require_auth)):
     form = await request.form()
     async with async_session_maker() as session:
         await create_tag(session, name=form.get("name"), color=form.get("color", "#3498db"))
+        from app.services.audit_service import log_action
+        await log_action(session, user['sub'], "Create Tag", f"Name: {form.get('name')}")
     return RedirectResponse(url="/crm/tags", status_code=302)
 
 
