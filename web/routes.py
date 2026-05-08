@@ -745,9 +745,11 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
     form = await request.form()
     message_text = form.get("message")
     media_type = form.get("media_type")
-    file_id_raw = form.get("file_id", "")
+    file_id_list = form.getlist("file_id")
     
-    file_ids = [fid.strip() for fid in file_id_raw.split(",") if fid.strip()]
+    file_ids = []
+    for fid_raw in file_id_list:
+        file_ids.extend([fid.strip() for fid in fid_raw.split(",") if fid.strip()])
     
     async with async_session_maker() as session:
         user_ids = await get_all_user_ids(session)

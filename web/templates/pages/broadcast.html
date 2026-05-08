@@ -37,11 +37,19 @@
                                     <option value="video">{{ _('video') }}</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 ml-1">{{ _('file_id') }}</label>
-                                <input type="text" name="file_id" 
-                                    class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
-                                    placeholder="File ID (bir nechta bo'lsa vergul bilan ajrating)">
+                            <div class="md:col-span-1">
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 ml-1">Media fayllar (File ID)</label>
+                                <div id="media-inputs" class="space-y-3">
+                                    <div class="flex gap-2 group">
+                                        <input type="text" name="file_id" 
+                                            class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
+                                            placeholder="Telegram File ID">
+                                    </div>
+                                </div>
+                                <button type="button" onclick="addMediaInput()" class="mt-3 text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:opacity-80 transition-all">
+                                    <i class="bi bi-plus-circle-fill"></i>
+                                    Yana fayl qo'shish
+                                </button>
                             </div>
                         </div>
 
@@ -186,5 +194,20 @@ async function generateDraft() {
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') hideAIModal();
 });
+
+function addMediaInput() {
+    const container = document.getElementById('media-inputs');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 animate-in slide-in-from-top-2 duration-200';
+    div.innerHTML = `
+        <input type="text" name="file_id" 
+            class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
+            placeholder="Telegram File ID">
+        <button type="button" onclick="this.parentElement.remove()" class="px-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all">
+            <i class="bi bi-trash3-fill"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
 </script>
 {% endblock %}
