@@ -553,10 +553,25 @@ async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
                 timeout=30.0
             )
             
+            # Fallback if rate limited or provider error
+            if response.status_code == 429 or "rate-limited" in response.text:
+                fallback_model = "google/gemini-flash-1.5-8b-exp:free"
+                if model != fallback_model:
+                    payload["model"] = fallback_model
+                    response = await client.post(
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers=headers,
+                        json=payload,
+                        timeout=30.0
+                    )
+            
         if response.status_code != 200:
             return JSONResponse({"status": "error", "message": f"OpenRouter Error: {response.text}"}, status_code=response.status_code)
             
         res_data = response.json()
+        if 'choices' not in res_data or not res_data['choices']:
+            return JSONResponse({"status": "error", "message": f"AI Response empty: {res_data}"}, status_code=500)
+            
         draft = res_data['choices'][0]['message']['content']
         
         return JSONResponse({
