@@ -398,6 +398,30 @@
                 }
             }
         };
+
+        function toggleMenu(id, e) {
+            if (e) e.stopPropagation();
+            const menu = document.getElementById(id);
+            if (!menu) return;
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                setTimeout(() => menu.classList.remove('opacity-0'), 10);
+            } else {
+                menu.classList.add('opacity-0');
+                setTimeout(() => menu.classList.add('hidden'), 200);
+            }
+        }
+
+        // Global click listener to close all open menus
+        document.addEventListener('click', (e) => {
+            const menus = document.querySelectorAll('[id$="Menu"]');
+            menus.forEach(menu => {
+                if (!menu.classList.contains('hidden') && !menu.contains(e.target)) {
+                    menu.classList.add('opacity-0');
+                    setTimeout(() => menu.classList.add('hidden'), 200);
+                }
+            });
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

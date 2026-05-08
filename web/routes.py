@@ -4,7 +4,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy import select, func
@@ -154,12 +154,11 @@ async def export_dashboard(format: str, user: dict = Depends(require_auth)):
         data = []
         for u in users:
             data.append({
-                "ID": u.id,
-                "Telegram ID": u.telegram_id,
-                "Full Name": u.full_name,
-                "Username": u.username,
+                "User ID": u.user_id,
+                "Username": u.username or "N/A",
+                "Full Name": u.full_name or "N/A",
                 "Referrals": u.referral_count,
-                "Joined At": u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else ""
+                "Joined At": u.registered_at.strftime('%Y-%m-%d %H:%M') if u.registered_at else "N/A"
             })
             
         from app.services.audit_service import log_action
