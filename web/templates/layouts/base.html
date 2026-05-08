@@ -222,12 +222,21 @@
         </main>
     </div>
     {% else %}
-        <div class="min-h-full flex items-center justify-center p-6 bg-[#0a0b10] relative overflow-hidden">
+        <div class="min-h-full flex items-center justify-center p-6 bg-slate-50 dark:bg-[#05060f] relative overflow-hidden transition-colors duration-500">
             <!-- Background Decorative Elements -->
-            <div class="absolute top-0 left-0 w-full h-full">
-                <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
-                <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+            <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 dark:bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
+                <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 dark:bg-secondary/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
             </div>
+            
+            <!-- Theme Toggle for Login Page -->
+            <div class="absolute top-8 right-8 z-50">
+                <button id="theme-toggle-login" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-600 dark:text-dark-muted hover:bg-primary hover:text-white transition-all duration-300 shadow-xl group">
+                    <i class="theme-toggle-dark-icon-login bi bi-moon-stars-fill hidden group-hover:rotate-12 transition-transform"></i>
+                    <i class="theme-toggle-light-icon-login bi bi-sun-fill hidden group-hover:rotate-45 transition-transform"></i>
+                </button>
+            </div>
+
             <div class="relative z-10 w-full max-w-md">
                 {% block login_content %}{% endblock %}
             </div>
@@ -236,42 +245,36 @@
 
     <script>
         const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleLoginBtn = document.getElementById('theme-toggle-login');
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const themeToggleDarkIconLogin = document.querySelector('.theme-toggle-dark-icon-login');
+        const themeToggleLightIconLogin = document.querySelector('.theme-toggle-light-icon-login');
 
-        // Change the icons inside the button based on previous settings
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            themeToggleLightIcon.classList.remove('hidden');
-        } else {
-            themeToggleDarkIcon.classList.remove('hidden');
+        function updateIcons() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (themeToggleDarkIcon) isDark ? themeToggleDarkIcon.classList.add('hidden') : themeToggleDarkIcon.classList.remove('hidden');
+            if (themeToggleLightIcon) isDark ? themeToggleLightIcon.classList.remove('hidden') : themeToggleLightIcon.classList.add('hidden');
+            if (themeToggleDarkIconLogin) isDark ? themeToggleDarkIconLogin.classList.add('hidden') : themeToggleDarkIconLogin.classList.remove('hidden');
+            if (themeToggleLightIconLogin) isDark ? themeToggleLightIconLogin.classList.remove('hidden') : themeToggleLightIconLogin.classList.add('hidden');
         }
 
-        themeToggleBtn.addEventListener('click', function() {
-            // toggle icons inside button
-            themeToggleDarkIcon.classList.toggle('hidden');
-            themeToggleLightIcon.classList.toggle('hidden');
+        // Initialize icons
+        updateIcons();
 
-            // if set via local storage previously
-            if (localStorage.getItem('theme')) {
-                if (localStorage.getItem('theme') === 'light') {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                }
-
-            // if NOT set via local storage previously
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
             } else {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                }
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
             }
-        });
+            updateIcons();
+        }
+
+        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+        if (themeToggleLoginBtn) themeToggleLoginBtn.addEventListener('click', toggleTheme);
     </script>
     {% block extra_js %}{% endblock %}
 </body>
