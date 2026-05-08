@@ -1,3 +1,4 @@
+# v1.0.1 - Fixed imports
 import logging
 from aiogram import Bot
 from aiogram.enums import ChatMemberStatus
