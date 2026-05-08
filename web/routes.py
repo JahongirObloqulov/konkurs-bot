@@ -555,7 +555,7 @@ async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
             
             # Fallback if rate limited (429), not found (404), or provider error
             if response.status_code in [404, 429] or "rate-limited" in response.text or "No endpoints found" in response.text:
-                fallback_model = "google/gemini-flash-1.5-8b-exp:free"
+                fallback_model = "openrouter/free"
                 if model != fallback_model:
                     payload["model"] = fallback_model
                     response = await client.post(
