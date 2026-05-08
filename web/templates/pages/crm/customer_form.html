@@ -13,12 +13,18 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="post" action="{% if customer %}/crm/customers/{{ customer.id }}/edit{% else %}/crm/customers/create{% endif %}">
+        <form method="post" action="{% if customer %}/crm/customers/{{ customer.id }}/edit{% else %}/crm/customers/new{% endif %}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
             <div class="mb-3">
                 <label for="full_name" class="form-label">F.I.O. <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="full_name" name="full_name" value="{{ customer.full_name if customer else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="user_id" class="form-label">Telegram User ID (ixtiyoriy)</label>
+                <input type="number" class="form-control" id="user_id" name="user_id" value="{{ customer.user_id if customer else '' }}" placeholder="Masalan: 12345678">
+                <div class="form-text">Bot foydalanuvchisi bilan bog'lash uchun</div>
             </div>
 
             <div class="mb-3">
