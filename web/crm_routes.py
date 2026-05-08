@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy import select
 
@@ -61,6 +61,46 @@ async def crm_dashboard(request: Request, user: dict = Depends(require_auth)):
             "recent_activity": recent_activity[:5]
         }
     )
+
+
+@router.get("/export/crm/{format}")
+async def export_crm(format: str, user: dict = Depends(require_auth)):
+    from app.services.crm_service import get_all_businesses, get_all_customers
+    from app.services.export_service import generate_excel, generate_pdf
+    from app.db.models import Customer
+    from sqlalchemy.orm import selectinload
+    
+    async with async_session_maker() as session:
+        result = await session.execute(
+            select(Customer).options(selectinload(Customer.business))
+        )
+        customers = result.scalars().all()
+        
+        data = []
+        for c in customers:
+            data.append({
+                "ID": c.id,
+                "Full Name": c.full_name,
+                "Business": c.business.name if c.business else "None",
+                "Phone": c.phone,
+                "Email": c.email,
+                "Joined At": c.created_at.strftime('%Y-%m-%d %H:%M') if c.created_at else ""
+            })
+            
+        if format == "excel":
+            content, filename = await generate_excel(data, "crm_customers_report")
+            return Response(
+                content=content,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:
+            content, filename = await generate_pdf(data, "CRM Customers Report")
+            return Response(
+                content=content,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
 
 
 @router.get("/crm/businesses", response_class=HTMLResponse)

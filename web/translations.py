@@ -181,6 +181,7 @@ TRANSLATIONS = {
         'overview': 'Umumiy ko\'rinish',
         'super_admin': 'Super Admin',
         'confirm_broadcast': 'Xabarni barcha foydalanuvchilarga yuborishni tasdiqlaysizmi?',
+        'export': 'Eksport qilish',
     },
     'ru': {
         # Sidebar & Common
@@ -363,6 +364,7 @@ TRANSLATIONS = {
         'overview': 'Обзор',
         'super_admin': 'Супер Админ',
         'confirm_broadcast': 'Вы подтверждаете отправку сообщения всем пользователям?',
+        'export': 'Экспорт',
     },
     'en': {
         # Sidebar & Common
@@ -545,6 +547,7 @@ TRANSLATIONS = {
         'overview': 'Overview',
         'super_admin': 'Super Admin',
         'confirm_broadcast': 'Are you sure you want to send this message to all users?',
+        'export': 'Export',
     }
 }
 

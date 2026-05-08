@@ -1,7 +1,29 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Dashboard{% endblock %}
-{% block header_title %}{{ _('overview') }}{% endblock %}
+{% block header_title %}
+<div class="flex items-center justify-between w-full">
+    <span>{{ _('overview') }}</span>
+    <div class="flex items-center gap-2">
+        <div class="relative group">
+            <button class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all flex items-center gap-2 shadow-sm">
+                <i class="bi bi-download"></i>
+                <span>{{ _('export') }}</span>
+            </button>
+            <div class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <a href="/export/dashboard/excel" class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
+                    <i class="bi bi-file-earmark-excel text-emerald-600"></i>
+                    Excel (.xlsx)
+                </a>
+                <a href="/export/dashboard/pdf" class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <i class="bi bi-file-earmark-pdf text-rose-600"></i>
+                    PDF (.pdf)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="space-y-8">

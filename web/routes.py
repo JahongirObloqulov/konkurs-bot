@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -140,6 +140,42 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
             "recent_participants": recent_participants,
         }
     )
+
+
+@router.get("/export/dashboard/{format}")
+async def export_dashboard(format: str, user: dict = Depends(require_auth)):
+    from app.db.models import User
+    from app.services.export_service import generate_excel, generate_pdf
+    
+    async with async_session_maker() as session:
+        users_res = await session.execute(select(User))
+        users = users_res.scalars().all()
+        
+        data = []
+        for u in users:
+            data.append({
+                "ID": u.id,
+                "Telegram ID": u.telegram_id,
+                "Full Name": u.full_name,
+                "Username": u.username,
+                "Referrals": u.referral_count,
+                "Joined At": u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else ""
+            })
+            
+        if format == "excel":
+            content, filename = await generate_excel(data, "users_report")
+            return Response(
+                content=content,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:
+            content, filename = await generate_pdf(data, "Users Report")
+            return Response(
+                content=content,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
 
 
 @router.get("/contests/new", response_class=HTMLResponse)
