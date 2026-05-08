@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
 
 from app.config import Config
-from app.keyboards.inline import get_admin_menu_kb, get_main_menu_kb, get_subscription_kb
+from app.keyboards.inline import get_subscription_kb
+from app.keyboards.reply import get_admin_reply_kb, get_main_reply_kb
 from app.services.user_service import get_or_create_user
 from app.services.subscription_service import check_all_subscriptions
 from app.services.settings_service import get_setting
@@ -66,8 +67,8 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config, sta
 
     if config.is_admin(user.id) or user_obj.is_admin:
         text += "\n\n\U0001f6e0 <i>Siz admin sifatida kirgansiz</i>"
-        kb = get_admin_menu_kb()
+        kb = get_admin_reply_kb()
     else:
-        kb = get_main_menu_kb()
+        kb = get_main_reply_kb()
 
     await message.answer(text, reply_markup=kb, parse_mode="HTML")

@@ -13,6 +13,7 @@ from app.keyboards.inline import (
     get_subscription_toggle_kb,
     get_winners_count_kb,
 )
+from app.keyboards.reply import get_admin_reply_kb, get_main_reply_kb
 from app.services.contest_service import (
     create_contest,
     delete_contest,
@@ -84,11 +85,21 @@ async def admin_message_check(message: Message, config: Config, session: AsyncSe
     return user is not None and user.is_admin
 
 
-# ===== Admin Menu =====
+# ===== Admin Menu (Reply & Callback) =====
 
+@router.message(F.text == "🏠 Asosiy menyu", admin_message_check)
+async def back_to_main_reply(message: Message):
+    await message.answer("\U0001f3e0 Asosiy menyu:", reply_markup=get_main_reply_kb())
+
+@router.message(F.text == "📊 Statistika", admin_message_check)
+async def show_stats_reply(message: Message, session: AsyncSession):
+    await show_stats_core(message, session)
 
 @router.callback_query(F.data == "admin_stats", admin_check)
-async def show_stats(callback: CallbackQuery, session: AsyncSession):
+async def show_stats_cb(callback: CallbackQuery, session: AsyncSession):
+    await show_stats_core(callback.message, session, edit=True)
+
+async def show_stats_core(message: Message, session: AsyncSession, edit: bool = False):
     from app.services.contest_service import get_active_contests
     from app.services.settings_service import get_required_chats
     from sqlalchemy import func, select
@@ -126,26 +137,32 @@ async def show_stats(callback: CallbackQuery, session: AsyncSession):
         f"👤 Jami qo'shilganlar: {total_additions}\n"
     )
 
-    await callback.message.edit_text(
-        text, reply_markup=get_admin_menu_kb(), parse_mode="HTML"
-    )
-
-    await callback.message.edit_text(
-        text, reply_markup=get_admin_menu_kb(), parse_mode="HTML"
-    )
+    if edit:
+        await message.edit_text(text, parse_mode="HTML")
+    else:
+        await message.answer(text, parse_mode="HTML")
 
 
 # ===== Create Contest =====
 
+@router.message(F.text == "➕ Konkurs yaratish", admin_message_check)
+async def start_create_contest_reply(message: Message, state: FSMContext):
+    await start_create_contest_core(message, state)
 
 @router.callback_query(F.data == "create_contest", admin_check)
-async def start_create_contest(callback: CallbackQuery, state: FSMContext):
+async def start_create_contest_cb(callback: CallbackQuery, state: FSMContext):
+    await start_create_contest_core(callback.message, state, edit=True)
+
+async def start_create_contest_core(message: Message, state: FSMContext, edit: bool = False):
     await state.set_state(CreateContestState.media)
-    await callback.message.edit_text(
+    text = (
         "\u2795 <b>Yangi konkurs yaratish</b>\n\n"
-        "\U0001f4f8 Konkurs uchun rasm yoki video yuboring (yoki /skip bosing):",
-        parse_mode="HTML",
+        "\U0001f4f8 Konkurs uchun rasm yoki video yuboring (yoki /skip bosing):"
     )
+    if edit:
+        await message.edit_text(text, parse_mode="HTML")
+    else:
+        await message.answer(text, parse_mode="HTML")
 
 
 @router.message(CreateContestState.media, admin_message_check)
@@ -364,22 +381,30 @@ async def cancel_create(callback: CallbackQuery, state: FSMContext):
 
 # ===== Manage Contests =====
 
+@router.message(F.text == "📋 Barcha konkurslar", admin_message_check)
+async def show_all_contests_reply(message: Message, session: AsyncSession):
+    await show_all_contests_core(message, session)
 
 @router.callback_query(F.data == "admin_all_contests", admin_check)
-async def show_all_contests(callback: CallbackQuery, session: AsyncSession):
+async def show_all_contests_cb(callback: CallbackQuery, session: AsyncSession):
+    await show_all_contests_core(callback.message, session, edit=True)
+
+async def show_all_contests_core(message: Message, session: AsyncSession, edit: bool = False):
     contests = await get_all_contests(session)
     if not contests:
-        await callback.message.edit_text(
-            "\U0001f4ed Hali konkurslar yo'q.",
-            reply_markup=get_admin_menu_kb(),
-        )
+        text = "\U0001f4ed Hali konkurslar yo'q."
+        if edit:
+            await message.edit_text(text)
+        else:
+            await message.answer(text)
         return
 
-    await callback.message.edit_text(
-        "\U0001f4cb <b>Barcha konkurslar:</b>",
-        reply_markup=get_contest_list_kb(contests, prefix="admin_contest"),
-        parse_mode="HTML",
-    )
+    text = "\U0001f4cb <b>Barcha konkurslar:</b>"
+    kb = get_contest_list_kb(contests, prefix="admin_contest")
+    if edit:
+        await message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    else:
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
 
 @router.callback_query(F.data.startswith("admin_contest_"), admin_check)
@@ -591,9 +616,15 @@ async def show_participants(callback: CallbackQuery, session: AsyncSession):
 
 # ===== Chat Management =====
 
+@router.message(F.text == "📢 Kanal/Guruh boshqaruvi", admin_message_check)
+async def show_chat_management_reply(message: Message, session: AsyncSession):
+    await show_chat_management_core(message, session)
 
 @router.callback_query(F.data == "manage_chats", admin_check)
-async def show_chat_management(callback: CallbackQuery, session: AsyncSession):
+async def show_chat_management_cb(callback: CallbackQuery, session: AsyncSession):
+    await show_chat_management_core(callback.message, session, edit=True)
+
+async def show_chat_management_core(message: Message, session: AsyncSession, edit: bool = False):
     from app.keyboards.inline import get_chat_list_kb, get_chat_manage_kb
     
     chats = await get_required_chats(session)
@@ -610,9 +641,10 @@ async def show_chat_management(callback: CallbackQuery, session: AsyncSession):
         text += "\n❗ <i>Biror kanalni o'chirish uchun ustiga bosing</i>"
         kb = get_chat_list_kb(chats)
     
-    await callback.message.edit_text(
-        text, reply_markup=kb, parse_mode="HTML"
-    )
+    if edit:
+        await message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    else:
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
 
 @router.callback_query(F.data == "add_chat", admin_check)
@@ -730,21 +762,31 @@ async def remove_chat(callback: CallbackQuery, session: AsyncSession):
         await callback.answer("Xatolik yuz berdi!", show_alert=True)
 # ===== Broadcast (Multiple Messages) =====
 
+@router.message(F.text == "📢 Xabar tarqatish", admin_message_check)
+async def start_broadcast_reply(message: Message, state: FSMContext):
+    await start_broadcast_core(message, state)
 
 @router.callback_query(F.data == "admin_broadcast", admin_check)
-async def start_broadcast(callback: CallbackQuery, state: FSMContext):
+async def start_broadcast_cb(callback: CallbackQuery, state: FSMContext):
+    await start_broadcast_core(callback.message, state, edit=True)
+
+async def start_broadcast_core(message: Message, state: FSMContext, edit: bool = False):
     await state.set_state(BroadcastState.message)
     await state.update_data(messages=[])  # To'plangan xabarlar ro'yxati
-    await callback.message.edit_text(
+    text = (
         "📢 <b>Xabar tarqatish bo'limi</b>\n\n"
         "Foydalanuvchilarga yubormoqchi bo'lgan xabarlaringizni (matn, rasm, video, va h.k.) ketma-ket yuboring.\n\n"
-        "Barcha xabarlarni yuborib bo'lgach, <b>'✅ Yuborishni boshlash'</b> tugmasini bosing.",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Yuborishni boshlash", callback_data="finish_broadcast")],
-            [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="back_to_admin_menu")]
-        ]),
-        parse_mode="HTML"
+        "Barcha xabarlarni yuborib bo'lgach, <b>'✅ Yuborishni boshlash'</b> tugmasini bosing."
     )
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Yuborishni boshlash", callback_data="finish_broadcast")],
+        [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="back_to_admin_menu")]
+    ])
+    
+    if edit:
+        await message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    else:
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
 
 @router.message(BroadcastState.message, admin_message_check)
@@ -900,8 +942,15 @@ async def handle_media_id_detector(message: Message):
 
 # ===== Bot Sozlamalari (Settings) =====
 
+@router.message(F.text == "⚙️ Bot Sozlamalari", admin_message_check)
+async def show_bot_settings_reply(message: Message, session: AsyncSession):
+    await show_bot_settings_core(message, session)
+
 @router.callback_query(F.data == "admin_settings", admin_check)
-async def show_bot_settings(callback: CallbackQuery, session: AsyncSession):
+async def show_bot_settings_cb(callback: CallbackQuery, session: AsyncSession):
+    await show_bot_settings_core(callback.message, session, edit=True)
+
+async def show_bot_settings_core(message: Message, session: AsyncSession, edit: bool = False):
     """Bot sozlamalari menyusi."""
     from app.services.settings_service import get_setting
     
@@ -930,7 +979,10 @@ async def show_bot_settings(callback: CallbackQuery, session: AsyncSession):
         f"<b>4. Obuna muvaffaqiyatli:</b>\n<i>{sub_success[:50]}...</i>"
     )
     
-    await callback.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    if edit:
+        await message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    else:
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
 @router.callback_query(F.data.startswith("edit_setting_"), admin_check)
 async def start_edit_setting(callback: CallbackQuery, state: FSMContext):

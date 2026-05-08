@@ -1,6 +1,7 @@
-from aiogram import Bot, F, Router
+from aiogram import Bot, F, Router, Message
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
+import logging
 
 from app.config import Config
 from app.keyboards.inline import (
@@ -10,6 +11,7 @@ from app.keyboards.inline import (
     get_main_menu_kb,
     get_subscription_kb,
 )
+from app.keyboards.reply import get_main_reply_kb
 from app.services.contest_service import (
     add_participant,
     get_active_contests,
@@ -22,25 +24,37 @@ from app.services.contest_service import (
 from app.services.subscription_service import check_all_subscriptions
 from app.utils.formatting import format_contest_view, format_results_view
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 
+@router.message(F.text == "🏆 Faol konkurslar")
+async def show_active_contests_reply(message: Message, session: AsyncSession):
+    await show_active_contests_core(message, session)
+
 @router.callback_query(F.data == "active_contests")
-async def show_active_contests(callback: CallbackQuery, session: AsyncSession):
+async def show_active_contests_cb(callback: CallbackQuery, session: AsyncSession):
+    await show_active_contests_core(callback.message, session, edit=True)
+
+async def show_active_contests_core(message: Message, session: AsyncSession, edit: bool = False):
     contests = await get_active_contests(session)
     if not contests:
-        await callback.message.edit_text(
+        text = (
             "\U0001f4ed Hozirda faol konkurslar yo'q.\n\n"
-            "Yangi konkurslar e'lon qilinishini kuting!",
-            reply_markup=get_main_menu_kb(),
+            "Yangi konkurslar e'lon qilinishini kuting!"
         )
+        if edit:
+            await message.edit_text(text, reply_markup=get_main_menu_kb())
+        else:
+            await message.answer(text)
         return
 
-    await callback.message.edit_text(
-        "\U0001f3c6 <b>Faol konkurslar:</b>\n\nBirini tanlang:",
-        reply_markup=get_contest_list_kb(contests),
-        parse_mode="HTML",
-    )
+    text = "\U0001f3c6 <b>Faol konkurslar:</b>\n\nBirini tanlang:"
+    kb = get_contest_list_kb(contests)
+    if edit:
+        await message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    else:
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
 
 @router.callback_query(F.data.startswith("contest_"))
@@ -101,36 +115,88 @@ async def _join_contest_core(
     return contest, joined_now, participants_count
 
 
+@router.message(F.text == "👥 Referal tizimi")
+async def show_referral_program_reply(message: Message, session: AsyncSession, bot: Bot):
+    await show_referral_program_core(message, session, bot)
+
 @router.callback_query(F.data == "referral_program")
-async def show_referral_program(callback: CallbackQuery, session: AsyncSession, bot: Bot):
-    from app.db.models import User
-    from app.keyboards.inline import get_referral_kb
-    from sqlalchemy import select
+async def show_referral_program_cb(callback: CallbackQuery, session: AsyncSession, bot: Bot):
+    await show_referral_program_core(callback.message, session, bot, edit=True)
+
+async def show_referral_program_core(message: Message, session: AsyncSession, bot: Bot, edit: bool = False):
+    from app.services.user_service import get_user_by_id
     
-    result = await session.execute(select(User).where(User.user_id == callback.from_user.id))
-    user = result.scalar_one_or_none()
+    user_id = message.chat.id
+    user = await get_user_by_id(session, user_id)
     
     if not user:
-        await callback.answer("Foydalanuvchi topilmadi!", show_alert=True)
         return
 
     bot_info = await bot.get_me()
-    ref_link = f"https://t.me/{bot_info.username}?start=ref{user.user_id}"
+    link = f"https://t.me/{bot_info.username}?start=ref{user_id}"
     
     text = (
-        "\U0001f465 <b>Referal dasturi</b>\n\n"
-        "Do'stlaringizni taklif qiling va konkurslarda ishtirok etish uchun ballar to'plang!\n\n"
-        f"\U0001f4ca <b>Sizning statistikangiz:</b>\n"
-        f"\u27a1\ufe0f Taklif qilinganlar: <b>{user.referral_count} ta</b>\n"
-        f"\u27a1\ufe0f Guruhlarga qo'shilganlar: <b>{user.added_users_count} ta</b>\n\n"
-        f"\U0001f517 <b>Sizning taklif havolangiz:</b>\n<code>{ref_link}</code>"
+        "\U0001f465 <b>Referal tizimi</b>\n\n"
+        "Do'stlaringizni botga taklif qiling va qo'shimcha imkoniyatlarga ega bo'ling!\n\n"
+        f"Sizning taklif havolangiz:\n<code>{link}</code>\n\n"
+        f"Taklif qilingan do'stlar soni: <b>{user.referral_count}</b>"
     )
     
-    await callback.message.edit_text(
-        text,
-        reply_markup=get_referral_kb(bot_info.username, user.user_id),
-        parse_mode="HTML"
+    if edit:
+        await message.edit_text(text, parse_mode="HTML")
+    else:
+        await message.answer(text, parse_mode="HTML")
+
+
+@router.message(F.text == "📋 Mening ishtiroklarim")
+async def show_my_contests_reply(message: Message, session: AsyncSession):
+    await show_my_contests_core(message, session)
+
+@router.callback_query(F.data == "my_contests")
+async def show_my_contests_cb(callback: CallbackQuery, session: AsyncSession):
+    await show_my_contests_core(callback.message, session, edit=True)
+
+async def show_my_contests_core(message: Message, session: AsyncSession, edit: bool = False):
+    user_id = message.chat.id
+    contests = await get_user_contests(session, user_id)
+
+    if not contests:
+        text = "\U0001f4ed Siz hali hech qanday konkursda ishtirok etmagansiz."
+        if edit:
+            await message.edit_text(text, reply_markup=get_main_menu_kb())
+        else:
+            await message.answer(text)
+        return
+
+    text = "\U0001f4cb <b>Siz ishtirok etgan konkurslar:</b>"
+    kb = get_contest_list_kb(contests)
+    if edit:
+        await message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    else:
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
+
+
+@router.callback_query(F.data == "back_to_main")
+async def back_to_main(callback: CallbackQuery, config: Config):
+    from app.keyboards.reply import get_admin_reply_kb, get_main_reply_kb
+    user = callback.from_user
+    text = (
+        f"Assalomu alaykum, {user.full_name}! \U0001f44b\n\n"
+        "\U0001f3c6 <b>Konkurs Bot</b>\n\n"
+        "Quyidagi tugmalardan birini tanlang:"
     )
+    if config.is_admin(user.id):
+        kb = get_admin_reply_kb()
+    else:
+        kb = get_main_reply_kb()
+
+    await callback.message.edit_text(text, parse_mode="HTML")
+    await callback.message.answer("Menyu yangilandi:", reply_markup=kb)
+
+
+@router.callback_query(F.data == "already_joined")
+async def already_joined_handler(callback: CallbackQuery):
+    await callback.answer("Siz allaqachon ishtirok etyapsiz!", show_alert=False)
 
 
 @router.callback_query(F.data.startswith("join_"))
@@ -148,8 +214,8 @@ async def join_contest(
     user = callback.from_user
 
     # 1. Check subscriptions
-    if contest.require_subscription and config.required_chats:
-        all_subscribed, unsubscribed = await check_all_subscriptions(bot, config, user.id)
+    if contest.require_subscription:
+        all_subscribed, unsubscribed = await check_all_subscriptions(bot, user.id, session)
         if not all_subscribed:
             await callback.message.edit_text(
                 "⚠️ <b>Ishtirok etish uchun quyidagi kanallarga/guruhlarga obuna bo'ling!</b>\n\n"
@@ -201,14 +267,13 @@ async def check_subscription_callback(
     contest_id = int(callback.data.split("_")[2])
     user = callback.from_user
 
-    if config.required_chats:
-        all_subscribed, unsubscribed = await check_all_subscriptions(bot, config, user.id)
-        if not all_subscribed:
-            await callback.answer(
-                "❌ Hali barcha kanallarga obuna bo'lmagansiz! Iltimos, avval obuna bo'ling.",
-                show_alert=True,
-            )
-            return
+    all_subscribed, unsubscribed = await check_all_subscriptions(bot, user.id, session)
+    if not all_subscribed:
+        await callback.answer(
+            "❌ Hali barcha kanallarga obuna bo'lmagansiz! Iltimos, avval obuna bo'ling.",
+            show_alert=True,
+        )
+        return
 
     result = await _join_contest_core(session, contest_id, user)
     if not result:
@@ -252,43 +317,3 @@ async def show_results(callback: CallbackQuery, session: AsyncSession):
         reply_markup=get_contest_detail_kb(contest, False),
         parse_mode="HTML",
     )
-
-
-@router.callback_query(F.data == "my_contests")
-async def show_my_contests(callback: CallbackQuery, session: AsyncSession):
-    user_id = callback.from_user.id
-    contests = await get_user_contests(session, user_id)
-
-    if not contests:
-        await callback.message.edit_text(
-            "\U0001f4ed Siz hali hech qanday konkursda ishtirok etmagansiz.",
-            reply_markup=get_main_menu_kb(),
-        )
-        return
-
-    await callback.message.edit_text(
-        "\U0001f4cb <b>Siz ishtirok etgan konkurslar:</b>",
-        reply_markup=get_contest_list_kb(contests),
-        parse_mode="HTML",
-    )
-
-
-@router.callback_query(F.data == "back_to_main")
-async def back_to_main(callback: CallbackQuery, config: Config):
-    user = callback.from_user
-    text = (
-        f"Assalomu alaykum, {user.full_name}! \U0001f44b\n\n"
-        "\U0001f3c6 <b>Konkurs Bot</b>\n\n"
-        "Quyidagi tugmalardan birini tanlang:"
-    )
-    if config.is_admin(user.id):
-        kb = get_admin_menu_kb()
-    else:
-        kb = get_main_menu_kb()
-
-    await callback.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
-
-
-@router.callback_query(F.data == "already_joined")
-async def already_joined_handler(callback: CallbackQuery):
-    await callback.answer("Siz allaqachon ishtirok etyapsiz!", show_alert=False)

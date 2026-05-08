@@ -8,7 +8,8 @@ import logging
 
 from app.config import Config
 from app.db.models import User
-from app.keyboards.inline import get_main_menu_kb, get_subscription_kb
+from app.keyboards.inline import get_subscription_kb
+from app.keyboards.reply import get_main_reply_kb
 from app.services.subscription_service import check_all_subscriptions
 from app.services.settings_service import get_setting
 
@@ -28,7 +29,7 @@ async def send_sub_success_message(target: Message | CallbackQuery, session: Asy
     media_id = await get_setting(session, "sub_success_media_id")
     media_type = await get_setting(session, "sub_success_media_type")
     
-    kb = get_main_menu_kb()
+    kb = get_main_reply_kb()
     
     # Message object to send to
     msg = target if isinstance(target, Message) else target.message
