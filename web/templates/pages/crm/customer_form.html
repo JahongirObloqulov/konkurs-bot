@@ -1,0 +1,79 @@
+{% extends "layouts/base.html" %}
+{% block title %}{% if customer %}Mijozni tahrirlash{% else %}Yangi mijoz{% endif %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-person-badge me-2"></i>
+        {% if customer %}Mijozni tahrirlash{% else %}Yangi mijoz qo'shish{% endif %}
+    </h2>
+    <a href="/crm/customers" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Orqaga
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{% if customer %}/crm/customers/{{ customer.id }}/edit{% else %}/crm/customers/create{% endif %}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="mb-3">
+                <label for="full_name" class="form-label">F.I.O. <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="full_name" name="full_name" value="{{ customer.full_name if customer else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">Telefon</label>
+                <input type="text" class="form-control" id="phone" name="phone" value="{{ customer.phone if customer else '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ customer.email if customer else '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Eslatmalar</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3">{{ customer.notes if customer else '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="business_id" class="form-label">Biznes</label>
+                <select class="form-select" id="business_id" name="business_id">
+                    <option value="">-- Biznes tanlang --</option>
+                    {% for biz in businesses %}
+                    <option value="{{ biz.id }}" {% if (customer and customer.business_id == biz.id) or (request.query_params.get('business_id')|string == biz.id|string) %}selected{% endif %}>
+                        {{ biz.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Teglar</label>
+                <div class="row">
+                    {% for tag in tags %}
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="tag_ids" value="{{ tag.id }}" id="tag_{{ tag.id }}"
+                                {% if tag.id in customer_tags %}checked{% endif %}>
+                            <label class="form-check-label" for="tag_{{ tag.id }}">
+                                <span class="badge" style="background-color: {{ tag.color }};">{{ tag.name }}</span>
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if not tags %}
+                <p class="text-muted">Hozircha teglar mavjud emas. <a href="/crm/tags">Teg yaratish</a></p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-lg me-1"></i>
+                {% if customer %}Saqlash{% else %}Yaratish{% endif %}
+            </button>
+            <a href="/crm/customers" class="btn btn-outline-secondary">Bekor qilish</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

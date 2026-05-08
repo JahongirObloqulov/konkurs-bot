@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+{% block title %}Interaksiya qo'shish{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-chat-dots me-2"></i> Yangi interaksiya</h2>
+    <a href="/crm/customers/{{ customer.id }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Orqaga
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <p class="mb-0">
+                    <strong>Mijoz:</strong>
+                    <a href="/crm/customers/{{ customer.id }}">{{ customer.full_name }}</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/crm/customers/{{ customer.id }}/interactions/create">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <div class="mb-3">
+                        <label for="interaction_type" class="form-label">Interaksiya turi <span class="text-danger">*</span></label>
+                        <select class="form-select" id="interaction_type" name="interaction_type" required>
+                            <option value="">-- Turini tanlang --</option>
+                            <option value="call">Qo'ng'iroq</option>
+                            <option value="email">Email</option>
+                            <option value="meeting">Uchrashuv</option>
+                            <option value="note">Eslatma</option>
+                            <option value="other">Boshqa</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Tavsif</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Interaksiya haqida batafsil..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i> Saqlash
+                    </button>
+                    <a href="/crm/customers/{{ customer.id }}" class="btn btn-outline-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

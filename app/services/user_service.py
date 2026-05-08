@@ -1,0 +1,45 @@
+import logging
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.models import User
+
+logger = logging.getLogger(__name__)
+
+
+async def get_or_create_user(
+    session: AsyncSession,
+    user_id: int,
+    username: str | None,
+    full_name: str,
+) -> User | None:
+    try:
+        result = await session.execute(select(User).where(User.user_id == user_id))
+        user = result.scalar_one_or_none()
+        if user:
+            user.username = username
+            user.full_name = full_name
+            await session.commit()
+            return user
+
+        user = User(user_id=user_id, username=username, full_name=full_name)
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        logger.info(f"New user registered: {user_id}")
+        return user
+    except Exception as e:
+        logger.error(f"Failed to get or create user {user_id}: {e}")
+        await session.rollback()
+        return None
+
+
+async def get_users_count(session: AsyncSession) -> int:
+    try:
+        from sqlalchemy import func
+
+        result = await session.execute(select(func.count(User.id)))
+        return result.scalar_one()
+    except Exception as e:
+        logger.error(f"Failed to get users count: {e}")
+        return 0

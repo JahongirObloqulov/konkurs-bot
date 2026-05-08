@@ -1,0 +1,129 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ customer.full_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-person-badge me-2"></i> {{ customer.full_name }}</h2>
+    <div>
+        <a href="/crm/customers" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Orqaga
+        </a>
+        <a href="/crm/customers/{{ customer.id }}/edit" class="btn btn-warning">
+            <i class="bi bi-pencil me-1"></i> Tahrirlash
+        </a>
+        <form action="/crm/customers/{{ customer.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Mijozni o\'chirishni tasdiqlaysizmi?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i> O'chirish
+            </button>
+        </form>
+        <a href="/crm/customers/{{ customer.id }}/interactions/create" class="btn btn-primary">
+            <i class="bi bi-chat-dots me-1"></i> Interaksiya qo'shish
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Mijoz ma'lumotlari</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th class="text-muted" style="width:120px;">F.I.O.:</th>
+                        <td>{{ customer.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Telefon:</th>
+                        <td>{{ customer.phone or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Email:</th>
+                        <td>{{ customer.email or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Biznes:</th>
+                        <td>
+                            {% if customer.business_id %}
+                            <a href="/crm/businesses/{{ customer.business_id }}">{{ customer.business_name }}</a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Eslatmalar:</th>
+                        <td>{{ customer.notes or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Teglar:</th>
+                        <td>
+                            {% if customer_tags %}
+                            {% for tag in customer_tags %}
+                            <span class="badge me-1" style="background-color: {{ tag.color }};">{{ tag.name }}</span>
+                            {% endfor %}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Yaratilgan:</th>
+                        <td>{{ customer.created_at }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Interaksiyalar ({{ interactions|length }})</h5>
+        <a href="/crm/customers/{{ customer.id }}/interactions/create" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Yangi interaksiya
+        </a>
+    </div>
+    <div class="card-body">
+        {% if interactions %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tur</th>
+                        <th>Tavsif</th>
+                        <th>Sana</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for interaction in interactions %}
+                    <tr>
+                        <td>{{ interaction.id }}</td>
+                        <td>
+                            {% if interaction.interaction_type == 'call' %}
+                            <span class="badge bg-primary">Qo'ng'iroq</span>
+                            {% elif interaction.interaction_type == 'email' %}
+                            <span class="badge bg-info">Email</span>
+                            {% elif interaction.interaction_type == 'meeting' %}
+                            <span class="badge bg-success">Uchrashuv</span>
+                            {% elif interaction.interaction_type == 'note' %}
+                            <span class="badge bg-secondary">Eslatma</span>
+                            {% else %}
+                            <span class="badge bg-warning">Boshqa</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ interaction.description or '-' }}</td>
+                        <td>{{ interaction.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Hozircha interaksiyalar yo'q.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+{% block title %}{% if business %}Biznesni tahrirlash{% else %}Yangi biznes{% endif %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-building me-2"></i>
+        {% if business %}Biznesni tahrirlash{% else %}Yangi biznes qo'shish{% endif %}
+    </h2>
+    <a href="/crm/businesses" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Orqaga
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{% if business %}/crm/businesses/{{ business.id }}/edit{% else %}/crm/businesses/create{% endif %}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Nomi <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ business.name if business else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">Telefon</label>
+                <input type="text" class="form-control" id="phone" name="phone" value="{{ business.phone if business else '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ business.email if business else '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">Manzil</label>
+                <textarea class="form-control" id="address" name="address" rows="2">{{ business.address if business else '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Tavsif</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{ business.description if business else '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>
+                {% if business %}Saqlash{% else %}Yaratish{% endif %}
+            </button>
+            <a href="/crm/businesses" class="btn btn-outline-secondary">Bekor qilish</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

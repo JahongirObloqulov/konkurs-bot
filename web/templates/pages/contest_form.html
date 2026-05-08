@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{% if contest %}Tahrirlash{% else %}Yangi konkurs{% endif %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-trophy"></i> {% if contest %}Konkursni tahrirlash{% else %}Yangi konkurs yaratish{% endif %}</h2>
+    <a href="/contests" class="btn btn-outline-secondary btn-sm">← Orqaga</a>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="/contests/new">
+            <div class="mb-3">
+                <label class="form-label">Konkurs nomi <span class="text-danger">*</span></label>
+                <input type="text" name="title" class="form-control" required placeholder="Masalan: May sovg'alari">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tavsif <span class="text-danger">*</span></label>
+                <textarea name="description" class="form-control" rows="4" required placeholder="Konkurs haqida batafsil ma'lumot"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Sovg'a <span class="text-danger">*</span></label>
+                <input type="text" name="prize" class="form-control" required placeholder="Masalan: 100 000 so'm">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">G'oliblar soni</label>
+                <select name="winners_count" class="form-control">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="require_subscription" class="form-check-input" id="require_sub" checked>
+                <label class="form-check-label" for="require_sub">Obuna bo'lish shart</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> {% if contest %}Saqlash{% else %}Yaratish{% endif %}
+            </button>
+            <a href="/contests" class="btn btn-secondary">Bekor qilish</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+{% block title %}Bizneslar{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-building me-2"></i> Bizneslar</h2>
+    <a href="/crm/businesses/create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Yangi biznes
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if businesses %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nomi</th>
+                        <th>Telefon</th>
+                        <th>Email</th>
+                        <th>Yaratilgan</th>
+                        <th>Harakatlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for business in businesses %}
+                    <tr>
+                        <td>{{ business.id }}</td>
+                        <td>{{ business.name }}</td>
+                        <td>{{ business.phone or '-' }}</td>
+                        <td>{{ business.email or '-' }}</td>
+                        <td>{{ business.created_at }}</td>
+                        <td>
+                            <a href="/crm/businesses/{{ business.id }}" class="btn btn-sm btn-outline-info" title="Ko'rish">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="/crm/businesses/{{ business.id }}/edit" class="btn btn-sm btn-outline-warning" title="Tahrirlash">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="/crm/businesses/{{ business.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Biznesni o\'chirishni tasdiqlaysizmi?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="O'chirish">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Hozircha bizneslar mavjud emas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

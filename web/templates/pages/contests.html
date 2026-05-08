@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Konkurslar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-trophy"></i> Konkurslar</h2>
+    <a href="/contests/new" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Yangi konkurs
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nomi</th>
+                    <th>Sovg'a</th>
+                    <th>G'oliblar</th>
+                    <th>Holat</th>
+                    <th>Yaratilgan</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in contests %}
+                <tr>
+                    <td>{{ c.id }}</td>
+                    <td>{{ c.title }}</td>
+                    <td>{{ c.prize[:50] }}{% if c.prize|length > 50 %}...{% endif %}</td>
+                    <td>{{ c.winners_count }}</td>
+                    <td>
+                        {% if c.is_active %}
+                        <span class="badge bg-success">Faol</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Tugagan</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ c.created_at.strftime('%d.%m.%Y') }}</td>
+                    <td>
+                        <a href="/contests/{{ c.id }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not contests %}
+                <tr><td colspan="7" class="text-center text-muted">Hali konkurslar yo'q</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

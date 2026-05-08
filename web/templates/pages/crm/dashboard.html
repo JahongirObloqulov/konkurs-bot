@@ -1,0 +1,116 @@
+{% extends "layouts/base.html" %}
+{% block title %}CRM Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-bar-chart me-2"></i> CRM Dashboard</h2>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card d-flex align-items-center">
+            <div class="me-3">
+                <i class="bi bi-building fs-1 text-primary"></i>
+            </div>
+            <div>
+                <h3>{{ businesses_count }}</h3>
+                <p>Bizneslar</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card d-flex align-items-center">
+            <div class="me-3">
+                <i class="bi bi-person-badge fs-1 text-success"></i>
+            </div>
+            <div>
+                <h3>{{ customers_count }}</h3>
+                <p>Mijozlar</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card d-flex align-items-center">
+            <div class="me-3">
+                <i class="bi bi-tags fs-1 text-info"></i>
+            </div>
+            <div>
+                <h3>{{ tags_count }}</h3>
+                <p>Teglar</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Tezkor amallar</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/crm/businesses" class="btn btn-outline-primary">
+                        <i class="bi bi-building me-1"></i> Bizneslarni boshqarish
+                    </a>
+                    <a href="/crm/customers" class="btn btn-outline-success">
+                        <i class="bi bi-person-badge me-1"></i> Mijozlarni boshqarish
+                    </a>
+                    <a href="/crm/tags" class="btn btn-outline-info">
+                        <i class="bi bi-tags me-1"></i> Teglarni boshqarish
+                    </a>
+                    <a href="/crm/businesses/create" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Yangi biznes
+                    </a>
+                    <a href="/crm/customers/create" class="btn btn-success">
+                        <i class="bi bi-plus-lg me-1"></i> Yangi mijoz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Oxirgi faoliyat</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tur</th>
+                                <th>Tavsif</th>
+                                <th>Sana</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recent_activity %}
+                            <tr>
+                                <td>
+                                    {% if item.type == 'business' %}
+                                    <span class="badge bg-primary">Biznes</span>
+                                    {% elif item.type == 'customer' %}
+                                    <span class="badge bg-success">Mijoz</span>
+                                    {% elif item.type == 'interaction' %}
+                                    <span class="badge bg-warning">Interaksiya</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ item.type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.created_at }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">Hozircha hech qanday faoliyat yo'q.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

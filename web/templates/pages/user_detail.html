@@ -1,0 +1,61 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ db_user.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-person"></i> {{ db_user.full_name }}</h2>
+    <a href="/users" class="btn btn-outline-secondary btn-sm">← Orqaga</a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Foydalanuvchi ma'lumotlari</h5>
+                <p><strong>ID:</strong> {{ db_user.user_id }}</p>
+                <p><strong>Ism:</strong> {{ db_user.full_name }}</p>
+                <p><strong>Username:</strong> {% if db_user.username %}@{{ db_user.username }}{% else %}-{% endif %}</p>
+                <p><strong>Ro'yxatdan o'tgan:</strong> {{ db_user.registered_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                <p><strong>Huquq:</strong>
+                    {% if db_user.is_admin %}
+                    <span class="badge bg-danger">Admin</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Foydalanuvchi</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-trophy"></i> Ishtirok etgan konkurslar</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Konkurs ID</th>
+                            <th>Qo'shilgan sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in participations %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><a href="/contests/{{ p.contest_id }}">#{{ p.contest_id }}</a></td>
+                            <td>{{ p.joined_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if not participations %}
+                        <tr><td colspan="3" class="text-muted text-center">Hech qanday konkursda qatnashmagan</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

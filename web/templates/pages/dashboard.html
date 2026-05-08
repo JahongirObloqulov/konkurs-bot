@@ -1,0 +1,105 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="bi bi-trophy fs-1 text-warning"></i>
+            <h3>{{ active_contests }}</h3>
+            <p>Faol konkurslar</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="bi bi-collection fs-1 text-primary"></i>
+            <h3>{{ total_contests }}</h3>
+            <p>Jami konkurslar</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="bi bi-people fs-1 text-success"></i>
+            <h3>{{ total_users }}</h3>
+            <p>Foydalanuvchilar</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="bi bi-person-check fs-1 text-info"></i>
+            <h3>{{ total_participants }}</h3>
+            <p>Ishtirokchilar</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Oxirgi ishtirokchilar</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Foydalanuvchi</th>
+                            <th>Konkurs</th>
+                            <th>Sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in recent_participants %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{% if p.username %}@{{ p.username }}{% else %}{{ p.full_name }}{% endif %}</td>
+                            <td>#{{ p.contest_id }}</td>
+                            <td>{{ p.joined_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if not recent_participants %}
+                        <tr><td colspan="4" class="text-center text-muted">Hali ishtirokchilar yo'q</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-graph-up"></i> Umumiy statistika</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statsChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+fetch('/api/stats')
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('statsChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Faol konkurslar', 'Tugagan konkurslar', 'Foydalanuvchilar', 'Ishtirokchilar'],
+                datasets: [{
+                    data: [data.active_contests, data.total_contests - data.active_contests, data.total_users, data.total_participants],
+                    backgroundColor: ['#f39c12', '#e74c3c', '#3498db', '#2ecc71']
+                }]
+            }
+        });
+    });
+</script>
+{% endblock %}

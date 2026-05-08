@@ -1,0 +1,66 @@
+{% extends "layouts/base.html" %}
+{% block title %}Mijozlar{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-person-badge me-2"></i> Mijozlar</h2>
+    <a href="/crm/customers/create" class="btn btn-success">
+        <i class="bi bi-plus-lg me-1"></i> Yangi mijoz
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if customers %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>F.I.O.</th>
+                        <th>Telefon</th>
+                        <th>Email</th>
+                        <th>Biznes</th>
+                        <th>Yaratilgan</th>
+                        <th>Harakatlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td>{{ customer.id }}</td>
+                        <td>{{ customer.full_name }}</td>
+                        <td>{{ customer.phone or '-' }}</td>
+                        <td>{{ customer.email or '-' }}</td>
+                        <td>
+                            {% if customer.business_name %}
+                            <a href="/crm/businesses/{{ customer.business_id }}">{{ customer.business_name }}</a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ customer.created_at }}</td>
+                        <td>
+                            <a href="/crm/customers/{{ customer.id }}" class="btn btn-sm btn-outline-info" title="Ko'rish">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="/crm/customers/{{ customer.id }}/edit" class="btn btn-sm btn-outline-warning" title="Tahrirlash">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="/crm/customers/{{ customer.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Mijozni o\'chirishni tasdiqlaysizmi?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="O'chirish">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Hozircha mijozlar mavjud emas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

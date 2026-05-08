@@ -1,0 +1,136 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ contest.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-trophy"></i> {{ contest.title }}</h2>
+    <div>
+        <a href="/contests" class="btn btn-outline-secondary btn-sm">← Orqaga</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Konkurs ma'lumotlari</h5>
+                <p><strong>Sovg'a:</strong> {{ contest.prize }}</p>
+                <p><strong>G'oliblar soni:</strong> {{ contest.winners_count }}</p>
+                <p><strong>Holat:</strong>
+                    {% if contest.is_active %}
+                    <span class="badge bg-success">Faol</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Tugagan</span>
+                    {% endif %}
+                </p>
+                <p><strong>Obuna shart:</strong>
+                    {% if contest.require_subscription %}
+                    <span class="badge bg-info">Ha</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Yo'q</span>
+                    {% endif %}
+                </p>
+                <p><strong>Yaratilgan:</strong> {{ contest.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                {% if contest.ended_at %}
+                <p><strong>Tugagan:</strong> {{ contest.ended_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-gear"></i> Amallar</h5>
+            </div>
+            <div class="card-body">
+                {% if contest.is_active %}
+                <form method="post" action="/contests/{{ contest.id }}/pick-winners" class="mb-2" onsubmit="return confirm('G'oliblarni tanlashni tasdiqlaysizmi? Bu konkursni tugatadi!')">
+                    <button type="submit" class="btn btn-warning w-100" {% if participants_count == 0 %}disabled{% endif %}>
+                        <i class="bi bi-award"></i> G'oliblarni tanlash
+                    </button>
+                </form>
+                {% if participants_count == 0 %}<small class="text-muted">Ishtirokchilar yo'q</small>{% endif %}
+
+                <form method="post" action="/contests/{{ contest.id }}/end" class="mb-2" onsubmit="return confirm('Konkursni tugatishni tasdiqlaysizmi?')">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-stop-circle"></i> Konkursni tugatish
+                    </button>
+                </form>
+                {% endif %}
+
+                <form method="post" action="/contests/{{ contest.id }}/delete" onsubmit="return confirm('Konkursni o\'chirishni tasdiqlaysizmi? Bu amal qaytarib bo\'lmaydi!')">
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-trash"></i> O'chirish
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-people"></i> Ishtirokchilar ({{ participants_count }})</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if participants %}
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Ism</th>
+                                <th>Username</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in participants %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ p.full_name }}</td>
+                                <td>{% if p.username %}@{{ p.username }}{% else %}-{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-muted text-center p-3">Ishtirokchilar yo'q</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-award"></i> G'oliblar</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if winners %}
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Ism</th>
+                            <th>Username</th>
+                            <th>Sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for w in winners %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ w.full_name }}</td>
+                            <td>{% if w.username %}@{{ w.username }}{% else %}-{% endif %}</td>
+                            <td>{{ w.selected_at.strftime('%d.%m.%Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-muted text-center p-3">G'oliblar tanlanmagan</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

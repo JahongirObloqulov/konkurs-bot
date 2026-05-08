@@ -1,0 +1,27 @@
+services:
+  # Web admin panel + Telegram bot (birgalikda)
+  - type: web
+    name: konkurs-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: DB_URL
+        value: sqlite+aiosqlite:///data/konkurs.db
+      - key: WEB_SECRET_KEY
+        sync: false
+      - key: WEB_ADMIN_USERNAME
+        sync: false
+      - key: WEB_ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
