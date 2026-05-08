@@ -220,7 +220,9 @@
                         <button id="mobile-menu-toggle" class="p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-all">
                             <i class="bi bi-list text-2xl"></i>
                         </button>
-                        <h2 class="text-lg font-semibold text-slate-900 dark:text-white truncate max-w-[150px] sm:max-w-none">{% block header_title %}{{ _('overview') }}{% endblock %}</h2>
+                        <div class="text-lg font-semibold text-slate-900 dark:text-white flex-1 min-w-0">
+                            {% block header_title %}{{ _('overview') }}{% endblock %}
+                        </div>
                     </div>
                     <div class="flex items-center gap-4">
                         <!-- Language Switcher -->
@@ -403,12 +405,23 @@
             if (e) e.stopPropagation();
             const menu = document.getElementById(id);
             if (!menu) return;
-            if (menu.classList.contains('hidden')) {
+            
+            const isHidden = menu.classList.contains('hidden');
+            
+            if (isHidden) {
+                // Open
                 menu.classList.remove('hidden');
-                setTimeout(() => menu.classList.remove('opacity-0'), 10);
+                // Trigger reflow
+                menu.offsetHeight;
+                menu.classList.remove('opacity-0');
             } else {
+                // Close
                 menu.classList.add('opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 200);
+                setTimeout(() => {
+                    if (menu.classList.contains('opacity-0')) {
+                        menu.classList.add('hidden');
+                    }
+                }, 200);
             }
         }
 
