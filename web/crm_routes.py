@@ -103,6 +103,49 @@ async def export_crm(format: str, user: dict = Depends(require_auth)):
             )
 
 
+@router.get("/export/business/{business_id}/{format}")
+async def export_business_customers(business_id: int, format: str, user: dict = Depends(require_auth)):
+    from app.db.models import Customer, Business
+    from app.services.export_service import generate_excel, generate_pdf
+    
+    async with async_session_maker() as session:
+        business = await session.get(Business, business_id)
+        if not business:
+            raise HTTPException(status_code=404, detail="Business not found")
+            
+        res = await session.execute(
+            select(Customer).where(Customer.business_id == business_id).order_by(Customer.created_at.desc())
+        )
+        customers = res.scalars().all()
+        
+        data = []
+        for c in customers:
+            data.append({
+                "Full Name": c.full_name,
+                "Phone": c.phone,
+                "Email": c.email,
+                "Joined At": c.created_at.strftime('%Y-%m-%d %H:%M') if c.created_at else ""
+            })
+            
+        prefix = f"business_{business_id}_customers"
+        title = f"Business Customers: {business.name}"
+        
+        if format == "excel":
+            content, filename = await generate_excel(data, prefix)
+            return Response(
+                content=content,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:
+            content, filename = await generate_pdf(data, title)
+            return Response(
+                content=content,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+
+
 @router.get("/crm/businesses", response_class=HTMLResponse)
 async def crm_businesses(request: Request, user: dict = Depends(require_auth)):
     async with async_session_maker() as session:

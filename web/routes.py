@@ -178,6 +178,49 @@ async def export_dashboard(format: str, user: dict = Depends(require_auth)):
             )
 
 
+@router.get("/export/contest/{contest_id}/{format}")
+async def export_contest_participants(contest_id: int, format: str, user: dict = Depends(require_auth)):
+    from app.db.models import Participant, Contest
+    from app.services.export_service import generate_excel, generate_pdf
+    
+    async with async_session_maker() as session:
+        contest = await session.get(Contest, contest_id)
+        if not contest:
+            raise HTTPException(status_code=404, detail="Contest not found")
+            
+        res = await session.execute(
+            select(Participant).where(Participant.contest_id == contest_id).order_by(Participant.joined_at.desc())
+        )
+        participants = res.scalars().all()
+        
+        data = []
+        for p in participants:
+            data.append({
+                "Telegram ID": p.telegram_id,
+                "Full Name": p.full_name,
+                "Referrals": p.referral_count,
+                "Joined At": p.joined_at.strftime('%Y-%m-%d %H:%M') if p.joined_at else ""
+            })
+            
+        prefix = f"contest_{contest_id}_participants"
+        title = f"Contest Participants: {contest.title}"
+        
+        if format == "excel":
+            content, filename = await generate_excel(data, prefix)
+            return Response(
+                content=content,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:
+            content, filename = await generate_pdf(data, title)
+            return Response(
+                content=content,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+
+
 @router.get("/contests/new", response_class=HTMLResponse)
 async def contest_new(request: Request, user: dict = Depends(require_auth)):
     return templates.TemplateResponse(
