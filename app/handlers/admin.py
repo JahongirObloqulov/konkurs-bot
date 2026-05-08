@@ -1,7 +1,7 @@
 from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Config
@@ -724,50 +724,88 @@ async def remove_chat(callback: CallbackQuery, session: AsyncSession):
         await show_chat_management(callback, session)
     else:
         await callback.answer("Xatolik yuz berdi!", show_alert=True)
-# ===== Broadcast =====
+# ===== Broadcast (Multiple Messages) =====
 
 
 @router.callback_query(F.data == "admin_broadcast", admin_check)
 async def start_broadcast(callback: CallbackQuery, state: FSMContext):
     await state.set_state(BroadcastState.message)
+    await state.update_data(messages=[])  # To'plangan xabarlar ro'yxati
     await callback.message.edit_text(
-        "📢 <b>Xabar tarqatish</b>\n\n"
-        "Barcha foydalanuvchilarga yubormoqchi bo'lgan xabaringizni yuboring (matn, rasm, video bo'lishi mumkin):",
+        "📢 <b>Xabar tarqatish bo'limi</b>\n\n"
+        "Foydalanuvchilarga yubormoqchi bo'lgan xabarlaringizni (matn, rasm, video, va h.k.) ketma-ket yuboring.\n\n"
+        "Barcha xabarlarni yuborib bo'lgach, <b>'✅ Yuborishni boshlash'</b> tugmasini bosing.",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✅ Yuborishni boshlash", callback_data="finish_broadcast")],
+            [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="back_to_admin_menu")]
+        ]),
         parse_mode="HTML"
     )
 
 
 @router.message(BroadcastState.message, admin_message_check)
-async def process_broadcast(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    from app.services.user_service import get_all_user_ids
+async def collect_broadcast_messages(message: Message, state: FSMContext):
+    data = await state.get_data()
+    messages = data.get("messages", [])
     
+    # Xabar ma'lumotlarini saqlash
+    messages.append({
+        "chat_id": message.chat.id,
+        "message_id": message.message_id
+    })
+    
+    await state.update_data(messages=messages)
+    
+    await message.answer(
+        f"📥 Xabar qabul qilindi ({len(messages)}-chi).\n"
+        "Yana yuborishingiz mumkin yoki yuborishni boshlash uchun pastdagi tugmani bosing.",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✅ Yuborishni boshlash", callback_data="finish_broadcast")],
+            [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="back_to_admin_menu")]
+        ])
+    )
+
+
+@router.callback_query(F.data == "finish_broadcast", admin_check, BroadcastState.message)
+async def process_broadcast_final(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
+    from app.services.user_service import get_all_user_ids
+    import asyncio
+    
+    data = await state.get_data()
+    broadcast_messages = data.get("messages", [])
+    
+    if not broadcast_messages:
+        await callback.answer("⚠️ Hech qanday xabar yuborilmadi!", show_alert=True)
+        return
+
     user_ids = await get_all_user_ids(session)
     if not user_ids:
-        await message.answer("❌ Foydalanuvchilar topilmadi.")
+        await callback.message.edit_text("❌ Foydalanuvchilar topilmadi.")
         await state.clear()
         return
 
-    await message.answer(f"⏳ <b>{len(user_ids)}</b> ta foydalanuvchiga xabar yuborish boshlandi...")
+    await callback.message.edit_text(f"⏳ <b>{len(user_ids)}</b> ta foydalanuvchiga <b>{len(broadcast_messages)}</b> ta xabar yuborish boshlandi...")
     await state.clear()
 
     count = 0
     errors = 0
     for user_id in user_ids:
         try:
-            await bot.copy_message(
-                chat_id=user_id,
-                from_chat_id=message.chat.id,
-                message_id=message.message_id
-            )
+            for msg in broadcast_messages:
+                await bot.copy_message(
+                    chat_id=user_id,
+                    from_chat_id=msg["chat_id"],
+                    message_id=msg["message_id"]
+                )
             count += 1
-            await asyncio.sleep(0.05)  # Flood limit avoidance
+            await asyncio.sleep(0.05)
         except Exception as e:
             errors += 1
             logger.error(f"Failed to send broadcast to {user_id}: {e}")
 
-    await message.answer(
+    await callback.message.answer(
         f"✅ <b>Xabar tarqatish yakunlandi!</b>\n\n"
-        f"Yuborildi: {count}\n"
+        f"Muvaffaqiyatli: {count}\n"
         f"Xatoliklar: {errors}",
         parse_mode="HTML"
     )
