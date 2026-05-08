@@ -916,6 +916,8 @@ async def show_bot_settings(callback: CallbackQuery, session: AsyncSession):
         [InlineKeyboardButton(text="✅ Ro'yxatdan o'tish (Muvaffaqiyatli)", callback_data="edit_setting_registration_success")],
         [InlineKeyboardButton(text="⚠️ Obuna so'rash xabari", callback_data="edit_setting_subscription_required")],
         [InlineKeyboardButton(text="🎉 Obuna muvaffaqiyatli xabari", callback_data="edit_setting_subscription_success")],
+        [InlineKeyboardButton(text="🖼️ Obuna muvaffaqiyatli (Media ID)", callback_data="edit_setting_sub_success_media_id")],
+        [InlineKeyboardButton(text="📁 Obuna muvaffaqiyatli (Media turi)", callback_data="edit_setting_sub_success_media_type")],
         [InlineKeyboardButton(text="🔙 Orqaga", callback_data="admin_menu")]
     ])
     
@@ -941,7 +943,9 @@ async def start_edit_setting(callback: CallbackQuery, state: FSMContext):
         "registration_welcome": "Ro'yxatdan o'tish (Xush kelibsiz) xabari",
         "registration_success": "Ro'yxatdan o'tish (Muvaffaqiyatli) xabari",
         "subscription_required": "Obuna so'rash xabari",
-        "subscription_success": "Obuna muvaffaqiyatli xabari"
+        "subscription_success": "Obuna muvaffaqiyatli xabari",
+        "sub_success_media_id": "Obuna muvaffaqiyatli (Media ID)",
+        "sub_success_media_type": "Obuna muvaffaqiyatli (Media turi: photo, video, video_note, audio, document)"
     }
     
     await callback.message.edit_text(

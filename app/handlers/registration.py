@@ -4,6 +4,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
+import logging
 
 from app.config import Config
 from app.db.models import User
@@ -11,6 +12,7 @@ from app.keyboards.inline import get_main_menu_kb, get_subscription_kb
 from app.services.subscription_service import check_all_subscriptions
 from app.services.settings_service import get_setting
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 class RegistrationState(StatesGroup):
@@ -19,6 +21,37 @@ class RegistrationState(StatesGroup):
     phone = State()
     location = State()
     check_sub = State()
+
+async def send_sub_success_message(target: Message | CallbackQuery, session: AsyncSession, bot: Bot):
+    """Obuna muvaffaqiyatli xabarini (ixtiyoriy media bilan) yuborish."""
+    success_text = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.")
+    media_id = await get_setting(session, "sub_success_media_id")
+    media_type = await get_setting(session, "sub_success_media_type")
+    
+    kb = get_main_menu_kb()
+    
+    # Message object to send to
+    msg = target if isinstance(target, Message) else target.message
+
+    if media_id and media_type:
+        try:
+            if media_type == "photo":
+                await bot.send_photo(msg.chat.id, photo=media_id, caption=success_text, reply_markup=kb, parse_mode="HTML")
+            elif media_type == "video":
+                await bot.send_video(msg.chat.id, video=media_id, caption=success_text, reply_markup=kb, parse_mode="HTML")
+            elif media_type == "video_note":
+                await bot.send_video_note(msg.chat.id, video_note=media_id)
+                await bot.send_message(msg.chat.id, success_text, reply_markup=kb, parse_mode="HTML")
+            elif media_type == "audio":
+                await bot.send_audio(msg.chat.id, audio=media_id, caption=success_text, reply_markup=kb, parse_mode="HTML")
+            elif media_type == "document":
+                await bot.send_document(msg.chat.id, document=media_id, caption=success_text, reply_markup=kb, parse_mode="HTML")
+            return
+        except Exception as e:
+            logger.error(f"Failed to send success media: {e}")
+            # Fallback to plain text if media fails
+    
+    await bot.send_message(msg.chat.id, success_text, reply_markup=kb, parse_mode="HTML")
 
 @router.callback_query(F.data == "start_registration")
 async def start_registration_cb(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
@@ -91,9 +124,8 @@ async def process_location(message: Message, state: FSMContext, session: AsyncSe
             reply_markup=get_subscription_kb(unsubscribed_chats)
         )
     else:
-        success_text = await get_setting(session, "registration_success", "✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!")
         await state.clear()
-        await message.answer(success_text, reply_markup=get_main_menu_kb())
+        await send_sub_success_message(message, session, bot)
 
 @router.callback_query(RegistrationState.check_sub, F.data == "check_sub")
 async def process_check_sub(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
@@ -104,7 +136,6 @@ async def process_check_sub(callback: CallbackQuery, state: FSMContext, session:
         # Update keyboard if some channels were joined
         await callback.message.edit_reply_markup(reply_markup=get_subscription_kb(unsubscribed_chats))
     else:
-        success_text = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.")
         await state.clear()
-        await callback.message.answer(success_text, reply_markup=get_main_menu_kb())
+        await send_sub_success_message(callback, session, bot)
         await callback.message.delete()

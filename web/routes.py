@@ -293,6 +293,8 @@ async def settings_page(request: Request, user: dict = Depends(require_auth)):
         reg_success = await get_setting(session, "registration_success", "✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!")
         sub_required = await get_setting(session, "subscription_required", "⚠️ <b>Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling!</b>\n\nBarcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.")
         sub_success = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.")
+        sub_success_media_id = await get_setting(session, "sub_success_media_id", "")
+        sub_success_media_type = await get_setting(session, "sub_success_media_type", "")
 
     return templates.TemplateResponse(
         "pages/settings.html",
@@ -303,6 +305,8 @@ async def settings_page(request: Request, user: dict = Depends(require_auth)):
             "reg_success": reg_success,
             "sub_required": sub_required,
             "sub_success": sub_success,
+            "sub_success_media_id": sub_success_media_id,
+            "sub_success_media_type": sub_success_media_type,
         }
     )
 
@@ -317,6 +321,8 @@ async def update_settings(request: Request, user: dict = Depends(require_auth)):
         await set_setting(session, "registration_success", form.get("reg_success"))
         await set_setting(session, "subscription_required", form.get("sub_required"))
         await set_setting(session, "subscription_success", form.get("sub_success"))
+        await set_setting(session, "sub_success_media_id", form.get("sub_success_media_id"))
+        await set_setting(session, "sub_success_media_type", form.get("sub_success_media_type"))
     
     return RedirectResponse(url="/settings?success=1", status_code=302)
 

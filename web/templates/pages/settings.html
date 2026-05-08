@@ -49,11 +49,30 @@
 
                 <!-- Subscription Success -->
                 <div class="space-y-2">
-                    <label class="block text-sm font-bold text-slate-700">Obuna muvaffaqiyatli</label>
+                    <label class="block text-sm font-bold text-slate-700">Obuna muvaffaqiyatli (Matn)</label>
                     <textarea name="sub_success" rows="4" required 
                         class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm"
                         placeholder="Obuna tasdiqlangandan keyingi xabar...">{{ sub_success }}</textarea>
                     <p class="text-[10px] text-slate-400 font-medium">"Obunani tekshirish" tugmasi bosilib, obuna tasdiqlansa ko'rinadi.</p>
+                </div>
+
+                <!-- Subscription Success Media -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-slate-700">Obuna muvaffaqiyatli (Media ID)</label>
+                    <input type="text" name="sub_success_media_id" value="{{ sub_success_media_id or '' }}"
+                        class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm"
+                        placeholder="File ID ni kiriting (ixtiyoriy)">
+                    
+                    <select name="sub_success_media_type" 
+                        class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm mt-2">
+                        <option value="">Media yo'q</option>
+                        <option value="photo" {% if sub_success_media_type == 'photo' %}selected{% endif %}>Rasm (Photo)</option>
+                        <option value="video" {% if sub_success_media_type == 'video' %}selected{% endif %}>Video</option>
+                        <option value="video_note" {% if sub_success_media_type == 'video_note' %}selected{% endif %}>Dumaloq video (Video Note)</option>
+                        <option value="audio" {% if sub_success_media_type == 'audio' %}selected{% endif %}>Audio</option>
+                        <option value="document" {% if sub_success_media_type == 'document' %}selected{% endif %}>Fayl (Document)</option>
+                    </select>
+                    <p class="text-[10px] text-slate-400 font-medium">Faqat Matn bo'lsa bo'sh qoldiring. File ID ni botga fayl tashlab olishingiz mumkin.</p>
                 </div>
             </div>
 
