@@ -18,6 +18,8 @@ async def create_contest(
     winners_count: int,
     created_by: int,
     require_subscription: bool = True,
+    min_referrals: int = 0,
+    min_additions: int = 0,
 ) -> Contest | None:
     try:
         contest = Contest(
@@ -27,6 +29,8 @@ async def create_contest(
             winners_count=winners_count,
             created_by=created_by,
             require_subscription=require_subscription,
+            min_referrals=min_referrals,
+            min_additions=min_additions,
         )
         session.add(contest)
         await session.commit()
@@ -37,6 +41,32 @@ async def create_contest(
         logger.error(f"Failed to create contest: {e}")
         await session.rollback()
         return None
+
+
+async def check_requirements(
+    session: AsyncSession, contest: Contest, user_id: int
+) -> tuple[bool, str]:
+    """Checks if a user meets all contest requirements."""
+    try:
+        from app.db.models import User
+        result = await session.execute(select(User).where(User.user_id == user_id))
+        user_obj = result.scalar_one_or_none()
+        
+        if not user_obj:
+            return False, "Foydalanuvchi topilmadi!"
+
+        if contest.min_referrals > 0 and user_obj.referral_count < contest.min_referrals:
+            diff = contest.min_referrals - user_obj.referral_count
+            return False, f"Taklif qilingan foydalanuvchilar yetarli emas! Yana {diff} ta odam taklif qilishingiz kerak."
+
+        if contest.min_additions > 0 and user_obj.added_users_count < contest.min_additions:
+            diff = contest.min_additions - user_obj.added_users_count
+            return False, f"Guruhlarga qo'shilgan a'zolar yetarli emas! Yana {diff} ta odam qo'shishingiz kerak."
+
+        return True, "Hamma shartlar bajarildi."
+    except Exception as e:
+        logger.error(f"Error checking requirements: {e}")
+        return False, "Texnik xatolik yuz berdi."
 
 
 async def get_active_contests(session: AsyncSession) -> list[Contest]:

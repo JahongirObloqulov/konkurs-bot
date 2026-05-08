@@ -28,6 +28,9 @@ class Contest(Base):
     ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_by: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
+    min_referrals: Mapped[int] = mapped_column(Integer, default=0)
+    min_additions: Mapped[int] = mapped_column(Integer, default=0)
+
     participants: Mapped[list["Participant"]] = relationship(
         back_populates="contest", cascade="all, delete-orphan"
     )
@@ -78,6 +81,9 @@ class User(Base):
     username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    referred_by_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    referral_count: Mapped[int] = mapped_column(Integer, default=0)
+    added_users_count: Mapped[int] = mapped_column(Integer, default=0)
     registered_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )

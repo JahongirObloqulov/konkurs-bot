@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}{{ contest.title }} - Konkurs Bot Admin{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <a href="/contests" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Orqaga
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">{{ contest.title }}</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Tavsif:</strong> {{ contest.description }}</p>
+                <p><strong>Sovg'a:</strong> {{ contest.prize }}</p>
+                <p>
+                    <strong>Holati:</strong> 
+                    {% if contest.is_active %}
+                    <span class="badge bg-success">Faol</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Tugagan</span>
+                    {% endif %}
+                </p>
+                <p>
+                    <strong>G'oliblar soni:</strong> {{ contest.winners_count }}
+                </p>
+                <p>
+                    <strong>Majburiy obuna:</strong> 
+                    {% if contest.require_subscription %}
+                    <span class="badge bg-info">Ha</span>
+                    {% else %}
+                    <span class="badge bg-light text-dark">Yo'q</span>
+                    {% endif %}
+                </p>
+                <p>
+                    <strong>Yaratilgan vaqt:</strong> {{ contest.created_at.strftime('%Y-%m-%d %H:%M') if contest.created_at else 'N/A' }}
+                </p>
+                <hr>
+                <h6>Ishtirokchilar ({{ participants|length }})</h6>
+                {% if participants %}
+                <ul class="list-group">
+                    {% for p in participants %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@{{ p.username or p.full_name }}</strong>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ p.joined_at.strftime('%m-%d %H:%M') if p.joined_at else '' }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Hozircha ishtirokchilar yo'q</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">G'oliblar ({{ winners|length }})</h4>
+            </div>
+            <div class="card-body">
+                {% if winners %}
+                <div class="list-group">
+                    {% for w in winners %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@{{ w.username or w.full_name }}</strong>
+                        </div>
+                        <span class="badge bg-success">{{ w.selected_at.strftime('%m-%d %H:%M') if w.selected_at else '' }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">G'oliblar hali tanlanmagan</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if contest.is_active %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4 class="mb-0">Amallar</h4>
+            </div>
+            <div class="card-body">
+                <a href="/contest/{{ contest.id }}/pick-winners" class="btn btn-warning w-100 mb-2">
+                    <i class="fas fa-star me-2"></i>G'oliblarni tanlash
+                </a>
+                <a href="/contest/{{ contest.id }}/end" class="btn btn-danger w-100">
+                    <i class="fas fa-stop me-2"></i>Konkursni tugatish
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -9,7 +9,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from app.config import Config
 from app.db.engine import create_engine, create_session_pool, init_db
-from app.handlers import admin, start, user
+from app.handlers import admin, start, user, events
 from app.middlewares.db_middleware import DbSessionMiddleware
 
 logger = logging.getLogger(__name__)
@@ -53,6 +53,7 @@ async def main():
         start.router,
         admin.router,
         user.router,
+        events.router,
     )
 
     logger.info("Bot ishga tushdi!")

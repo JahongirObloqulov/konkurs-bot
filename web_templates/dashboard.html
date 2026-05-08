@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Konkurs Bot Admin{% endblock %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card bg-primary text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-opacity-75">Foydalanuvchilar</h6>
+                        <h3 class="mb-0">{{ users_count }}</h3>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card bg-success text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-opacity-75">Faol Konkurslar</h6>
+                        <h3 class="mb-0">{{ active_contests_count }}</h3>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-trophy fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card bg-info text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-opacity-75">Jami Ishtirokchilar</h6>
+                        <h3 class="mb-0">{{ total_participants }}</h3>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-user-friends fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card bg-warning text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-opacity-75">Jami G'oliblar</h6>
+                        <h3 class="mb-0">{{ total_winners }}</h3>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-medal fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">So'nggi Faol Konkurslar</h5>
+            </div>
+            <div class="card-body">
+                {% if active_contests %}
+                <div class="list-group">
+                    {% for contest in active_contests %}
+                    <a href="/contest/{{ contest.id }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ contest.title }}</h6>
+                            <small>{{ contest.participants_count|default(0) }} ishtirokchi</small>
+                        </div>
+                        <p class="mb-1">{{ contest.description|truncate(100) }}</p>
+                        <small>Sovg'a: {{ contest.prize }} | G'oliblar: {{ contest.winners_count }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">Hozircha faol konkurslar yo'q</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Majburiy Obuna Kanallar/Guruhlar</h5>
+            </div>
+            <div class="card-body">
+                {% if required_chats %}
+                <div class="list-group">
+                    {% for chat in required_chats %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center chat-item 
+                        {% if chat.type == 'channel' %}chat-channel{% else %}chat-group{% endif %}">
+                        <div>
+                            <i class="fas 
+                                {% if chat.type == 'channel' %}fa-location-arrow me-2{% else %}fa-users me-2{% endif %}"
+                            ></i>
+                            <strong>@{{ chat.username or 'no_username' }}</strong> 
+                            <span class="ms-2 badge bg-{{ 'success' if chat.type == 'channel' else 'warning' }}">
+                                {{ 'Kanal' if chat.type == 'channel' else 'Guruh' }}
+                            </span>
+                        </div>
+                        <small>ID: {{ chat.id }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">Majburiy obuna kanallar/grupah yo'q</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if request.args.get('success') %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    Sozlamalar muvaffaqiyatli saqlangan!
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if request.args.get('error') %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    Xatolik yuz berdi! Iltimos, qaytadan urinib ko'ring.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+{% endblock %}

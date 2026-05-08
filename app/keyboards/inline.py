@@ -14,6 +14,9 @@ def get_main_menu_kb() -> InlineKeyboardMarkup:
     builder.row(
         InlineKeyboardButton(text="\U0001f4cb Mening ishtiroklarim", callback_data="my_contests")
     )
+    builder.row(
+        InlineKeyboardButton(text="\U0001f465 Referal tizimi", callback_data="referral_program")
+    )
     return builder.as_markup()
 
 
@@ -248,7 +251,7 @@ def get_chat_list_kb(chats: list[dict]) -> InlineKeyboardMarkup:
         builder.row(
             InlineKeyboardButton(
                 text=f"{chat_type} @{username} ({chat['id']})",
-                callback_data=f"remove_chat_{chat['id']}",
+                callback_data=f"chat_detail_{chat['id']}",
             )
         )
     builder.row(
@@ -261,6 +264,23 @@ def get_chat_list_kb(chats: list[dict]) -> InlineKeyboardMarkup:
         InlineKeyboardButton(
             text="🏠 Admin menyu",
             callback_data="back_to_admin_menu",
+        )
+    )
+    return builder.as_markup()
+
+
+def get_chat_detail_kb(chat_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text="\U0001f5d1 O'chirish",
+            callback_data=f"remove_chat_{chat_id}",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="🔙 Orqaga",
+            callback_data="manage_chats",
         )
     )
     return builder.as_markup()
@@ -298,12 +318,31 @@ def get_back_to_chats_kb() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_back_to_chats_kb() -> InlineKeyboardMarkup:
+def get_referral_kb(bot_username: str, user_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    ref_link = f"https://t.me/{bot_username}?start=ref{user_id}"
     builder.row(
         InlineKeyboardButton(
-            text="🔙 Orqaga",
-            callback_data="back_to_chats",
+            text="\U0001f517 Havolani nusxalash",
+            url=f"https://t.me/share/url?url={ref_link}&text=Ushbu bot orqali konkurslarda ishtirok eting va sovg'alar yuting!"
         )
+    )
+    builder.row(
+        InlineKeyboardButton(text="\U0001f519 Orqaga", callback_data="back_to_main")
+    )
+    return builder.as_markup()
+
+
+def get_requirement_settings_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="0", callback_data="set_req_0"),
+        InlineKeyboardButton(text="1", callback_data="set_req_1"),
+        InlineKeyboardButton(text="3", callback_data="set_req_3"),
+        InlineKeyboardButton(text="5", callback_data="set_req_5"),
+        InlineKeyboardButton(text="10", callback_data="set_req_10"),
+    )
+    builder.row(
+        InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_create")
     )
     return builder.as_markup()

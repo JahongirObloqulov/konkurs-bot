@@ -40,12 +40,15 @@ class CreateContestState(StatesGroup):
     prize = State()
     winners_count = State()
     require_subscription = State()
+    min_referrals = State()
+    min_additions = State()
 
 
 class ChatManageState(StatesGroup):
     chat_id = State()
     chat_username = State()
     chat_type = State()
+    edit_mode = State()
 
 
 def admin_check(callback: CallbackQuery, config: Config) -> bool:
@@ -78,6 +81,12 @@ async def show_stats(callback: CallbackQuery, session: AsyncSession):
     
     total_winners = await session.execute(select(func.count(Winner.id)))
     total_winners = total_winners.scalar_one()
+    
+    total_referrals = await session.execute(select(func.sum(User.referral_count)))
+    total_referrals = total_referrals.scalar() or 0
+    
+    total_additions = await session.execute(select(func.sum(User.added_users_count)))
+    total_additions = total_additions.scalar() or 0
 
     text = (
         "\U0001f4ca <b>Bot statistikasi</b>\n\n"
@@ -88,6 +97,8 @@ async def show_stats(callback: CallbackQuery, session: AsyncSession):
         f"\U0001f465 Jami ishtirokchilar: {total_participants}\n"
         f"\U0001f3c5 Jami g'oliblar: {total_winners}\n"
         f"\U0001f4e2 Majburiy kanallar: {len(required_chats)}\n"
+        f"\U0001f465 Jami takliflar: {total_referrals}\n"
+        f"👤 Jami qo'shilganlar: {total_additions}\n"
     )
 
     await callback.message.edit_text(
@@ -199,9 +210,12 @@ async def toggle_subscription(callback: CallbackQuery, state: FSMContext):
 async def skip_subscription(
     callback: CallbackQuery, state: FSMContext, session: AsyncSession
 ):
-    data = await state.get_data()
-    data["require_subscription"] = False
-    await _finish_create_contest(callback, state, session, data)
+    await state.update_data(require_subscription=False)
+    await callback.message.edit_text(
+        "\U0001f465 Minimal referallar sonini kiriting (0 - shart emas):",
+        reply_markup=get_requirement_settings_kb()
+    )
+    await state.set_state(CreateContestState.min_referrals)
 
 
 @router.callback_query(
@@ -212,7 +226,29 @@ async def skip_subscription(
 async def confirm_create(
     callback: CallbackQuery, state: FSMContext, session: AsyncSession
 ):
+    await callback.message.edit_text(
+        "\U0001f465 Minimal referallar sonini kiriting (0 - shart emas):",
+        reply_markup=get_requirement_settings_kb()
+    )
+    await state.set_state(CreateContestState.min_referrals)
+
+
+@router.callback_query(CreateContestState.min_referrals, F.data.startswith("set_req_"), admin_check)
+async def process_min_referrals(callback: CallbackQuery, state: FSMContext):
+    count = int(callback.data.split("_")[2])
+    await state.update_data(min_referrals=count)
+    await callback.message.edit_text(
+        "👥 Guruhlarga qo'shilishi kerak bo'lgan a'zolar sonini kiriting (0 - shart emas):",
+        reply_markup=get_requirement_settings_kb()
+    )
+    await state.set_state(CreateContestState.min_additions)
+
+
+@router.callback_query(CreateContestState.min_additions, F.data.startswith("set_req_"), admin_check)
+async def process_min_additions(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+    count = int(callback.data.split("_")[2])
     data = await state.get_data()
+    data["min_additions"] = count
     await _finish_create_contest(callback, state, session, data)
 
 
@@ -230,6 +266,8 @@ async def _finish_create_contest(
         winners_count=data["winners_count"],
         created_by=callback.from_user.id,
         require_subscription=data.get("require_subscription", True),
+        min_referrals=data.get("min_referrals", 0),
+        min_additions=data.get("min_additions", 0),
     )
     await state.clear()
 
@@ -248,6 +286,8 @@ async def _finish_create_contest(
         f"🎁 <b>Sovg'a:</b> {contest.prize}\n"
         f"🏅 <b>G'oliblar soni:</b> {contest.winners_count}\n"
         f"📢 <b>Obuna shart:</b> {sub_status}\n"
+        f"👥 <b>Minimal referallar:</b> {contest.min_referrals}\n"
+        f"👤 <b>Minimal qo'shilgan a'zolar:</b> {contest.min_additions}\n"
     )
 
     await callback.message.edit_text(
@@ -592,6 +632,30 @@ async def process_chat_type(
         )
     else:
         await callback.answer("Xatolik yuz berdi!", show_alert=True)
+
+
+@router.callback_query(F.data.startswith("chat_detail_"), admin_check)
+async def chat_detail(callback: CallbackQuery, session: AsyncSession):
+    from app.keyboards.inline import get_chat_detail_kb
+    chat_id = int(callback.data.split("_")[2])
+    chats = await get_required_chats(session)
+    chat = next((c for c in chats if c["id"] == chat_id), None)
+    
+    if not chat:
+        await callback.answer("Chat topilmadi!", show_alert=True)
+        return
+        
+    chat_type = "📢 Kanal" if chat.get("type") == "channel" else "👥 Guruh"
+    text = (
+        f"<b>Kanal/Guruh ma'lumotlari:</b>\n\n"
+        f"ID: <code>{chat['id']}</code>\n"
+        f"Username: @{chat.get('username') or 'yoq'}\n"
+        f"Turi: {chat_type}"
+    )
+    
+    await callback.message.edit_text(
+        text, reply_markup=get_chat_detail_kb(chat_id), parse_mode="HTML"
+    )
 
 
 @router.callback_query(F.data.startswith("remove_chat_"), admin_check)

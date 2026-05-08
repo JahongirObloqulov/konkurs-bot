@@ -16,11 +16,21 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config):
     if not user:
         return
 
+    # Handle referral
+    referred_by_id = None
+    args = message.text.split()
+    if len(args) > 1 and args[1].startswith("ref"):
+        try:
+            referred_by_id = int(args[1].replace("ref", ""))
+        except ValueError:
+            pass
+
     user_obj = await get_or_create_user(
         session,
         user_id=user.id,
         username=user.username,
         full_name=user.full_name,
+        referred_by_id=referred_by_id,
     )
     if not user_obj:
         await message.answer("Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")

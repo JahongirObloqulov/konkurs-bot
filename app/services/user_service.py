@@ -12,6 +12,7 @@ async def get_or_create_user(
     user_id: int,
     username: str | None,
     full_name: str,
+    referred_by_id: int | None = None,
 ) -> User | None:
     try:
         result = await session.execute(select(User).where(User.user_id == user_id))
@@ -22,16 +23,46 @@ async def get_or_create_user(
             await session.commit()
             return user
 
-        user = User(user_id=user_id, username=username, full_name=full_name)
+        # Create new user
+        user = User(
+            user_id=user_id, 
+            username=username, 
+            full_name=full_name,
+            referred_by_id=referred_by_id if referred_by_id != user_id else None
+        )
         session.add(user)
+        
+        # Increment referral count for referrer
+        if referred_by_id and referred_by_id != user_id:
+            from sqlalchemy import update
+            await session.execute(
+                update(User)
+                .where(User.user_id == referred_by_id)
+                .values(referral_count=User.referral_count + 1)
+            )
+            
         await session.commit()
         await session.refresh(user)
-        logger.info(f"New user registered: {user_id}")
+        logger.info(f"New user registered: {user_id} (referred by: {referred_by_id})")
         return user
     except Exception as e:
         logger.error(f"Failed to get or create user {user_id}: {e}")
         await session.rollback()
         return None
+
+
+async def increment_addition_count(session: AsyncSession, user_id: int):
+    try:
+        from sqlalchemy import update
+        await session.execute(
+            update(User)
+            .where(User.user_id == user_id)
+            .values(added_users_count=User.added_users_count + 1)
+        )
+        await session.commit()
+    except Exception as e:
+        logger.error(f"Failed to increment addition count for {user_id}: {e}")
+        await session.rollback()
 
 
 async def get_users_count(session: AsyncSession) -> int:

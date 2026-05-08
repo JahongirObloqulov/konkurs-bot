@@ -84,10 +84,44 @@ async def _join_contest_core(
     return contest, joined_now, participants_count
 
 
+@router.callback_query(F.data == "referral_program")
+async def show_referral_program(callback: CallbackQuery, session: AsyncSession, bot: Bot):
+    from app.db.models import User
+    from app.keyboards.inline import get_referral_kb
+    from sqlalchemy import select
+    
+    result = await session.execute(select(User).where(User.user_id == callback.from_user.id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        await callback.answer("Foydalanuvchi topilmadi!", show_alert=True)
+        return
+
+    bot_info = await bot.get_me()
+    ref_link = f"https://t.me/{bot_info.username}?start=ref{user.user_id}"
+    
+    text = (
+        "\U0001f465 <b>Referal dasturi</b>\n\n"
+        "Do'stlaringizni taklif qiling va konkurslarda ishtirok etish uchun ballar to'plang!\n\n"
+        f"\U0001f4ca <b>Sizning statistikangiz:</b>\n"
+        f"\u27a1\ufe0f Taklif qilinganlar: <b>{user.referral_count} ta</b>\n"
+        f"\u27a1\ufe0f Guruhlarga qo'shilganlar: <b>{user.added_users_count} ta</b>\n\n"
+        f"\U0001f517 <b>Sizning taklif havolangiz:</b>\n<code>{ref_link}</code>"
+    )
+    
+    await callback.message.edit_text(
+        text,
+        reply_markup=get_referral_kb(bot_info.username, user.user_id),
+        parse_mode="HTML"
+    )
+
+
 @router.callback_query(F.data.startswith("join_"))
 async def join_contest(
     callback: CallbackQuery, session: AsyncSession, config: Config, bot: Bot
 ):
+    from app.services.contest_service import check_requirements
+    
     contest_id = int(callback.data.split("_")[1])
     contest = await get_contest_by_id(session, contest_id)
     if not contest or not contest.is_active:
@@ -96,6 +130,7 @@ async def join_contest(
 
     user = callback.from_user
 
+    # 1. Check subscriptions
     if contest.require_subscription and config.required_chats:
         all_subscribed, unsubscribed = await check_all_subscriptions(bot, config, user.id)
         if not all_subscribed:
@@ -106,6 +141,18 @@ async def join_contest(
                 parse_mode="HTML",
             )
             return
+
+    # 2. Check other requirements (referrals, additions)
+    meets_reqs, error_msg = await check_requirements(session, contest, user.id)
+    if not meets_reqs:
+        await callback.message.edit_text(
+            f"❌ <b>Siz ushbu konkurs shartlarini hali bajarmagansiz!</b>\n\n"
+            f"{error_msg}\n\n"
+            "Shartlarni bajarib, qaytadan urinib ko'ring.",
+            reply_markup=get_contest_detail_kb(contest, False),
+            parse_mode="HTML"
+        )
+        return
 
     result = await _join_contest_core(session, contest_id, user)
     if not result:
