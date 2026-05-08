@@ -1,5 +1,5 @@
-from aiogram import Bot, F, Router, Message
-from aiogram.types import CallbackQuery
+from aiogram import Bot, F, Router
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
