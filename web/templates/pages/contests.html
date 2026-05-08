@@ -4,56 +4,53 @@
 {% block header_title %}Konkurslar Ro'yxati{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-8">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="relative max-w-sm w-full">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 dark:text-dark-muted">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <i class="bi bi-search"></i>
             </span>
-            <input type="text" placeholder="Qidirish..." class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm dark:text-white transition-all">
+            <input type="text" placeholder="Search contests..." class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm dark:text-white transition-all">
         </div>
-        <a href="/contests/new" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 btn-primary-gradient text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-primary/20">
+        <a href="/contests/new" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 btn-primary rounded-xl font-bold text-sm transition-all shadow-sm">
             <i class="bi bi-plus-lg"></i>
-            Yangi Konkurs Yaratish
+            Create New Contest
         </a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for contest in contests %}
-        <div class="glass-card rounded-[2rem] shadow-sm overflow-hidden flex flex-col group transition-all hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
+        <div class="ui-card rounded-xl overflow-hidden flex flex-col group transition-all hover:shadow-lg">
             <div class="p-6 flex-1">
                 <div class="flex items-center justify-between mb-4">
                     {% if contest.is_active %}
-                    <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-wider rounded-lg">Faol</span>
+                    <span class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
                     {% else %}
-                    <span class="px-3 py-1 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-dark-muted text-[10px] font-black uppercase tracking-wider rounded-lg">Yakunlangan</span>
+                    <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Finished</span>
                     {% endif %}
-                    <span class="text-slate-400 dark:text-dark-muted text-xs font-medium">{{ contest.created_at.strftime('%d.%m.%Y') }}</span>
+                    <span class="text-slate-400 text-xs font-medium">{{ contest.created_at.strftime('%b %d, %Y') }}</span>
                 </div>
                 
-                <h3 class="text-xl font-extrabold text-slate-800 dark:text-white mb-2 group-hover:text-primary transition-colors">{{ contest.title }}</h3>
-                <p class="text-sm text-slate-500 dark:text-dark-muted line-clamp-2 mb-4">{{ contest.description }}</p>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors">{{ contest.title }}</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-6">{{ contest.description }}</p>
                 
-                <div class="grid grid-cols-2 gap-4 py-4 border-t border-slate-100 dark:border-white/5">
+                <div class="flex items-center gap-6 py-4 border-t border-slate-100 dark:border-slate-700">
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider mb-1">Sovg'a</p>
-                        <p class="text-sm font-bold text-amber-500">{{ contest.prize }}</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Prize</p>
+                        <p class="text-sm font-bold text-amber-600 dark:text-amber-500">{{ contest.prize }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider mb-1">Ishtirokchilar</p>
-                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ contest.participants_count }} kishi</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Participants</p>
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ contest.participants_count }}</p>
                     </div>
                 </div>
             </div>
             
-            <div class="p-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
-                <div class="flex -space-x-2">
-                    <div class="w-8 h-8 rounded-full border-2 border-white dark:border-dark-card bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-300">ID</div>
-                    <div class="w-8 h-8 rounded-full border-2 border-white dark:border-dark-card bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">#{{ contest.id }}</div>
-                </div>
-                <a href="/contests/{{ contest.id }}" class="inline-flex items-center gap-2 text-sm font-extrabold text-primary hover:text-secondary transition-colors">
-                    Batafsil
-                    <i class="bi bi-arrow-right"></i>
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400">#{{ contest.id }}</span>
+                <a href="/contests/{{ contest.id }}" class="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary-hover transition-colors">
+                    Manage
+                    <i class="bi bi-chevron-right"></i>
                 </a>
             </div>
         </div>
@@ -61,13 +58,13 @@
     </div>
 
     {% if not contests %}
-    <div class="flex flex-col items-center justify-center py-20 bg-white dark:bg-dark-card rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-dark-border">
-        <div class="w-20 h-20 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-700 mb-4">
-            <i class="bi bi-trophy fs-1"></i>
+    <div class="flex flex-col items-center justify-center py-20 ui-card rounded-xl border-dashed">
+        <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mb-4">
+            <i class="bi bi-trophy text-3xl"></i>
         </div>
-        <h4 class="text-lg font-extrabold text-slate-800 dark:text-white">Hozircha konkurslar yo'q</h4>
-        <p class="text-slate-500 dark:text-dark-muted text-sm mb-6">Yangi konkurs yaratish uchun yuqoridagi tugmani bosing</p>
-        <a href="/contests/new" class="btn-primary-gradient text-white px-10 py-3.5 rounded-2xl font-bold shadow-lg shadow-primary/20">Boshlash</a>
+        <h4 class="text-lg font-bold text-slate-900 dark:text-white">No contests found</h4>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 max-w-xs text-center">Get started by creating your first contest for your audience.</p>
+        <a href="/contests/new" class="btn-primary px-8 py-2.5 rounded-lg font-bold shadow-sm">Get Started</a>
     </div>
     {% endif %}
 </div>
