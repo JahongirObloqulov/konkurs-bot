@@ -337,10 +337,11 @@ def get_back_to_chats_kb() -> InlineKeyboardMarkup:
 def get_referral_kb(bot_username: str, user_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     ref_link = f"https://t.me/{bot_username}?start=ref{user_id}"
+    share_text = "Ushbu bot orqali konkurslarda ishtirok eting va sovg'alar yuting! \U0001f3c6"
     builder.row(
         InlineKeyboardButton(
-            text="\U0001f517 Havolani nusxalash",
-            url=f"https://t.me/share/url?url={ref_link}&text=Ushbu bot orqali konkurslarda ishtirok eting va sovg'alar yuting!"
+            text="\U0001f4e2 Do'stlarga ulashish",
+            url=f"https://t.me/share/url?url={ref_link}&text={share_text}"
         )
     )
     builder.row(

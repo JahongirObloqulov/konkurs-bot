@@ -10,6 +10,7 @@ from app.keyboards.inline import (
     get_contest_list_kb,
     get_main_menu_kb,
     get_subscription_kb,
+    get_referral_kb,
 )
 from app.keyboards.reply import get_main_reply_kb
 from app.services.contest_service import (
@@ -142,10 +143,12 @@ async def show_referral_program_core(message: Message, session: AsyncSession, bo
         f"Taklif qilingan do'stlar soni: <b>{user.referral_count}</b>"
     )
     
+    kb = get_referral_kb(bot_info.username, user_id)
+    
     if edit:
-        await message.edit_text(text, parse_mode="HTML")
+        await message.edit_text(text, reply_markup=kb, parse_mode="HTML")
     else:
-        await message.answer(text, parse_mode="HTML")
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
 
 @router.message(F.text == "📋 Mening ishtiroklarim")

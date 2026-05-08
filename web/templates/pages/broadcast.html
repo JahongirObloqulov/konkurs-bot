@@ -46,7 +46,7 @@
                             </p>
                         </div>
 
-                        <button type="submit" onclick="return confirm('{{ _('manage') }}?')"
+                        <button type="submit" onclick="return confirm('{{ _('confirm_broadcast') }}')"
                             class="w-full py-4 btn-primary rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                             <i class="bi bi-send-fill"></i>
                             {{ _('start_broadcast') }}
@@ -70,7 +70,7 @@
                     </li>
                     <li class="flex gap-4">
                         <span class="w-2 h-2 bg-white rounded-full mt-1.5 shrink-0"></span>
-                        <span>Rasm yoki Video yuborish uchun botga avval o'sha faylni yuboring va bot qaytargan <b class="text-white">File ID</b>dan foydalaning.</span>
+                        <span>{{ _('broadcast_media_tip') }}</span>
                     </li>
                 </ul>
             </div>
@@ -82,7 +82,7 @@
                     </div>
                     <h5 class="font-bold text-slate-900 dark:text-white">{{ _('broadcast_speed') }}</h5>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold leading-relaxed">Tizim sekundiga o'rtacha 30 ta xabar yuboradi. 10,000 foydalanuvchi uchun ~6 daqiqa vaqt ketadi.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold leading-relaxed">{{ _('broadcast_speed_info') }}</p>
             </div>
         </div>
     </div>

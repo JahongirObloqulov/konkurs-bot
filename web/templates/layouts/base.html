@@ -123,6 +123,131 @@
         }
         .animate-bounce-slow {
             animation: bounce-slow 3s infinite;
+<!DOCTYPE html>
+<html lang="uz" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Konkurs Bot Admin{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#4f46e5',
+                            hover: '#4338ca',
+                            light: '#eef2ff',
+                        },
+                        secondary: '#64748b',
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155',
+                            text: '#f8fafc',
+                            muted: '#94a3b8'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'xl': '0.75rem',
+                        '2xl': '1rem',
+                        '3xl': '1.5rem',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script>
+        // Theme initialization
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    
+    <!-- Icons & Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            transition: background-color 0.3s ease, color 0.3s ease; 
+        }
+        
+        .sidebar-item-active {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+        .dark .sidebar-item-active {
+            background-color: rgba(79, 70, 229, 0.1);
+            color: #818cf8;
+        }
+
+        .ui-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .dark .ui-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .btn-primary {
+            background-color: #4f46e5;
+            color: #ffffff !important;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #ffffff !important;
+            transition: all 0.2s ease;
+        }
+        .btn-primary-gradient:hover {
+            filter: brightness(110%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Ensure all submit buttons with bg-primary or similar have white text */
+        [type="submit"].bg-primary, 
+        [type="submit"].btn-primary,
+        [type="submit"].btn-primary-gradient {
+            color: white !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: #e2e8f0; 
+            border-radius: 10px; 
+        }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+            50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+        .animate-bounce-slow {
+            animation: bounce-slow 3s infinite;
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -130,14 +255,17 @@
 <body class="h-full bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text">
     {% if request.cookies.get('access_token') %}
     <div class="min-h-full flex">
+        <!-- Sidebar Backdrop -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
         <!-- Sidebar -->
-        <aside class="w-64 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border hidden lg:flex flex-col fixed h-full z-50 transition-colors duration-300">
+        <aside id="sidebar" class="w-64 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col fixed h-full z-50 transition-transform duration-300 -translate-x-full lg:translate-x-0">
             <div class="p-6">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
                         <i class="bi bi-rocket-takeoff-fill"></i>
                     </div>
-                    <span class="font-bold text-slate-900 dark:text-white text-lg tracking-tight">Admin Console</span>
+                    <span class="font-bold text-slate-900 dark:text-white text-lg tracking-tight">{{ _('admin_console') }}</span>
                 </div>
             </div>
 
@@ -201,8 +329,13 @@
         <!-- Main Content -->
         <main class="flex-1 lg:ml-64 flex flex-col min-w-0 overflow-hidden">
             <header class="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border sticky top-0 z-40">
-                <div class="px-8 py-4 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{% block header_title %}{{ _('overview') }}{% endblock %}</h2>
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button id="mobile-menu-toggle" class="p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-all">
+                            <i class="bi bi-list text-2xl"></i>
+                        </button>
+                        <h2 class="text-lg font-semibold text-slate-900 dark:text-white truncate max-w-[150px] sm:max-w-none">{% block header_title %}{{ _('overview') }}{% endblock %}</h2>
+                    </div>
                     <div class="flex items-center gap-4">
                         <!-- Language Switcher -->
                         <div class="relative group">
@@ -211,9 +344,9 @@
                                 <i class="bi bi-chevron-down text-[10px]"></i>
                             </button>
                             <div class="absolute right-0 top-full mt-1 w-24 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                <button onclick="setLanguage('uz')" class="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-t-xl transition-colors">UZBEK</button>
-                                <button onclick="setLanguage('ru')" class="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">RUSSIAN</button>
-                                <button onclick="setLanguage('en')" class="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-b-xl transition-colors">ENGLISH</button>
+                                <button onclick="setLanguage('uz')" class="w-full px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">{{ _('lang_uz') }}</button>
+                                <button onclick="setLanguage('ru')" class="w-full px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">{{ _('lang_ru') }}</button>
+                                <button onclick="setLanguage('en')" class="w-full px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">{{ _('lang_en') }}</button>
                             </div>
                         </div>
 
@@ -246,9 +379,6 @@
             <div class="absolute top-8 right-8 flex items-center gap-6">
                 <!-- Theme Switcher (3-state) -->
                 <div class="inline-flex p-1 bg-slate-200/50 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700">
-                    <button onclick="setTheme('system')" id="theme-system" class="p-2 rounded-full transition-all duration-200 hover:text-primary">
-                        <i class="bi bi-display text-sm"></i>
-                    </button>
                     <button onclick="setTheme('light')" id="theme-light" class="p-2 rounded-full transition-all duration-200 hover:text-primary">
                         <i class="bi bi-sun text-sm"></i>
                     </button>
@@ -280,24 +410,19 @@
         // Theme management
         function setTheme(mode) {
             const root = document.documentElement;
-            const themeSystemBtn = document.getElementById('theme-system');
+
             const themeLightBtn = document.getElementById('theme-light');
             const themeDarkBtn = document.getElementById('theme-dark');
             
             // Remove active classes
-            [themeSystemBtn, themeLightBtn, themeDarkBtn].forEach(btn => {
+            [themeLightBtn, themeDarkBtn].forEach(btn => {
                 if (btn) {
                     btn.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
                     btn.classList.add('text-slate-500');
                 }
             });
 
-            if (mode === 'system') {
-                localStorage.removeItem('theme');
-                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                isDark ? root.classList.add('dark') : root.classList.remove('dark');
-                if (themeSystemBtn) themeSystemBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
-            } else if (mode === 'dark') {
+            if (mode === 'dark') {
                 localStorage.setItem('theme', 'dark');
                 root.classList.add('dark');
                 if (themeDarkBtn) themeDarkBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
@@ -313,7 +438,7 @@
         // Initialize theme switcher UI
         const savedTheme = localStorage.getItem('theme');
         if (!savedTheme) {
-            setTheme('system');
+            setTheme('light');
         } else {
             setTheme(savedTheme);
         }
@@ -339,6 +464,40 @@
         }
 
         if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Mobile Menu Toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function toggleMobileMenu() {
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+                sidebarOverlay.classList.replace('opacity-100', 'opacity-0');
+                document.body.classList.remove('overflow-hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+                setTimeout(() => sidebarOverlay.classList.replace('opacity-0', 'opacity-100'), 0);
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleMobileMenu);
+
+        // Close mobile menu on resize if screen is large
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>
