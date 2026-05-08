@@ -154,9 +154,14 @@ async def crm_business_delete(request: Request, business_id: int, user: dict = D
 
 @router.get("/crm/customers", response_class=HTMLResponse)
 async def crm_customers(request: Request, user: dict = Depends(require_auth)):
-    from app.db.models import Customer
+    from sqlalchemy.orm import selectinload
     async with async_session_maker() as session:
-        result = await session.execute(select(Customer).order_by(Customer.created_at.desc()).limit(100))
+        result = await session.execute(
+            select(Customer)
+            .options(selectinload(Customer.business), selectinload(Customer.tags).selectinload(CustomerTag.tag))
+            .order_by(Customer.created_at.desc())
+            .limit(100)
+        )
         customers = result.scalars().all()
     
     return templates.TemplateResponse(

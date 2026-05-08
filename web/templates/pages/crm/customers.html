@@ -43,10 +43,10 @@
                             <div class="text-xs text-slate-400 font-normal">{{ customer.email or '' }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            {% if customer.business_name %}
+                            {% if customer.business %}
                             <a href="/crm/businesses/{{ customer.business_id }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700">
                                 <i class="bi bi-building"></i>
-                                {{ customer.business_name }}
+                                {{ customer.business.name }}
                             </a>
                             {% else %}
                             <span class="text-slate-400 text-sm">-</span>

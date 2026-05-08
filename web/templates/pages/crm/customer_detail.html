@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
             <div class="w-16 h-16 bg-emerald-600 rounded-2xl shadow-lg flex items-center justify-center text-white text-2xl font-black">
-                {{ customer.full_name[:1] }}
+                {{ (customer.full_name[:1]) if customer.full_name else '?' }}
             </div>
             <div>
                 <h2 class="text-3xl font-black text-slate-800">{{ customer.full_name }}</h2>
@@ -63,10 +63,10 @@
                     </div>
                     <div>
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Biznes</p>
-                        {% if customer.business_name %}
+                        {% if customer.business %}
                         <a href="/crm/businesses/{{ customer.business_id }}" class="inline-flex items-center gap-2 text-primary font-bold hover:underline">
                             <i class="bi bi-building"></i>
-                            {{ customer.business_name }}
+                            {{ customer.business.name }}
                         </a>
                         {% else %}
                         <p class="text-slate-400 font-medium italic">-</p>

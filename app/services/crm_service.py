@@ -94,8 +94,14 @@ async def get_customers_by_business(session: AsyncSession, business_id: int) -> 
     return result.scalars().all()
 
 
+from sqlalchemy.orm import selectinload
+
 async def get_customer_by_id(session: AsyncSession, customer_id: int) -> Optional[Customer]:
-    result = await session.execute(select(Customer).where(Customer.id == customer_id))
+    result = await session.execute(
+        select(Customer)
+        .options(selectinload(Customer.business), selectinload(Customer.tags).selectinload(CustomerTag.tag))
+        .where(Customer.id == customer_id)
+    )
     return result.scalar_one_or_none()
 
 
