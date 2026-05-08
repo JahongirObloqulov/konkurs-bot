@@ -22,7 +22,8 @@ async def generate_pdf(data, title="Report"):
     if not data:
         pdf.set_font("Arial", "", 12)
         pdf.cell(0, 10, "No data available", ln=True)
-        return pdf.output(), f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        return bytes(pdf.output()), filename
 
     # Headers
     pdf.set_font("Arial", "B", 10)
@@ -30,7 +31,8 @@ async def generate_pdf(data, title="Report"):
     col_width = pdf.epw / len(cols)
     
     for col in cols:
-        pdf.cell(col_width, 10, str(col), border=1)
+        clean_col = str(col).encode('latin-1', 'replace').decode('latin-1')
+        pdf.cell(col_width, 10, clean_col, border=1)
     pdf.ln()
     
     # Data
@@ -38,7 +40,8 @@ async def generate_pdf(data, title="Report"):
     for row in data:
         for col in cols:
             val = str(row.get(col, ""))
-            pdf.cell(col_width, 8, val[:20], border=1) # Truncate for simplicity
+            clean_val = val.encode('latin-1', 'replace').decode('latin-1')
+            pdf.cell(col_width, 8, clean_val[:20], border=1)
         pdf.ln()
         
     filename = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
