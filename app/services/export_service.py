@@ -16,7 +16,8 @@ async def generate_pdf(data, title="Report"):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, title, ln=True, align='C')
+    clean_title = title.encode('latin-1', 'replace').decode('latin-1')
+    pdf.cell(0, 10, clean_title, ln=True, align='C')
     pdf.ln(10)
     
     if not data:
