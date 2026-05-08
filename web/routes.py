@@ -491,7 +491,7 @@ async def notify_sse(message: str):
 
 @router.post("/api/ai/draft")
 async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
-    import google.generativeai as genai
+    import httpx
     import os
     
     try:
@@ -499,21 +499,44 @@ async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
         prompt = data.get("prompt")
         lang = data.get("lang", "uz")
         
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        model = os.getenv("OPENROUTER_MODEL", "google/gemini-flash-1.5-exp:free")
+        
         if not api_key:
-            return JSONResponse({"status": "error", "message": "AI API key not configured"}, status_code=500)
+            return JSONResponse({"status": "error", "message": "AI API key not configured (OPENROUTER_API_KEY)"}, status_code=500)
             
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
         system_instruction = f"You are a helpful telegram bot administrator. Draft a short, engaging broadcast message in {lang}. Use HTML tags like <b>, <i> if needed. Keep it concise."
-        full_prompt = f"{system_instruction}\n\nTopic: {prompt}"
         
-        response = model.generate_content(full_prompt)
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": f"Topic: {prompt}"}
+            ]
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=30.0
+            )
+            
+        if response.status_code != 200:
+            return JSONResponse({"status": "error", "message": f"OpenRouter Error: {response.text}"}, status_code=response.status_code)
+            
+        res_data = response.json()
+        draft = res_data['choices'][0]['message']['content']
         
         return JSONResponse({
             "status": "success",
-            "draft": response.text.strip()
+            "draft": draft.strip()
         })
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
