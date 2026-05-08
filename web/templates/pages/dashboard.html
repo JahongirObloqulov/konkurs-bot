@@ -7,45 +7,45 @@
 <div class="space-y-8">
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+        <div class="glass-card p-6 rounded-3xl shadow-sm transition-all hover:shadow-xl hover:shadow-primary/5 group">
             <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
+                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary transition-transform group-hover:scale-110">
                     <i class="bi bi-people fs-4"></i>
                 </div>
-                <span class="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">+12%</span>
+                <span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">+12%</span>
             </div>
-            <h3 class="text-3xl font-bold text-slate-800">{{ total_users }}</h3>
-            <p class="text-sm font-medium text-slate-500 mt-1">Jami foydalanuvchilar</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 dark:text-white">{{ total_users }}</h3>
+            <p class="text-sm font-semibold text-slate-500 dark:text-dark-muted mt-1">Jami foydalanuvchilar</p>
         </div>
 
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+        <div class="glass-card p-6 rounded-3xl shadow-sm transition-all hover:shadow-xl hover:shadow-primary/5 group">
             <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+                <div class="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 transition-transform group-hover:scale-110">
                     <i class="bi bi-trophy fs-4"></i>
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-slate-800">{{ active_contests }}</h3>
-            <p class="text-sm font-medium text-slate-500 mt-1">Faol konkurslar</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 dark:text-white">{{ active_contests }}</h3>
+            <p class="text-sm font-semibold text-slate-500 dark:text-dark-muted mt-1">Faol konkurslar</p>
         </div>
 
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+        <div class="glass-card p-6 rounded-3xl shadow-sm transition-all hover:shadow-xl hover:shadow-primary/5 group">
             <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 transition-transform group-hover:scale-110">
                     <i class="bi bi-person-plus fs-4"></i>
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-slate-800">{{ total_referrals }}</h3>
-            <p class="text-sm font-medium text-slate-500 mt-1">Jami takliflar (Referal)</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 dark:text-white">{{ total_referrals }}</h3>
+            <p class="text-sm font-semibold text-slate-500 dark:text-dark-muted mt-1">Jami takliflar (Referal)</p>
         </div>
 
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+        <div class="glass-card p-6 rounded-3xl shadow-sm transition-all hover:shadow-xl hover:shadow-primary/5 group">
             <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
+                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary transition-transform group-hover:scale-110">
                     <i class="bi bi-people-fill fs-4"></i>
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-slate-800">{{ total_additions }}</h3>
-            <p class="text-sm font-medium text-slate-500 mt-1">Guruhga qo'shilganlar</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 dark:text-white">{{ total_additions }}</h3>
+            <p class="text-sm font-semibold text-slate-500 dark:text-dark-muted mt-1">Guruhga qo'shilganlar</p>
         </div>
     </div>
 
@@ -54,53 +54,53 @@
         <!-- Active Contests List -->
         <div class="xl:col-span-2 space-y-6">
             <div class="flex items-center justify-between">
-                <h3 class="text-xl font-bold text-slate-800">Oxirgi Konkurslar</h3>
-                <a href="/contests/new" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-semibold text-sm transition-all hover:bg-secondary shadow-lg shadow-primary/20">
+                <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">Oxirgi Konkurslar</h3>
+                <a href="/contests/new" class="inline-flex items-center gap-2 px-5 py-2.5 btn-primary-gradient text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-primary/20">
                     <i class="bi bi-plus-lg"></i>
                     Yangi Konkurs
                 </a>
             </div>
             
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden transition-colors duration-300">
                 <table class="w-full text-left">
-                    <thead class="bg-slate-50 border-b border-slate-200">
+                    <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-dark-border">
                         <tr>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nomi</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Sovg'a</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Ishtirokchilar</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Holat</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Amal</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-dark-muted uppercase tracking-wider">Nomi</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-dark-muted uppercase tracking-wider">Sovg'a</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-dark-muted uppercase tracking-wider">Ishtirokchilar</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-dark-muted uppercase tracking-wider">Holat</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-dark-muted uppercase tracking-wider text-right">Amal</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100 dark:divide-white/5">
                         {% for contest in contests %}
-                        <tr class="hover:bg-slate-50/50 transition-colors">
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
                             <td class="px-6 py-4">
-                                <div class="font-semibold text-slate-800">{{ contest.title }}</div>
-                                <div class="text-xs text-slate-400">{{ contest.created_at.strftime('%Y-%m-%d') }}</div>
+                                <div class="font-bold text-slate-800 dark:text-white">{{ contest.title }}</div>
+                                <div class="text-xs text-slate-400 dark:text-dark-muted">{{ contest.created_at.strftime('%Y-%m-%d') }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700">
+                                <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-500">
                                     {{ contest.prize }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm font-medium text-slate-600">
+                            <td class="px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300">
                                 {{ contest.participants_count }}
                             </td>
                             <td class="px-6 py-4">
                                 {% if contest.is_active %}
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                                     Faol
                                 </span>
                                 {% else %}
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-dark-muted">
                                     Yakunlangan
                                 </span>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <a href="/contests/{{ contest.id }}" class="text-primary hover:text-secondary font-bold text-sm">Ko'rish</a>
+                                <a href="/contests/{{ contest.id }}" class="text-primary hover:text-secondary font-extrabold text-sm transition-colors">Ko'rish</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -111,20 +111,20 @@
 
         <!-- Sidebar Widgets / Stats -->
         <div class="space-y-6">
-            <h3 class="text-xl font-bold text-slate-800">Bot Sozlamalari</h3>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">Bot Sozlamalari</h3>
+            <div class="glass-card p-6 rounded-[2rem] border border-slate-200 dark:border-dark-border">
                 <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-primary/20 transition-all group">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center text-white">
+                            <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary transition-transform group-hover:rotate-12">
                                 <i class="bi bi-shield-check text-lg"></i>
                             </div>
                             <div>
-                                <p class="text-xs font-bold text-slate-400 uppercase">Obuna</p>
-                                <p class="text-sm font-bold text-slate-700">Majburiy Obuna</p>
+                                <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider">Obuna</p>
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-200">Majburiy Obuna</p>
                             </div>
                         </div>
-                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase">Yoqilgan</span>
+                        <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-tight">Yoqilgan</span>
                     </div>
                 </div>
             </div>

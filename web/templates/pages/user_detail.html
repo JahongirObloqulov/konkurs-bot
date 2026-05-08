@@ -7,21 +7,21 @@
 <div class="space-y-8">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-slate-200 rounded-2xl shadow-md flex items-center justify-center text-slate-500 text-2xl font-black">
+            <div class="w-16 h-16 bg-primary/10 rounded-2xl shadow-xl shadow-primary/5 flex items-center justify-center text-primary text-2xl font-black">
                 {{ db_user.full_name[:1] if db_user.full_name else '?' }}
             </div>
             <div>
-                <h2 class="text-3xl font-black text-slate-800">{{ db_user.full_name }}</h2>
-                <div class="flex items-center gap-3 mt-1">
-                    <span class="text-xs font-bold text-slate-400 uppercase">Telegram ID: {{ db_user.user_id }}</span>
+                <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{{ db_user.full_name }}</h2>
+                <div class="flex items-center gap-3 mt-1.5">
+                    <span class="text-xs font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider">Telegram ID: {{ db_user.user_id }}</span>
                     {% if db_user.username %}
-                    <a href="https://t.me/{{ db_user.username }}" target="_blank" class="text-xs font-bold text-primary hover:underline">@{{ db_user.username }}</a>
+                    <a href="https://t.me/{{ db_user.username }}" target="_blank" class="text-xs font-black text-primary hover:text-secondary uppercase tracking-wider transition-colors">@{{ db_user.username }}</a>
                     {% endif %}
                 </div>
             </div>
         </div>
         <div class="flex flex-wrap gap-3">
-            <a href="/users" class="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">
+            <a href="/users" class="inline-flex items-center gap-2 px-6 py-2.5 glass-card text-slate-600 dark:text-dark-muted rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
                 <i class="bi bi-arrow-left"></i>
                 Orqaga qaytish
             </a>
@@ -31,31 +31,31 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Sidebar: Info -->
         <div class="lg:col-span-1 space-y-6">
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-8 border-b border-slate-100 bg-slate-50/50">
-                    <h3 class="text-lg font-bold text-slate-800">Hisob ma'lumotlari</h3>
+            <div class="glass-card rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
+                <div class="p-8 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5">
+                    <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">Hisob ma'lumotlari</h3>
                 </div>
                 <div class="p-8 space-y-6">
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Roli</p>
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-widest mb-2 ml-1">Roli</p>
                         {% if db_user.is_admin %}
-                        <span class="px-3 py-1 bg-rose-100 text-rose-700 text-[10px] font-black uppercase rounded-lg shadow-sm">Admin</span>
+                        <span class="px-3 py-1 bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase rounded-lg shadow-sm">Admin</span>
                         {% else %}
-                        <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase rounded-lg shadow-sm">Foydalanuvchi</span>
+                        <span class="px-3 py-1 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-dark-muted text-[10px] font-black uppercase rounded-lg shadow-sm">Foydalanuvchi</span>
                         {% endif %}
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ro'yxatdan o'tgan</p>
-                        <p class="text-slate-700 font-bold">{{ db_user.registered_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-widest mb-2 ml-1">Ro'yxatdan o'tgan</p>
+                        <p class="text-slate-700 dark:text-slate-200 font-extrabold text-sm ml-1">{{ db_user.registered_at.strftime('%d.%m.%Y %H:%M') }}</p>
                     </div>
-                    <div class="pt-4 border-t border-slate-100">
-                        <div class="flex items-center gap-2 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                            <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                                <i class="bi bi-people fs-4"></i>
+                    <div class="pt-6 border-t border-slate-100 dark:border-white/5">
+                        <div class="flex items-center gap-3 p-5 bg-primary/10 rounded-2xl border border-primary/20 group hover:scale-[1.02] transition-transform">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary shadow-inner">
+                                <i class="bi bi-people-fill fs-3"></i>
                             </div>
                             <div>
-                                <p class="text-[10px] font-bold text-primary uppercase tracking-widest">Referallar</p>
-                                <p class="text-lg font-black text-primary leading-none">{{ participations|length }}</p>
+                                <p class="text-[10px] font-black text-primary uppercase tracking-[2px]">Ishtiroklar</p>
+                                <p class="text-2xl font-black text-primary leading-none">{{ participations|length }}</p>
                             </div>
                         </div>
                     </div>
@@ -65,40 +65,40 @@
 
         <!-- Main Content: History -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-slate-800">Ishtirok etilgan konkurslar</h3>
-                    <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase rounded-lg">Jami: {{ participations|length }}</span>
+            <div class="glass-card rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
+                <div class="p-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-white/50 dark:bg-white/5">
+                    <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">Ishtirok etilgan konkurslar</h3>
+                    <span class="px-3 py-1 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-dark-muted text-[10px] font-black uppercase tracking-wider rounded-lg">Jami: {{ participations|length }}</span>
                 </div>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-50/50 border-b border-slate-100">
+                        <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-dark-border">
                             <tr>
-                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Konkurs</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Qo'shilgan sana</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Amal</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Konkurs</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px]">Qo'shilgan sana</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-dark-muted uppercase tracking-[2px] text-right">Amal</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50">
+                        <tbody class="divide-y divide-slate-100 dark:divide-white/5">
                             {% for p in participations %}
-                            <tr class="hover:bg-slate-50/30 transition-colors">
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
                                 <td class="px-6 py-4">
-                                    <a href="/contests/{{ p.contest_id }}" class="flex items-center gap-3 group">
-                                        <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-all">
-                                            <i class="bi bi-trophy"></i>
+                                    <a href="/contests/{{ p.contest_id }}" class="flex items-center gap-4">
+                                        <div class="w-11 h-11 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all shadow-sm">
+                                            <i class="bi bi-trophy-fill"></i>
                                         </div>
                                         <div>
-                                            <span class="font-bold text-slate-800">Konkurs #{{ p.contest_id }}</span>
-                                            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">ID: {{ p.contest_id }}</p>
+                                            <span class="font-extrabold text-slate-800 dark:text-white group-hover:text-primary transition-colors">Konkurs #{{ p.contest_id }}</span>
+                                            <p class="text-[10px] text-slate-400 dark:text-dark-muted font-black uppercase tracking-wider">ID: {{ p.contest_id }}</p>
                                         </div>
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 text-sm font-medium text-slate-500">
+                                <td class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-dark-muted">
                                     {{ p.joined_at.strftime('%d.%m.%Y %H:%M') }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="/contests/{{ p.contest_id }}" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm">
+                                    <a href="/contests/{{ p.contest_id }}" class="inline-flex items-center justify-center w-9 h-9 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-dark-muted rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
                                         <i class="bi bi-arrow-right"></i>
                                     </a>
                                 </td>
@@ -108,7 +108,7 @@
                             {% if not participations %}
                             <tr>
                                 <td colspan="3" class="px-6 py-20 text-center">
-                                    <p class="text-slate-400 font-bold italic">Bu foydalanuvchi hali konkurslarda qatnashmagan</p>
+                                    <p class="text-slate-400 dark:text-dark-muted font-extrabold italic">Bu foydalanuvchi hali konkurslarda qatnashmagan</p>
                                 </td>
                             </tr>
                             {% endif %}
