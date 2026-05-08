@@ -6,53 +6,53 @@
 <div class="w-full max-w-md">
     <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl border border-white/10">
         <div class="flex flex-col items-center mb-8">
-            <div class="w-16 h-16 bg-primary rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center text-white mb-4">
-                <i class="bi bi-shield-lock fs-1"></i>
+            <div class="w-16 h-16 bg-primary rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center text-white mb-6 animate-bounce-slow">
+                <i class="bi bi-shield-lock-fill fs-1"></i>
             </div>
-            <h1 class="text-3xl font-extrabold text-white tracking-tight">Xush kelibsiz</h1>
-            <p class="text-slate-400 text-sm font-medium mt-1">Admin panelga kirish uchun login va parolni kiriting</p>
+            <h1 class="text-4xl font-black text-white tracking-tighter mb-2">Xush kelibsiz</h1>
+            <p class="text-primary font-bold text-xs uppercase tracking-[3px] opacity-80">Admin boshqaruv tizimi</p>
         </div>
 
         {% if error %}
-        <div class="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 text-sm">
-            <i class="bi bi-exclamation-circle fs-5"></i>
-            <span class="font-semibold">{{ error }}</span>
+        <div class="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 text-xs">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span class="font-black uppercase tracking-wider">{{ error }}</span>
         </div>
         {% endif %}
 
-        <form method="post" action="/login" class="space-y-5">
+        <form method="post" action="/login" class="space-y-6">
             <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Username</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-primary">
-                        <i class="bi bi-person"></i>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[2px] mb-2 ml-1">Foydalanuvchi nomi</label>
+                <div class="relative group">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500 group-focus-within:text-primary transition-colors">
+                        <i class="bi bi-person-fill text-lg"></i>
                     </span>
                     <input type="text" name="username" required 
-                        class="block w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none text-white placeholder-slate-500 transition-all"
-                        placeholder="Admin loginini kiriting">
+                        class="block w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none text-white font-bold placeholder-slate-600 transition-all"
+                        placeholder="admin">
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Parol</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-primary">
-                        <i class="bi bi-key"></i>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[2px] mb-2 ml-1">Maxfiy parol</label>
+                <div class="relative group">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500 group-focus-within:text-primary transition-colors">
+                        <i class="bi bi-lock-fill text-lg"></i>
                     </span>
                     <input type="password" name="password" required 
-                        class="block w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none text-white placeholder-slate-500 transition-all"
+                        class="block w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none text-white font-bold placeholder-slate-600 transition-all"
                         placeholder="••••••••">
                 </div>
             </div>
 
             <button type="submit" 
-                class="w-full py-4 btn-primary-gradient text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                class="w-full py-4.5 btn-primary-gradient text-white rounded-2xl font-black text-sm uppercase tracking-[3px] shadow-2xl shadow-primary/30 hover:scale-[1.03] active:scale-[0.97] transition-all">
                 Tizimga Kirish
             </button>
         </form>
 
-        <div class="mt-8 text-center">
-            <p class="text-slate-500 text-xs font-medium uppercase tracking-[2px]">Konkurs Bot v1.0.0</p>
+        <div class="mt-10 text-center">
+            <p class="text-slate-600 text-[10px] font-black uppercase tracking-[4px]">Konkurs Bot v1.0.0</p>
         </div>
     </div>
 </div>
