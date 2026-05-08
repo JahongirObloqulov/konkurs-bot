@@ -184,6 +184,12 @@ def get_subscription_kb(unsubscribed_chats: list[dict], contest_id: int) -> Inli
             callback_data=f"check_sub_{contest_id}",
         )
     )
+    if contest_id == 0:  # Start-up registration case
+        builder.row(
+            InlineKeyboardButton(
+                text="📝 Ro'yxatdan o'tish", callback_data="start_registration"
+            )
+        )
     return builder.as_markup()
 
 

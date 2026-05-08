@@ -7,11 +7,13 @@ from app.config import Config
 from app.keyboards.inline import get_admin_menu_kb, get_main_menu_kb
 from app.services.user_service import get_or_create_user
 
+from aiogram.fsm.context import FSMContext
+
 router = Router()
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message, session: AsyncSession, config: Config):
+async def cmd_start(message: Message, session: AsyncSession, config: Config, state: FSMContext):
     user = message.from_user
     if not user:
         return
@@ -34,6 +36,27 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config):
     )
     if not user_obj:
         await message.answer("Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")
+        return
+
+    # 1. Check subscriptions first
+    if config.required_chats:
+        from app.services.subscription_service import check_all_subscriptions
+        from app.keyboards.inline import get_subscription_kb
+        
+        all_subscribed, unsubscribed = await check_all_subscriptions(message.bot, config, user.id)
+        if not all_subscribed:
+            await message.answer(
+                "⚠️ <b>Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling!</b>\n\n"
+                "Barcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.",
+                reply_markup=get_subscription_kb(unsubscribed, 0), # 0 means start check
+                parse_mode="HTML"
+            )
+            return
+
+    # 2. Check if registered
+    if not user_obj.is_registered:
+        from app.handlers.registration import start_registration
+        await start_registration(message, state)
         return
 
     text = (
