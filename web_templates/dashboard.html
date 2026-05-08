@@ -123,14 +123,14 @@
     </div>
 </div>
 
-{% if request.args.get('success') %}
+{% if request.query_params.get('success') %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
     Sozlamalar muvaffaqiyatli saqlangan!
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 {% endif %}
 
-{% if request.args.get('error') %}
+{% if request.query_params.get('error') %}
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
     Xatolik yuz berdi! Iltimos, qaytadan urinib ko'ring.
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

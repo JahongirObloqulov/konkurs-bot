@@ -7,16 +7,16 @@
     </a>
 </div>
 
-{% if request.args.get('success') %}
+{% if request.query_params.get('success') %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
-    Konkurs muvaffaqiyatli yaratildi!
+    Muvaffaqiyatli!
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 {% endif %}
 
-{% if request.args.get('error') %}
+{% if request.query_params.get('error') %}
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    Xatolik yuz berdi! Iltimos, qaytadan urinib ko'ring.
+    Xatolik yuz berdi!
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 {% endif %}
