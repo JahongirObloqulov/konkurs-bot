@@ -1,46 +1,50 @@
-# Konkurs Telegram Bot 🏆
+# Konkurs Telegram Bot 🏆 (Enterprise Edition)
 
-Professional darajadagi Telegram konkurs bot loyihasi. Ushbu bot orqali siz o'z kanallaringiz va guruhlaringizda adolatli, shaffof va yuqori darajada avtomatlashtirilgan tanlovlar o'tkazishingiz mumkin.
+Professional va yuqori darajada avtomatlashtirilgan Telegram konkurs bot loyihasi. Ushbu tizim orqali siz o'z kanallaringiz va guruhlaringizda adolatli, shaffof va zamonaviy tanlovlar o'tkazishingiz, shuningdek, mukammal boshqaruv paneliga ega bo'lishingiz mumkin.
 
-## ✨ Yangi va Asosiy Imkoniyatlar
+## 🚀 Eng Yangi "Enterprise" Imkoniyatlar
 
-- **Ehtimollik asosida g'olib tanlash (Weighted Random)** — Referal tizimi orqali ko'proq do'stlarni taklif qilgan foydalanuvchilarning yutish ehtimoli avtomatik ravishda oshadi.
-- **To'liq Ro'yxatdan o'tish tizimi** — Foydalanuvchilardan Ism, Familiya, Telefon raqami va Yashash joyini so'rab olish (FSM asosida).
-- **Media qo'llab-quvvatlash** — Konkurslarga rasm yoki video biriktirish, natijalarni media bilan e'lon qilish.
-- **Multi-Media Broadcast** — Adminlar barcha foydalanuvchilarga bir vaqtning o'zida bir nechta xabarlarni (matn, rasm, video) tarqata oladi.
-- **Majburiy Obuna (Force Subscription)** — Botdan foydalanish yoki konkursda qatnashish uchun belgilangan kanallarga a'zo bo'lish sharti.
-- **Media ID Detektori** — Admin botga media fayl yuborganda, bot uning `file_id`sini darhol qaytaradi (web-panel uchun qulaylik).
-- **Web Admin Dashboard** — FastAPI asosidagi zamonaviy boshqaruv paneli (Statistika, CRM, Konkurs boshqaruvi).
-- **CRM Tizimi** — Bizneslar, mijozlar va teglar bilan ishlash imkoniyati.
+Ushbu loyiha so'nggi yangilanishlar bilan yanada kuchaytirildi:
+
+- **🤖 AI Yordamchi (Gemini/OpenRouter)**:
+    - **Adminlar uchun:** Xabar matnlarini aqlli tarzda generatsiya qilish.
+    - **Foydalanuvchilar uchun:** Bot ichida jonli AI chat orqali yordam olish.
+- **📊 Interaktiv Analitika**: Admin panelda foydalanuvchilar o'sish grafigi va turli statistik ma'lumotlar vizual tarzda (`Chart.js`) ko'rsatiladi.
+- **📜 Audit Logs (Amallar Tarixi)**: Adminlar tomonidan bajarilgan barcha muhim amallar (eksport, g'oliblarni aniqlash, media qo'shish) tarixda saqlanadi.
+- **⚡️ Real-time Bildirishnomalar**: Dashboard-da yangi foydalanuvchilar qo'shilishi jonli (SSE texnologiyasi) tarzda ko'rinadi.
+- **🖼 Media Manager**: Botdagi barcha File ID larni boshqarish uchun markaziy galereya.
+- **📑 Eksport Tizimi**: Barcha statistik ma'lumotlar, ishtirokchilar va mijozlar ro'yxatini bir tugma bilan **Excel** yoki **PDF** formatida yuklab olish.
+
+## ✨ Boshqa Asosiy Imkoniyatlar
+
+- **Ehtimollik asosida g'olib tanlash (Weighted Random)** — Referal soniga qarab yutish imkoniyatini oshirish.
+- **To'liq Ro'yxatdan o'tish tizimi** — Ism, Familiya, Telefon va Manzilni yig'ish (FSM).
+- **Majburiy Obuna (Force Subscription)** — Kanallarga a'zo bo'lish shartini tekshirish.
+- **CRM Tizimi** — Bizneslar va mijozlarni boshqarish uchun qulay platforma.
 
 ## 🛠 Texnologiyalar
 
-- **Python 3.11+**
-- **Aiogram 3.x** — Telegram bot uchun asinxron kutubxona
-- **FastAPI** — Web admin panel uchun
-- **SQLAlchemy** — ORM (Object Relational Mapping)
-- **SQLite** — Ma'lumotlar bazasi sifatida (production uchun oson ko'chiriladigan)
-- **Uvicorn** — ASGI server
-- **Jinja2** — Web shablonlar uchun
+- **Python 3.11+**, **Aiogram 3.x**
+- **FastAPI**, **SQLAlchemy** (Asinxron)
+- **Chart.js** (Vizualizatsiya)
+- **OpenRouter AI** (LLM integratsiyasi)
+- **SQLite** (Ma'lumotlar bazasi)
+- **Jinja2** & **Tailwind CSS** (Web UI)
 
 ## 📂 Loyiha Tuzilmasi
 
 ```text
 ├── app/
-│   ├── db/              # Ma'lumotlar bazasi modellari va engine
-│   ├── handlers/        # Bot buyruqlari (admin, start, registration, user)
-│   ├── keyboards/       # Inline va Reply tugmalar
-│   ├── middlewares/     # Bot middlewarelari (DB session)
-│   ├── services/        # Biznes mantiqi (contest, subscription, user)
-│   └── utils/           # Yordamchi funksiyalar (formatting)
-├── data/                # Ma'lumotlar bazasi fayli (.db)
+│   ├── db/              # Modellar va engine
+│   ├── handlers/        # Bot buyruqlari (admin, user, registration, AI)
+│   ├── services/        # Biznes mantiqi (AI, Audit, Export, Contest)
+│   └── utils/           # Formatting va yordamchi funksiyalar
 ├── web/
-│   ├── static/          # CSS va JS fayllar
-│   ├── templates/       # HTML shablonlar
-│   ├── app.py           # FastAPI konfiguratsiyasi
-│   └── routes.py        # Web marshrutlar
-├── main.py              # ASOSIY ISHGA TUSHIRISH FAYLI (Bot + Web)
-├── render.yaml          # Render.com uchun deployment sozlamalari
+│   ├── static/          # CSS va vizual elementlar
+│   ├── templates/       # HTML shablonlar (Admin panel)
+│   ├── app.py           # FastAPI asosi
+│   └── routes.py        # Web marshrutlar va API
+├── main.py              # ASOSIY ISHGA TUSHIRISH (Bot + Web)
 └── requirements.txt     # Kerakli kutubxonalar
 ```
 
@@ -52,7 +56,7 @@ Professional darajadagi Telegram konkurs bot loyihasi. Ushbu bot orqali siz o'z 
    cd konkurs-bot
    ```
 
-2. **Virtual muhit yaratish va kutubxonalarni o'rnatish:**
+2. **Virtual muhit va kutubxonalar:**
    ```bash
    python -m venv venv
    source venv/bin/activate  # Windows: venv\Scripts\activate
@@ -60,28 +64,21 @@ Professional darajadagi Telegram konkurs bot loyihasi. Ushbu bot orqali siz o'z 
    ```
 
 3. **.env faylini sozlang:**
-   `.env.example` faylini `.env` deb nomlang va o'zingizning ma'lumotlaringizni kiriting:
+   `.env.example`ni `.env`ga o'zgartiring va quyidagilarni kiriting:
    ```env
    BOT_TOKEN=Sizning_Bot_Tokeningiz
-   ADMIN_IDS=1234567,8901234
-   WEB_SECRET_KEY=ixtiyoriy_murakkab_kod
+   ADMIN_IDS=1234567
+   OPENROUTER_API_KEY=Sizning_API_kalitingiz
+   OPENROUTER_MODEL=openrouter/free
    ```
 
-4. **Loyiha ishga tushiring:**
+4. **Ishga tushirish:**
    ```bash
    python main.py
    ```
-   *Bot va Web panel (port 8000) bir vaqtda ishga tushadi.*
 
-## 📈 Statistika va Boshqaruv
-
-Botga kirganingizda `/start` buyrug'i orqali admin bo'lsangiz, maxsus admin menyusi chiqadi. Web-panelga kirish uchun esa brauzerda `http://localhost:8000/dashboard` manziliga kiring (login/parol `.env` yoki sozlamalarda ko'rsatilgan).
-
-## 🛡 Xavfsizlik
-
-- Barcha admin amallari ID orqali tekshiriladi.
-- Web-panel sessiya va xavfsiz cookie-fayllar orqali himoyalangan.
-- Ma'lumotlar bazasi SQLite orqali local holda saqlanadi.
+## 📈 Boshqaruv
+Web-panelga kirish: `http://localhost:8000/dashboard` (Login: admin, Parol: admin123).
 
 ---
-Loyiha ishlab chiqish jarayonida: **Antigravity AI Coding Assistant** tomonidan yaratildi.
+Loyiha ishlab chiqish jarayonida: **Antigravity AI Coding Assistant** tomonidan modernizatsiya qilindi.
