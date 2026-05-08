@@ -225,10 +225,14 @@
                             </div>
                         </div>
 
-                        <button id="theme-toggle" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                            <i id="theme-toggle-dark-icon" class="bi bi-moon-fill hidden"></i>
-                            <i id="theme-toggle-light-icon" class="bi bi-sun-fill hidden"></i>
-                        </button>
+                        <div class="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700">
+                            <button onclick="setTheme('light')" id="header-theme-light" class="p-1.5 rounded-full transition-all duration-200 text-slate-500 hover:text-primary">
+                                <i class="bi bi-sun text-sm"></i>
+                            </button>
+                            <button onclick="setTheme('dark')" id="header-theme-dark" class="p-1.5 rounded-full transition-all duration-200 text-slate-500 hover:text-primary">
+                                <i class="bi bi-moon-stars text-sm"></i>
+                            </button>
+                        </div>
 
                         <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-700">
                             <div class="text-right hidden sm:block">
@@ -288,26 +292,36 @@
 
             const themeLightBtn = document.getElementById('theme-light');
             const themeDarkBtn = document.getElementById('theme-dark');
+            const headerThemeLightBtn = document.getElementById('header-theme-light');
+            const headerThemeDarkBtn = document.getElementById('header-theme-dark');
             
-            // Remove active classes
-            [themeLightBtn, themeDarkBtn].forEach(btn => {
-                if (btn) {
+            // Helper to update button classes
+            const updateBtn = (btn, isActive) => {
+                if (!btn) return;
+                if (isActive) {
+                    btn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
+                    btn.classList.remove('text-slate-500');
+                } else {
                     btn.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
                     btn.classList.add('text-slate-500');
                 }
-            });
+            };
 
             if (mode === 'dark') {
                 localStorage.setItem('theme', 'dark');
                 root.classList.add('dark');
-                if (themeDarkBtn) themeDarkBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
+                updateBtn(themeDarkBtn, true);
+                updateBtn(themeLightBtn, false);
+                updateBtn(headerThemeDarkBtn, true);
+                updateBtn(headerThemeLightBtn, false);
             } else {
                 localStorage.setItem('theme', 'light');
                 root.classList.remove('dark');
-                if (themeLightBtn) themeLightBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-primary');
+                updateBtn(themeDarkBtn, false);
+                updateBtn(themeLightBtn, true);
+                updateBtn(headerThemeDarkBtn, false);
+                updateBtn(headerThemeLightBtn, true);
             }
-            
-            if (typeof updateIcons === 'function') updateIcons();
         }
 
         // Initialize theme switcher UI
@@ -317,28 +331,6 @@
         } else {
             setTheme(savedTheme);
         }
-
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-
-        function updateIcons() {
-            const isDark = document.documentElement.classList.contains('dark');
-            if (themeToggleDarkIcon) isDark ? themeToggleDarkIcon.classList.add('hidden') : themeToggleDarkIcon.classList.remove('hidden');
-            if (themeToggleLightIcon) isDark ? themeToggleLightIcon.classList.remove('hidden') : themeToggleLightIcon.classList.add('hidden');
-        }
-
-        updateIcons();
-
-        function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-                setTheme('light');
-            } else {
-                setTheme('dark');
-            }
-        }
-
-        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
 
         // Mobile Menu Toggle
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
