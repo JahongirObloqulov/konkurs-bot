@@ -1,79 +1,109 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Kanallar va guruhlar{% endblock %}
+{% block header_title %}Majburiy Obuna Sozlamalari{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-megaphone"></i> Majburiy obuna kanallari/guruhlari</h2>
-</div>
-
-<div class="row">
-    <div class="col-md-5">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="bi bi-plus-circle"></i> Yangi qo'shish</h5>
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+    <!-- Form Section -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="text-lg font-bold text-slate-800">Yangi Qo'shish</h3>
+                <p class="text-xs text-slate-400 font-medium uppercase mt-1 tracking-wider">Kanal yoki Guruh ID bo'yicha</p>
             </div>
-            <div class="card-body">
-                <form method="post" action="/chats/add">
-                    <div class="mb-3">
-                        <label class="form-label">Kanal/Guruh ID <span class="text-danger">*</span></label>
-                        <input type="text" name="chat_id" class="form-control" required placeholder="Masalan: -1001234567890">
-                        <div class="form-text">ID ni olish uchun @username_to_id_bot dan foydalaning.</div>
+            <div class="p-8">
+                <form method="post" action="/chats/add" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Chat ID <span class="text-rose-500">*</span></label>
+                        <input type="text" name="chat_id" required 
+                            class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 font-mono"
+                            placeholder="-1001234567890">
+                        <p class="text-[10px] text-slate-400 mt-2 font-medium">ID ni olish uchun @username_to_id_bot dan foydalaning.</p>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Username (ixtiyoriy)</label>
-                        <input type="text" name="username" class="form-control" placeholder="Masalan: @my_channel">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Username (ixtiyoriy)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold">@</span>
+                            <input type="text" name="username" 
+                                class="block w-full pl-9 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
+                                placeholder="kanal_nomi">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Tur</label>
-                        <select name="type" class="form-control">
-                            <option value="channel">📢 Kanal</option>
-                            <option value="group">👥 Guruh</option>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Chat Turi</label>
+                        <select name="type" class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+                            <option value="channel">📢 Kanal (Channel)</option>
+                            <option value="group">👥 Guruh (Group)</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="bi bi-plus-lg"></i> Qo'shish
+                    <button type="submit" 
+                        class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
+                        <i class="bi bi-plus-lg"></i>
+                        Qo'shish
                     </button>
                 </form>
             </div>
         </div>
+
+        <div class="p-6 bg-indigo-50 border border-indigo-100 rounded-3xl text-indigo-700">
+            <h5 class="font-bold text-sm mb-2 flex items-center gap-2">
+                <i class="bi bi-info-circle"></i>
+                Muhim Eslatma
+            </h5>
+            <p class="text-xs leading-relaxed font-medium">
+                Bot qo'shilgan kanal yoki guruhda <b>Admin</b> bo'lishi shart. Aks holda bot foydalanuvchining obunasini tekshira olmaydi.
+            </p>
+        </div>
     </div>
 
-    <div class="col-md-7">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="bi bi-list"></i> Qo'shilgan kanallar</h5>
+    <!-- List Section -->
+    <div class="lg:col-span-3">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-800">Qo'shilgan Chatlar</h3>
+                <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase rounded-lg">Jami: {{ chats|length }}</span>
             </div>
-            <div class="card-body p-0">
-                <table class="table table-striped mb-0">
-                    <thead>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50/50 border-b border-slate-100">
                         <tr>
-                            <th>#</th>
-                            <th>Tur</th>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th></th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tur</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Chat ID</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Username</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Amal</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-50">
                         {% for chat in chats %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
+                            <td class="px-6 py-4">
                                 {% if chat.type == 'channel' %}
-                                <span class="badge bg-info">📢 Kanal</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-sky-100 text-sky-700">
+                                    📢 Kanal
+                                </span>
                                 {% else %}
-                                <span class="badge bg-success">👥 Guruh</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">
+                                    👥 Guruh
+                                </span>
                                 {% endif %}
                             </td>
-                            <td><code>{{ chat.id }}</code></td>
-                            <td>{% if chat.username %}@{{ chat.username }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
-                            <td>
-                                <form method="post" action="/chats/{{ chat.id }}/remove" onsubmit="return confirm('O\'chirishni tasdiqlaysizmi?')">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <td class="px-6 py-4">
+                                <code class="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md">{{ chat.id }}</code>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if chat.username %}
+                                <span class="text-sm font-bold text-slate-800">@{{ chat.username }}</span>
+                                {% else %}
+                                <span class="text-xs text-slate-400 italic">Mavjud emas</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <form method="post" action="/chats/{{ chat.id }}/remove" onsubmit="return confirm('Ushbu chatni majburiy obuna ro'yxatidan o'chirishni tasdiqlaysizmi?')">
+                                    <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-500 hover:text-white transition-all shadow-sm">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -81,7 +111,14 @@
                         </tr>
                         {% endfor %}
                         {% if not chats %}
-                        <tr><td colspan="5" class="text-center text-muted">Hali kanallar qo'shilmagan</td></tr>
+                        <tr>
+                            <td colspan="4" class="px-6 py-20 text-center">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-4">
+                                    <i class="bi bi-megaphone fs-2"></i>
+                                </div>
+                                <p class="text-slate-400 font-bold">Hali hech qanday chat qo'shilmagan</p>
+                            </td>
+                        </tr>
                         {% endif %}
                     </tbody>
                 </table>

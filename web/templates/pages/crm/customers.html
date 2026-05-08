@@ -1,66 +1,101 @@
 {% extends "layouts/base.html" %}
-{% block title %}Mijozlar{% endblock %}
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-person-badge me-2"></i> Mijozlar</h2>
-    <a href="/crm/customers/new" class="btn btn-success">
-        <i class="bi bi-plus-lg me-1"></i> Yangi mijoz
-    </a>
-</div>
 
-<div class="card">
-    <div class="card-body">
-        {% if customers %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
+{% block title %}Mijozlar{% endblock %}
+{% block header_title %}CRM Mijozlar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="relative max-w-sm w-full">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" placeholder="Mijoz ismi yoki telefon..." class="block w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm transition-all">
+        </div>
+        <a href="/crm/customers/new" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm transition-all hover:bg-emerald-700 shadow-lg shadow-emerald-600/20">
+            <i class="bi bi-person-plus"></i>
+            Yangi Mijoz Qo'shish
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 border-b border-slate-200">
                     <tr>
-                        <th>#</th>
-                        <th>F.I.O.</th>
-                        <th>Telefon</th>
-                        <th>Email</th>
-                        <th>Biznes</th>
-                        <th>Yaratilgan</th>
-                        <th>Harakatlar</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Mijoz F.I.O.</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Kontakt</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Biznes</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Teglar</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Sana</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Amallar</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                     {% for customer in customers %}
-                    <tr>
-                        <td>{{ customer.id }}</td>
-                        <td>{{ customer.full_name }}</td>
-                        <td>{{ customer.phone or '-' }}</td>
-                        <td>{{ customer.email or '-' }}</td>
-                        <td>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-800">{{ customer.full_name }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">ID: #{{ customer.id }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium text-slate-600">
+                            <div>{{ customer.phone or '-' }}</div>
+                            <div class="text-xs text-slate-400 font-normal">{{ customer.email or '' }}</div>
+                        </td>
+                        <td class="px-6 py-4">
                             {% if customer.business_name %}
-                            <a href="/crm/businesses/{{ customer.business_id }}">{{ customer.business_name }}</a>
+                            <a href="/crm/businesses/{{ customer.business_id }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700">
+                                <i class="bi bi-building"></i>
+                                {{ customer.business_name }}
+                            </a>
                             {% else %}
-                            <span class="text-muted">-</span>
+                            <span class="text-slate-400 text-sm">-</span>
                             {% endif %}
                         </td>
-                        <td>{{ customer.created_at }}</td>
-                        <td>
-                            <a href="/crm/customers/{{ customer.id }}" class="btn btn-sm btn-outline-info" title="Ko'rish">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="/crm/customers/{{ customer.id }}/edit" class="btn btn-sm btn-outline-warning" title="Tahrirlash">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="/crm/customers/{{ customer.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Mijozni o\'chirishni tasdiqlaysizmi?');">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="O'chirish">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1">
+                                {% for ct in customer.tags %}
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style="background-color: {{ ct.tag.color or '#6366f1' }};">
+                                    {{ ct.tag.name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-slate-500 font-medium">
+                            {{ customer.created_at.strftime('%d.%m.%Y') }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="/crm/customers/{{ customer.id }}" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="/crm/customers/{{ customer.id }}/edit" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="/crm/customers/{{ customer.id }}/delete" method="post" onsubmit="return confirm('Mijozni o\'chirishni tasdiqlaysizmi?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-all">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
+                    {% if not customers %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-20 text-center">
+                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4">
+                                <i class="bi bi-person-badge fs-2"></i>
+                            </div>
+                            <h4 class="text-slate-800 font-bold">Mijozlar topilmadi</h4>
+                            <p class="text-slate-500 text-sm mt-1">Hali hech qanday mijoz qo'shilmagan</p>
+                        </td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <p class="text-muted mb-0">Hozircha mijozlar mavjud emas.</p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

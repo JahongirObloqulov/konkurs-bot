@@ -1,56 +1,74 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Konkurslar{% endblock %}
+{% block header_title %}Konkurslar Ro'yxati{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-trophy"></i> Konkurslar</h2>
-    <a href="/contests/new" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Yangi konkurs
-    </a>
-</div>
-
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table table-striped mb-0">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nomi</th>
-                    <th>Sovg'a</th>
-                    <th>G'oliblar</th>
-                    <th>Holat</th>
-                    <th>Yaratilgan</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in contests %}
-                <tr>
-                    <td>{{ c.id }}</td>
-                    <td>{{ c.title }}</td>
-                    <td>{{ c.prize[:50] }}{% if c.prize|length > 50 %}...{% endif %}</td>
-                    <td>{{ c.winners_count }}</td>
-                    <td>
-                        {% if c.is_active %}
-                        <span class="badge bg-success">Faol</span>
-                        {% else %}
-                        <span class="badge bg-secondary">Tugagan</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ c.created_at.strftime('%d.%m.%Y') }}</td>
-                    <td>
-                        <a href="/contests/{{ c.id }}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% if not contests %}
-                <tr><td colspan="7" class="text-center text-muted">Hali konkurslar yo'q</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="relative max-w-sm w-full">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" placeholder="Qidirish..." class="block w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm transition-all">
+        </div>
+        <a href="/contests/new" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm transition-all hover:bg-secondary shadow-lg shadow-primary/20">
+            <i class="bi bi-plus-lg"></i>
+            Yangi Konkurs Yaratish
+        </a>
     </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for contest in contests %}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group transition-all hover:shadow-md hover:-translate-y-1">
+            <div class="p-6 flex-1">
+                <div class="flex items-center justify-between mb-4">
+                    {% if contest.is_active %}
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-lg">Faol</span>
+                    {% else %}
+                    <span class="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-wider rounded-lg">Yakunlangan</span>
+                    {% endif %}
+                    <span class="text-slate-400 text-xs font-medium">{{ contest.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+                
+                <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary transition-colors">{{ contest.title }}</h3>
+                <p class="text-sm text-slate-500 line-clamp-2 mb-4">{{ contest.description }}</p>
+                
+                <div class="grid grid-cols-2 gap-4 py-4 border-t border-slate-100">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Sovg'a</p>
+                        <p class="text-sm font-bold text-amber-600">{{ contest.prize }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Ishtirokchilar</p>
+                        <p class="text-sm font-bold text-slate-700">{{ contest.participants_count }} kishi</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                <div class="flex -space-x-2">
+                    <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">ID</div>
+                    <div class="w-8 h-8 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-primary">#{{ contest.id }}</div>
+                </div>
+                <a href="/contests/{{ contest.id }}" class="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-secondary">
+                    Batafsil
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not contests %}
+    <div class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+            <i class="bi bi-trophy fs-1"></i>
+        </div>
+        <h4 class="text-lg font-bold text-slate-800">Hozircha konkurslar yo'q</h4>
+        <p class="text-slate-500 text-sm mb-6">Yangi konkurs yaratish uchun yuqoridagi tugmani bosing</p>
+        <a href="/contests/new" class="btn bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-secondary">Boshlash</a>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,119 +1,134 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Dashboard{% endblock %}
+{% block header_title %}Umumiy Statistika{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-2">
-        <div class="stat-card text-center">
-            <i class="bi bi-trophy fs-1 text-warning"></i>
-            <h3>{{ active_contests }}</h3>
-            <p>Faol</p>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card text-center">
-            <i class="bi bi-collection fs-1 text-primary"></i>
-            <h3>{{ total_contests }}</h3>
-            <p>Jami</p>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card text-center">
-            <i class="bi bi-people fs-1 text-success"></i>
-            <h3>{{ total_users }}</h3>
-            <p>A'zolar</p>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card text-center">
-            <i class="bi bi-person-check fs-1 text-info"></i>
-            <h3>{{ total_participants }}</h3>
-            <p>Ishtirokchilar</p>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card text-center">
-            <i class="bi bi-person-plus fs-1 text-secondary"></i>
-            <h3>{{ total_referrals }}</h3>
-            <p>Takliflar</p>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card text-center">
-            <i class="bi bi-people-fill fs-1 text-dark"></i>
-            <h3>{{ total_additions }}</h3>
-            <p>Qo'shilganlar</p>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="bi bi-clock-history"></i> Oxirgi ishtirokchilar</h5>
+<div class="space-y-8">
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
+                    <i class="bi bi-people fs-4"></i>
+                </div>
+                <span class="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">+12%</span>
             </div>
-            <div class="card-body p-0">
-                <table class="table table-striped mb-0">
-                    <thead>
+            <h3 class="text-3xl font-bold text-slate-800">{{ total_users }}</h3>
+            <p class="text-sm font-medium text-slate-500 mt-1">Jami foydalanuvchilar</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+                    <i class="bi bi-trophy fs-4"></i>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-slate-800">{{ active_contests }}</h3>
+            <p class="text-sm font-medium text-slate-500 mt-1">Faol konkurslar</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                    <i class="bi bi-person-plus fs-4"></i>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-slate-800">{{ total_referrals }}</h3>
+            <p class="text-sm font-medium text-slate-500 mt-1">Jami takliflar (Referal)</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
+                    <i class="bi bi-people-fill fs-4"></i>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-slate-800">{{ total_additions }}</h3>
+            <p class="text-sm font-medium text-slate-500 mt-1">Guruhga qo'shilganlar</p>
+        </div>
+    </div>
+
+    <!-- Tables & Secondary Content -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <!-- Active Contests List -->
+        <div class="xl:col-span-2 space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-bold text-slate-800">Oxirgi Konkurslar</h3>
+                <a href="/contests/new" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-semibold text-sm transition-all hover:bg-secondary shadow-lg shadow-primary/20">
+                    <i class="bi bi-plus-lg"></i>
+                    Yangi Konkurs
+                </a>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th>#</th>
-                            <th>Foydalanuvchi</th>
-                            <th>Konkurs</th>
-                            <th>Sana</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nomi</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Sovg'a</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Ishtirokchilar</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Holat</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Amal</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for p in recent_participants %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{% if p.username %}@{{ p.username }}{% else %}{{ p.full_name }}{% endif %}</td>
-                            <td>#{{ p.contest_id }}</td>
-                            <td>{{ p.joined_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for contest in contests %}
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-800">{{ contest.title }}</div>
+                                <div class="text-xs text-slate-400">{{ contest.created_at.strftime('%Y-%m-%d') }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700">
+                                    {{ contest.prize }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium text-slate-600">
+                                {{ contest.participants_count }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if contest.is_active %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                    Faol
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                    Yakunlangan
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="/contests/{{ contest.id }}" class="text-primary hover:text-secondary font-bold text-sm">Ko'rish</a>
+                            </td>
                         </tr>
                         {% endfor %}
-                        {% if not recent_participants %}
-                        <tr><td colspan="4" class="text-center text-muted">Hali ishtirokchilar yo'q</td></tr>
-                        {% endif %}
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="bi bi-graph-up"></i> Umumiy statistika</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="statsChart" height="200"></canvas>
+
+        <!-- Sidebar Widgets / Stats -->
+        <div class="space-y-6">
+            <h3 class="text-xl font-bold text-slate-800">Bot Sozlamalari</h3>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center text-white">
+                                <i class="bi bi-shield-check text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase">Obuna</p>
+                                <p class="text-sm font-bold text-slate-700">Majburiy Obuna</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase">Yoqilgan</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-fetch('/api/stats')
-    .then(r => r.json())
-    .then(data => {
-        new Chart(document.getElementById('statsChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Faol konkurslar', 'Tugagan konkurslar', 'Foydalanuvchilar', 'Ishtirokchilar'],
-                datasets: [{
-                    data: [data.active_contests, data.total_contests - data.active_contests, data.total_users, data.total_participants],
-                    backgroundColor: ['#f39c12', '#e74c3c', '#3498db', '#2ecc71']
-                }]
-            }
-        });
-    });
-</script>
 {% endblock %}
