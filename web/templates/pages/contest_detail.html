@@ -1,150 +1,159 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}{{ contest.title }}{% endblock %}
+{% block title %}Konkurs: {{ contest.title }}{% endblock %}
+{% block header_title %}Konkurs Tafsilotlari{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-trophy"></i> {{ contest.title }}</h2>
-    <div>
-        <a href="/contests" class="btn btn-outline-secondary btn-sm">← Orqaga</a>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Konkurs ma'lumotlari</h5>
-                <p><strong>Sovg'a:</strong> {{ contest.prize }}</p>
-                <p><strong>G'oliblar soni:</strong> {{ contest.winners_count }}</p>
-                <p><strong>Holat:</strong>
+<div class="space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-amber-500 rounded-2xl shadow-lg flex items-center justify-center text-white text-2xl font-black">
+                <i class="bi bi-trophy"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-slate-800">{{ contest.title }}</h2>
+                <div class="flex items-center gap-3 mt-1">
                     {% if contest.is_active %}
-                    <span class="badge bg-success">Faol</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Tugagan</span>
-                    {% endif %}
-                </p>
-                <p><strong>Obuna shart:</strong>
-                    {% if contest.require_subscription %}
-                    <span class="badge bg-info">Ha</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Yo'q</span>
-                    {% endif %}
-                </p>
-                <p><strong>Min. Referallar:</strong> {{ contest.min_referrals }}</p>
-                <p><strong>Min. Qo'shilganlar:</strong> {{ contest.min_additions }}</p>
-                {% if contest.media_type %}
-                <p><strong>Media:</strong> 
-                    <span class="badge bg-primary">
-                        <i class="bi bi-{% if contest.media_type == 'photo' %}image{% else %}film{% endif %}"></i>
-                        {{ contest.media_type|capitalize }}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                        Faol
                     </span>
-                    <br><small class="text-muted">File ID: {{ contest.file_id|truncate(20) }}</small>
-                </p>
-                {% endif %}
-                <p><strong>Yaratilgan:</strong> {{ contest.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
-                {% if contest.ended_at %}
-                <p><strong>Tugagan:</strong> {{ contest.ended_at.strftime('%d.%m.%Y %H:%M') }}</p>
-                {% endif %}
+                    {% else %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600">
+                        Yakunlangan
+                    </span>
+                    {% endif %}
+                    <span class="text-xs font-bold text-slate-400 uppercase">ID: #{{ contest.id }}</span>
+                </div>
             </div>
         </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="bi bi-gear"></i> Amallar</h5>
-            </div>
-            <div class="card-body">
-                {% if contest.is_active %}
-                <form method="post" action="/contests/{{ contest.id }}/pick-winners" class="mb-2" onsubmit="return confirm('G\'oliblarni tanlashni tasdiqlaysizmi? Bu konkursni tugatadi!')">
-                    <button type="submit" class="btn btn-warning w-100" {% if participants_count == 0 %}disabled{% endif %}>
-                        <i class="bi bi-award"></i> G'oliblarni tanlash
-                    </button>
-                </form>
-                {% if participants_count == 0 %}<small class="text-muted">Ishtirokchilar yo'q</small>{% endif %}
-
-                <form method="post" action="/contests/{{ contest.id }}/end" class="mb-2" onsubmit="return confirm('Konkursni tugatishni tasdiqlaysizmi?')">
-                    <button type="submit" class="btn btn-secondary w-100">
-                        <i class="bi bi-stop-circle"></i> Konkursni tugatish
-                    </button>
-                </form>
-                {% endif %}
-
-                <form method="post" action="/contests/{{ contest.id }}/delete" onsubmit="return confirm('Konkursni o\'chirishni tasdiqlaysizmi? Bu amal qaytarib bo\'lmaydi!')">
-                    <button type="submit" class="btn btn-danger w-100">
-                        <i class="bi bi-trash"></i> O'chirish
-                    </button>
-                </form>
-            </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="/contests" class="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">
+                <i class="bi bi-arrow-left"></i>
+                Orqaga
+            </a>
+            <a href="/contests/{{ contest.id }}/edit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-500 text-white rounded-xl font-bold text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20">
+                <i class="bi bi-pencil"></i>
+                Tahrirlash
+            </a>
+            {% if contest.is_active %}
+            <form action="/contests/{{ contest.id }}/finish" method="post" onsubmit="return confirm('Konkursni yakunlash va g\'oliblarni aniqlashni tasdiqlaysizmi?');">
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-600 text-white rounded-xl font-bold text-sm hover:bg-rose-700 transition-all shadow-lg shadow-rose-600/20">
+                    <i class="bi bi-flag-fill"></i>
+                    Yakunlash (G'oliblarni tanlash)
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="bi bi-people"></i> Ishtirokchilar ({{ participants_count }})</h5>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sidebar: Stats & Info -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-lg font-bold text-slate-800">Konkurs ma'lumotlari</h3>
+                </div>
+                <div class="p-8 space-y-6">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sovg'a</p>
+                        <p class="text-amber-600 font-black text-lg">{{ contest.prize }}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">G'oliblar</p>
+                            <p class="text-slate-800 font-bold">{{ contest.winners_count }} ta</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ishtirokchilar</p>
+                            <p class="text-slate-800 font-bold text-lg">{{ participants|length }} kishi</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4 pt-4 border-t border-slate-100">
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Shartlar:</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                <span class="text-xs font-bold text-slate-500">Min. Referallar</span>
+                                <span class="text-xs font-black text-slate-800">{{ contest.min_referrals }}</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                <span class="text-xs font-bold text-slate-500">Min. Qo'shilganlar</span>
+                                <span class="text-xs font-black text-slate-800">{{ contest.min_additions }}</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                <span class="text-xs font-bold text-slate-500">Majburiy obuna</span>
+                                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase">{{ 'Ha' if contest.require_subscription else 'Yo\'q' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                {% if participants_data %}
-                <div style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-striped mb-0">
-                        <thead>
+
+            {% if contest.media_file_id %}
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden p-6">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4">Biriktirilgan Media</h4>
+                <div class="p-4 bg-slate-100 rounded-2xl flex items-center justify-center flex-col gap-2">
+                    <i class="bi {% if contest.media_type == 'video' %}bi-camera-video{% else %}bi-image{% endif %} fs-2 text-slate-400"></i>
+                    <p class="text-[10px] font-mono text-slate-400 break-all text-center">{{ contest.media_file_id }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Main Content: Participants -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-slate-800">Ishtirokchilar Ro'yxati</h3>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50/50 border-b border-slate-100">
                             <tr>
-                                <th>Ism</th>
-                                <th>Chiptalar</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Foydalanuvchi</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Referallar</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Qo'shilganlar</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Amal</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for row in participants_data %}
-                            {% set p = row[0] %}
-                            {% set refs = row[1] %}
-                            <tr>
-                                <td>
-                                    {{ p.full_name }}<br>
-                                    <small class="text-muted">{% if p.username %}@{{ p.username }}{% else %}ID: {{ p.user_id }}{% endif %}</small>
+                        <tbody class="divide-y divide-slate-50">
+                            {% for p in participants %}
+                            <tr class="hover:bg-slate-50/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="font-bold text-slate-800">{{ p.user_name }}</div>
+                                    <div class="text-[10px] text-slate-400 font-mono">ID: {{ p.user_id }}</div>
                                 </td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">{{ refs + 1 }}</span>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-black text-xs">
+                                        <i class="bi bi-people"></i>
+                                        {{ p.referral_count }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm font-bold text-slate-700">
+                                    {{ p.addition_count }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="/users/{{ p.user_id }}" class="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
+                            
+                            {% if not participants %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-20 text-center">
+                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-4">
+                                        <i class="bi bi-people fs-2"></i>
+                                    </div>
+                                    <p class="text-slate-400 font-bold">Hozircha ishtirokchilar mavjud emas</p>
+                                </td>
+                            </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
-                {% else %}
-                <div class="text-muted text-center p-3">Ishtirokchilar yo'q</div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="bi bi-award"></i> G'oliblar</h5>
-            </div>
-            <div class="card-body p-0">
-                {% if winners %}
-                <table class="table table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Ism</th>
-                            <th>Username</th>
-                            <th>Sana</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for w in winners %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ w.full_name }}</td>
-                            <td>{% if w.username %}@{{ w.username }}{% else %}-{% endif %}</td>
-                            <td>{{ w.selected_at.strftime('%d.%m.%Y') }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="text-muted text-center p-3">G'oliblar tanlanmagan</div>
-                {% endif %}
             </div>
         </div>
     </div>

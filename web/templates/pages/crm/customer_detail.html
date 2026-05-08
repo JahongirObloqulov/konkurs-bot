@@ -1,129 +1,146 @@
 {% extends "layouts/base.html" %}
-{% block title %}{{ customer.full_name }}{% endblock %}
+
+{% block title %}Mijoz: {{ customer.full_name }}{% endblock %}
+{% block header_title %}Mijoz Profili{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-person-badge me-2"></i> {{ customer.full_name }}</h2>
-    <div>
-        <a href="/crm/customers" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Orqaga
-        </a>
-        <a href="/crm/customers/{{ customer.id }}/edit" class="btn btn-warning">
-            <i class="bi bi-pencil me-1"></i> Tahrirlash
-        </a>
-        <form action="/crm/customers/{{ customer.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Mijozni o\'chirishni tasdiqlaysizmi?');">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button type="submit" class="btn btn-danger">
-                <i class="bi bi-trash me-1"></i> O'chirish
-            </button>
-        </form>
-        <a href="/crm/customers/{{ customer.id }}/interactions/new" class="btn btn-primary">
-            <i class="bi bi-chat-dots me-1"></i> Interaksiya qo'shish
-        </a>
-    </div>
-</div>
-
-<div class="row g-4 mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Mijoz ma'lumotlari</h5>
+<div class="space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-emerald-600 rounded-2xl shadow-lg flex items-center justify-center text-white text-2xl font-black">
+                {{ customer.full_name[:1] }}
             </div>
-            <div class="card-body">
-                <table class="table table-borderless">
-                    <tr>
-                        <th class="text-muted" style="width:120px;">F.I.O.:</th>
-                        <td>{{ customer.full_name }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Telefon:</th>
-                        <td>{{ customer.phone or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Email:</th>
-                        <td>{{ customer.email or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Biznes:</th>
-                        <td>
-                            {% if customer.business_id %}
-                            <a href="/crm/businesses/{{ customer.business_id }}">{{ customer.business_name }}</a>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Eslatmalar:</th>
-                        <td>{{ customer.notes or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Teglar:</th>
-                        <td>
-                            {% if customer_tags %}
-                            {% for tag in customer_tags %}
-                            <span class="badge me-1" style="background-color: {{ tag.color }};">{{ tag.name }}</span>
+            <div>
+                <h2 class="text-3xl font-black text-slate-800">{{ customer.full_name }}</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Mijoz ID: #{{ customer.id }}</span>
+                    {% if customer.user_id %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 text-[10px] font-bold">
+                        <i class="bi bi-telegram"></i> Telegram bog'langan
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="/crm/customers" class="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">
+                <i class="bi bi-arrow-left"></i>
+                Orqaga
+            </a>
+            <a href="/crm/customers/{{ customer.id }}/edit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20">
+                <i class="bi bi-pencil"></i>
+                Tahrirlash
+            </a>
+            <form action="/crm/customers/{{ customer.id }}/delete" method="post" onsubmit="return confirm('Mijozni o\'chirishni tasdiqlaysizmi?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-xl font-bold text-sm hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20">
+                    <i class="bi bi-trash"></i>
+                    O'chirish
+                </button>
+            </form>
+            <a href="/crm/customers/{{ customer.id }}/interactions/new" class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm hover:bg-secondary transition-all shadow-lg shadow-primary/20">
+                <i class="bi bi-chat-dots"></i>
+                Interaksiya qo'shish
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sidebar: Info -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-lg font-bold text-slate-800">Mijoz ma'lumotlari</h3>
+                </div>
+                <div class="p-8 space-y-6">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Telefon</p>
+                        <p class="text-slate-700 font-bold">{{ customer.phone or '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email</p>
+                        <p class="text-slate-700 font-bold">{{ customer.email or '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Biznes</p>
+                        {% if customer.business_name %}
+                        <a href="/crm/businesses/{{ customer.business_id }}" class="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+                            <i class="bi bi-building"></i>
+                            {{ customer.business_name }}
+                        </a>
+                        {% else %}
+                        <p class="text-slate-400 font-medium italic">-</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Teglar</p>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            {% for ct in customer.tags %}
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style="background-color: {{ ct.tag.color or '#6366f1' }};">
+                                {{ ct.tag.name }}
+                            </span>
                             {% endfor %}
-                            {% else %}
-                            <span class="text-muted">-</span>
+                            {% if not customer.tags %}
+                            <span class="text-slate-400 text-xs">-</span>
                             {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Yaratilgan:</th>
-                        <td>{{ customer.created_at }}</td>
-                    </tr>
-                </table>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Yaratilgan sana</p>
+                        <p class="text-slate-500 text-xs font-medium">{{ customer.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-3xl p-8 text-white shadow-xl">
+                <h4 class="text-lg font-bold mb-4">Eslatmalar</h4>
+                <p class="text-slate-300 text-sm leading-relaxed">{{ customer.notes or 'Eslatmalar mavjud emas.' }}</p>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Interaksiyalar ({{ interactions|length }})</h5>
-        <a href="/crm/customers/{{ customer.id }}/interactions/new" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> Yangi interaksiya
-        </a>
-    </div>
-    <div class="card-body">
-        {% if interactions %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Tur</th>
-                        <th>Tavsif</th>
-                        <th>Sana</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <!-- Main Content: Interactions -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-slate-800">Interaksiyalar ({{ interactions|length }})</h3>
+                    <a href="/crm/customers/{{ customer.id }}/interactions/new" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-primary hover:text-white rounded-xl text-xs font-bold transition-all">
+                        <i class="bi bi-plus-lg"></i>
+                        Yangi
+                    </a>
+                </div>
+                
+                <div class="divide-y divide-slate-100">
                     {% for interaction in interactions %}
-                    <tr>
-                        <td>{{ interaction.id }}</td>
-                        <td>
-                            {% if interaction.interaction_type == 'call' %}
-                            <span class="badge bg-primary">Qo'ng'iroq</span>
-                            {% elif interaction.interaction_type == 'email' %}
-                            <span class="badge bg-info">Email</span>
-                            {% elif interaction.interaction_type == 'meeting' %}
-                            <span class="badge bg-success">Uchrashuv</span>
-                            {% elif interaction.interaction_type == 'note' %}
-                            <span class="badge bg-secondary">Eslatma</span>
-                            {% else %}
-                            <span class="badge bg-warning">Boshqa</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ interaction.description or '-' }}</td>
-                        <td>{{ interaction.created_at }}</td>
-                    </tr>
+                    <div class="p-8 hover:bg-slate-50/50 transition-colors">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider
+                                {% if interaction.interaction_type == 'call' %}bg-blue-100 text-blue-700
+                                {% elif interaction.interaction_type == 'meeting' %}bg-purple-100 text-purple-700
+                                {% elif interaction.interaction_type == 'email' %}bg-amber-100 text-amber-700
+                                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                                {{ interaction.interaction_type }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ interaction.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        <p class="text-slate-700 text-sm leading-relaxed mb-3">{{ interaction.description }}</p>
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center text-[8px] text-slate-400 font-bold">A</div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Admin ID: {{ interaction.created_by }}</span>
+                        </div>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                    
+                    {% if not interactions %}
+                    <div class="p-16 text-center">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-4">
+                            <i class="bi bi-chat-left-dots fs-2"></i>
+                        </div>
+                        <p class="text-slate-400 font-bold">Hozircha hech qanday interaksiya mavjud emas</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        {% else %}
-        <p class="text-muted mb-0">Hozircha interaksiyalar yo'q.</p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

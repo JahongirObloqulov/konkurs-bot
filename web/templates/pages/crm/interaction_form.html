@@ -1,53 +1,57 @@
 {% extends "layouts/base.html" %}
-{% block title %}Interaksiya qo'shish{% endblock %}
+
+{% block title %}Yangi interaksiya{% endblock %}
+{% block header_title %}Interaksiya qo'shish{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-chat-dots me-2"></i> Yangi interaksiya</h2>
-    <a href="/crm/customers/{{ customer.id }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Orqaga
-    </a>
-</div>
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6 flex items-center justify-between">
+        <a href="/crm/customers/{{ customer.id }}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary transition-colors">
+            <i class="bi bi-arrow-left"></i>
+            Mijoz profiliga qaytish
+        </a>
+    </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-body">
-                <p class="mb-0">
-                    <strong>Mijoz:</strong>
-                    <a href="/crm/customers/{{ customer.id }}">{{ customer.full_name }}</a>
-                </p>
-            </div>
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+            <h3 class="text-lg font-bold text-slate-800">{{ customer.full_name }} bilan interaksiya</h3>
+            <p class="text-xs text-slate-400 font-medium uppercase mt-1 tracking-wider">Muloqot tafsilotlarini kiriting</p>
         </div>
+        
+        <form method="post" action="/crm/customers/{{ customer.id }}/interactions/new" class="p-8 space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-        <div class="card">
-            <div class="card-body">
-                <form method="post" action="/crm/customers/{{ customer.id }}/interactions/new">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Interaksiya turi <span class="text-rose-500">*</span></label>
+                    <select name="interaction_type" required 
+                        class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+                        <option value="note">📝 Eslatma / Izoh</option>
+                        <option value="call">📞 Telefon qo'ng'irog'i</option>
+                        <option value="meeting">🤝 Uchrashuv</option>
+                        <option value="email">📧 Email xabar</option>
+                        <option value="telegram">💬 Telegram muloqot</option>
+                    </select>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="interaction_type" class="form-label">Interaksiya turi <span class="text-danger">*</span></label>
-                        <select class="form-select" id="interaction_type" name="interaction_type" required>
-                            <option value="">-- Turini tanlang --</option>
-                            <option value="call">Qo'ng'iroq</option>
-                            <option value="email">Email</option>
-                            <option value="meeting">Uchrashuv</option>
-                            <option value="note">Eslatma</option>
-                            <option value="other">Boshqa</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Tavsif</label>
-                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Interaksiya haqida batafsil..." required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg me-1"></i> Saqlash
-                    </button>
-                    <a href="/crm/customers/{{ customer.id }}" class="btn btn-outline-secondary">Bekor qilish</a>
-                </form>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Tafsilotlar <span class="text-rose-500">*</span></label>
+                    <textarea name="description" rows="5" required 
+                        class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                        placeholder="Nima haqida gaplashildi yoki qanday kelishuvga erishildi..."></textarea>
+                </div>
             </div>
-        </div>
+
+            <div class="flex items-center gap-4 pt-4">
+                <button type="submit" class="flex-1 py-4 bg-primary text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-secondary hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
+                    <i class="bi bi-check-lg"></i>
+                    Saqlash
+                </button>
+                <a href="/crm/customers/{{ customer.id }}" class="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-slate-200 transition-all">
+                    Bekor qilish
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
