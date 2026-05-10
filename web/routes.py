@@ -86,6 +86,11 @@ async def logout():
     return response
 
 
+@router.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 @router.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     user = get_current_user(request)
