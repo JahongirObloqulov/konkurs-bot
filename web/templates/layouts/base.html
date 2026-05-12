@@ -266,6 +266,18 @@
             </nav>
 
             <div class="px-4 py-2 mt-auto space-y-4">
+                <!-- Theme Switcher (Mobile) -->
+                <div class="lg:hidden p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-2 gap-1 mb-2">
+                    <button onclick="setTheme('light')" id="sidebar-theme-light" class="flex items-center justify-center gap-2 px-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all text-slate-500">
+                        <i class="bi bi-sun"></i>
+                        <span>{{ _('light') }}</span>
+                    </button>
+                    <button onclick="setTheme('dark')" id="sidebar-theme-dark" class="flex items-center justify-center gap-2 px-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all text-slate-500">
+                        <i class="bi bi-moon-stars"></i>
+                        <span>{{ _('dark') }}</span>
+                    </button>
+                </div>
+
                 <!-- Language Switcher (Mobile) -->
                 <div class="lg:hidden p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-3 gap-1">
                     <button onclick="setLanguage('uz')" class="px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all {% if current_lang == 'uz' %}bg-white dark:bg-slate-700 text-primary shadow-sm{% else %}text-slate-500{% endif %}">UZ</button>
@@ -376,6 +388,8 @@
             const themeDarkBtn = document.getElementById('theme-dark');
             const headerThemeLightBtn = document.getElementById('header-theme-light');
             const headerThemeDarkBtn = document.getElementById('header-theme-dark');
+            const sidebarThemeLightBtn = document.getElementById('sidebar-theme-light');
+            const sidebarThemeDarkBtn = document.getElementById('sidebar-theme-dark');
             
             // Helper to update button classes
             const updateBtn = (btn, isActive) => {
@@ -396,6 +410,8 @@
                 updateBtn(themeLightBtn, false);
                 updateBtn(headerThemeDarkBtn, true);
                 updateBtn(headerThemeLightBtn, false);
+                updateBtn(sidebarThemeDarkBtn, true);
+                updateBtn(sidebarThemeLightBtn, false);
             } else {
                 localStorage.setItem('theme', 'light');
                 root.classList.remove('dark');
@@ -403,6 +419,8 @@
                 updateBtn(themeLightBtn, true);
                 updateBtn(headerThemeDarkBtn, false);
                 updateBtn(headerThemeLightBtn, true);
+                updateBtn(sidebarThemeDarkBtn, false);
+                updateBtn(sidebarThemeLightBtn, true);
             }
         }
 

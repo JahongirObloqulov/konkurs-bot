@@ -182,6 +182,13 @@ TRANSLATIONS = {
         'super_admin': 'Super Admin',
         'confirm_broadcast': 'Xabarni barcha foydalanuvchilarga yuborishni tasdiqlaysizmi?',
         'export': 'Eksport qilish',
+        'broadcast_history': 'Xabarlar tarixi',
+        'no_broadcasts_yet': 'Hozircha xabarlar yuborilmagan',
+        'entries': 'yozuv',
+        'audit_logs_info': 'Tizimdagi barcha administrator harakatlari jurnali',
+        'no_audit_logs': 'Hozircha amallar jurnali bo\'sh',
+        'date_time': 'Sana va vaqt',
+        'details': 'Tafsilotlar',
     },
     'ru': {
         # Sidebar & Common
@@ -365,6 +372,13 @@ TRANSLATIONS = {
         'super_admin': 'Супер Админ',
         'confirm_broadcast': 'Вы подтверждаете отправку сообщения всем пользователям?',
         'export': 'Экспорт',
+        'broadcast_history': 'История рассылок',
+        'no_broadcasts_yet': 'Рассылок пока не было',
+        'entries': 'записей',
+        'audit_logs_info': 'Журнал всех действий администраторов в системе',
+        'no_audit_logs': 'Журнал действий пуст',
+        'date_time': 'Дата и время',
+        'details': 'Детали',
     },
     'en': {
         # Sidebar & Common
@@ -548,6 +562,13 @@ TRANSLATIONS = {
         'super_admin': 'Super Admin',
         'confirm_broadcast': 'Are you sure you want to send this message to all users?',
         'export': 'Export',
+        'broadcast_history': 'Broadcast History',
+        'no_broadcasts_yet': 'No broadcasts sent yet',
+        'entries': 'entries',
+        'audit_logs_info': 'Log of all administrator actions in the system',
+        'no_audit_logs': 'Action log is empty',
+        'date_time': 'Date & Time',
+        'details': 'Details',
     }
 }
 

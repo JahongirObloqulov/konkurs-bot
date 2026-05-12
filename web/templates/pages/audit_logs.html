@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Audit Logs{% endblock %}
+{% block title %}{{ _('audit_logs') }}{% endblock %}
 {% block header_title %}{{ _('audit_logs') }}{% endblock %}
 
 {% block content %}
@@ -9,7 +9,7 @@
         <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ _('audit_logs') }}</h3>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Tizimdagi barcha administrator harakatlari jurnali</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">{{ _('audit_logs_info') }}</p>
             </div>
             <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-lg">{{ logs|length }} {{ _('entries') }}</span>
         </div>
@@ -68,7 +68,7 @@
                             <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
                                 <i class="bi bi-journal-text text-3xl"></i>
                             </div>
-                            <p class="text-slate-500 dark:text-slate-400 font-bold">Hozircha amallar jurnali bo'sh</p>
+                            <p class="text-slate-500 dark:text-slate-400 font-bold">{{ _('no_audit_logs') }}</p>
                         </td>
                     </tr>
                     {% endif %}

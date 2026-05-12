@@ -118,7 +118,7 @@
                             <span class="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></span>
                             <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{{ log.admin_username }}</span>
                         </div>
-                        <p class="text-sm text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                        <p class="text-sm text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed font-medium">
                             {{ log.message }}
                         </p>
                     </div>
@@ -136,8 +136,11 @@
             {% endfor %}
             
             {% if not logs %}
-            <div class="py-12 text-center">
-                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">{{ _('no_broadcasts_yet') }}</p>
+            <div class="py-20 text-center">
+                <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
+                    <i class="bi bi-broadcast text-3xl"></i>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 text-sm font-bold">{{ _('no_broadcasts_yet') }}</p>
             </div>
             {% endif %}
         </div>
