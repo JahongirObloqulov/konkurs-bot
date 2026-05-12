@@ -25,9 +25,10 @@ class RegistrationState(StatesGroup):
 
 async def send_sub_success_message(target: Message | CallbackQuery, session: AsyncSession, bot: Bot):
     """Obuna muvaffaqiyatli xabarini (ixtiyoriy media bilan) yuborish."""
-    success_text = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.")
-    media_id = await get_setting(session, "sub_success_media_id")
-    media_type = await get_setting(session, "sub_success_media_type")
+    bot_db_id = getattr(bot, "db_id", None)
+    success_text = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.", bot_id=bot_db_id)
+    media_id = await get_setting(session, "sub_success_media_id", bot_id=bot_db_id)
+    media_type = await get_setting(session, "sub_success_media_type", bot_id=bot_db_id)
     
     kb = get_main_reply_kb()
     
@@ -56,13 +57,15 @@ async def send_sub_success_message(target: Message | CallbackQuery, session: Asy
 
 @router.callback_query(F.data == "start_registration")
 async def start_registration_cb(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
-    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:")
+    bot_db_id = getattr(callback.bot, "db_id", None)
+    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:", bot_id=bot_db_id)
     await state.set_state(RegistrationState.first_name)
     await callback.message.answer(welcome_text, reply_markup=ReplyKeyboardRemove())
     await callback.message.delete()
 
 async def start_registration(message: Message, state: FSMContext, session: AsyncSession):
-    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:")
+    bot_db_id = getattr(message.bot, "db_id", None)
+    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:", bot_id=bot_db_id)
     await state.set_state(RegistrationState.first_name)
     await message.answer(welcome_text, reply_markup=ReplyKeyboardRemove())
 
@@ -124,7 +127,8 @@ async def process_location(message: Message, state: FSMContext, session: AsyncSe
     is_subscribed, unsubscribed_chats = await check_all_subscriptions(bot, message.from_user.id, session)
     
     if not is_subscribed:
-        sub_required_text = await get_setting(session, "subscription_required", "✅ Ro'yxatdan o'tdingiz!\n\nLekin botdan foydalanish uchun quyidagi kanallarga obuna bo'lishingiz shart:")
+        bot_db_id = getattr(bot, "db_id", None)
+        sub_required_text = await get_setting(session, "subscription_required", "✅ Ro'yxatdan o'tdingiz!\n\nLekin botdan foydalanish uchun quyidagi kanallarga obuna bo'lishingiz shart:", bot_id=bot_db_id)
         await state.set_state(RegistrationState.check_sub)
         await message.answer(
             sub_required_text,

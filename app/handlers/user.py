@@ -41,8 +41,8 @@ async def show_active_contests_reply(message: Message, session: AsyncSession):
 async def show_active_contests_cb(callback: CallbackQuery, session: AsyncSession):
     await show_active_contests_core(callback.message, session, edit=True)
 
-async def show_active_contests_core(message: Message, session: AsyncSession, edit: bool = False):
-    contests = await get_active_contests(session)
+async def show_active_contests_core(message: Message, session: AsyncSession, bot: Bot, edit: bool = False):
+    contests = await get_active_contests(session, bot_id=getattr(bot, 'db_id', None))
     if not contests:
         text = (
             "\U0001f4ed Hozirda faol konkurslar yo'q.\n\n"

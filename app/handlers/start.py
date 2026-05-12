@@ -37,6 +37,7 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config, sta
         username=user.username,
         full_name=user.full_name,
         referred_by_id=referred_by_id,
+        bot_id=getattr(bot, 'db_id', None)
     )
     if not user_obj:
         await message.answer("Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")
@@ -61,7 +62,13 @@ async def cmd_start(message: Message, session: AsyncSession, config: Config, sta
     # 2. Check subscriptions
     is_subscribed, unsubscribed_chats = await check_all_subscriptions(bot, user.id, session)
     if not is_subscribed:
-        sub_required_text = await get_setting(session, f"subscription_required_{lang}", translate('sub_required_title', lang))
+        bot_db_id = getattr(bot, "db_id", None)
+        sub_required_text = await get_setting(
+            session, 
+            f"subscription_required_{lang}", 
+            translate('sub_required_title', lang),
+            bot_id=bot_db_id
+        )
         await message.answer(
             sub_required_text,
             reply_markup=get_subscription_kb(unsubscribed_chats, 0),
@@ -95,7 +102,13 @@ async def process_set_lang(callback: CallbackQuery, state: FSMContext, session: 
     await callback.answer(welcome_texts.get(lang_code, "✅"))
     
     # After selecting language, proceed to registration or main menu
-    user_obj = await get_or_create_user(session, callback.from_user.id, callback.from_user.username, callback.from_user.full_name)
+    user_obj = await get_or_create_user(
+        session, 
+        callback.from_user.id, 
+        callback.from_user.username, 
+        callback.from_user.full_name,
+        bot_id=getattr(bot, 'db_id', None)
+    )
     
     if not user_obj.is_registered:
         await start_registration(callback.message, state, session)

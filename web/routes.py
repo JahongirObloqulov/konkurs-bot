@@ -497,12 +497,22 @@ async def chats_page(request: Request, user: dict = Depends(require_auth)):
 
     async with async_session_maker() as session:
         chats = await get_required_chats(session)
-        res = await session.execute(select(Media).order_by(Media.created_at.desc()))
-        media_gallery = res.scalars().all()
+        # Fetch bots for selection
+        res_bots = await session.execute(select(Bot).where(Bot.is_active == True))
+        bots = res_bots.scalars().all()
+        
+        res_media = await session.execute(select(Media).order_by(Media.created_at.desc()))
+        media_gallery = res_media.scalars().all()
 
     return templates.TemplateResponse(
         "pages/chats.html",
-        {"request": request, "user": user, "chats": chats, "media_gallery": media_gallery}
+        {
+            "request": request, 
+            "user": user, 
+            "chats": chats, 
+            "bots": bots,
+            "media_gallery": media_gallery
+        }
     )
 
 
@@ -685,21 +695,29 @@ async def api_ai_draft(request: Request, user: dict = Depends(require_auth)):
 
 
 @router.get("/settings", response_class=HTMLResponse)
-async def settings_page(request: Request, user: dict = Depends(require_auth)):
+async def settings_page(request: Request, bot_id: Optional[int] = None, user: dict = Depends(require_auth)):
     from app.services.settings_service import get_setting
+    from app.db.models import Bot
+    
     async with async_session_maker() as session:
-        reg_welcome = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:")
-        reg_success = await get_setting(session, "registration_success", "✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!")
-        sub_required = await get_setting(session, "subscription_required", "⚠️ <b>Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling!</b>\n\nBarcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.")
-        sub_success = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.")
-        sub_success_media_id = await get_setting(session, "sub_success_media_id", "")
-        sub_success_media_type = await get_setting(session, "sub_success_media_type", "")
+        # Fetch bots for selection
+        res_bots = await session.execute(select(Bot).where(Bot.is_active == True))
+        bots = res_bots.scalars().all()
+        
+        reg_welcome = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:", bot_id=bot_id)
+        reg_success = await get_setting(session, "registration_success", "✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!", bot_id=bot_id)
+        sub_required = await get_setting(session, "subscription_required", "⚠️ <b>Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling!</b>\n\nBarcha kanallarga obuna bo'lgach, \"Obunani tekshirish\" tugmasini bosing.", bot_id=bot_id)
+        sub_success = await get_setting(session, "subscription_success", "✅ Tabriklaymiz! Obuna tasdiqlandi. Endi botdan to'liq foydalanishingiz mumkin.", bot_id=bot_id)
+        sub_success_media_id = await get_setting(session, "sub_success_media_id", "", bot_id=bot_id)
+        sub_success_media_type = await get_setting(session, "sub_success_media_type", "", bot_id=bot_id)
 
     return templates.TemplateResponse(
         "pages/settings.html",
         {
             "request": request,
             "user": user,
+            "bots": bots,
+            "current_bot_id": bot_id,
             "reg_welcome": reg_welcome,
             "reg_success": reg_success,
             "sub_required": sub_required,
@@ -714,60 +732,89 @@ async def settings_page(request: Request, user: dict = Depends(require_auth)):
 async def update_settings(request: Request, user: dict = Depends(require_auth)):
     from app.services.settings_service import set_setting
     form = await request.form()
+    bot_id = form.get("bot_id")
+    bot_id = int(bot_id) if bot_id else None
     
     async with async_session_maker() as session:
-        await set_setting(session, "registration_welcome", form.get("reg_welcome"))
-        await set_setting(session, "registration_success", form.get("reg_success"))
-        await set_setting(session, "subscription_required", form.get("sub_required"))
-        await set_setting(session, "subscription_success", form.get("sub_success"))
-        await set_setting(session, "sub_success_media_id", form.get("sub_success_media_id"))
-        await set_setting(session, "sub_success_media_type", form.get("sub_success_media_type"))
+        await set_setting(session, "registration_welcome", form.get("reg_welcome"), bot_id=bot_id)
+        await set_setting(session, "registration_success", form.get("reg_success"), bot_id=bot_id)
+        await set_setting(session, "subscription_required", form.get("sub_required"), bot_id=bot_id)
+        await set_setting(session, "subscription_success", form.get("sub_success"), bot_id=bot_id)
+        await set_setting(session, "sub_success_media_id", form.get("sub_success_media_id"), bot_id=bot_id)
+        await set_setting(session, "sub_success_media_type", form.get("sub_success_media_type"), bot_id=bot_id)
     
-    return RedirectResponse(url="/settings?success=1", status_code=302)
+    redirect_url = "/settings?success=1"
+    if bot_id: redirect_url += f"&bot_id={bot_id}"
+    
+    return RedirectResponse(url=redirect_url, status_code=302)
 
 
 @router.post("/chats/add")
 async def chat_add(request: Request, user: dict = Depends(require_auth)):
-    from app.services.settings_service import get_required_chats, set_required_chats
+    from app.services.settings_service import add_required_chat
 
     form = await request.form()
-    new_chat = {
-        "id": int(form.get("chat_id")),
-        "title": form.get("title") or "Noma'lum",
-        "username": form.get("username", "").strip("@"),
-        "type": form.get("type", "channel"),
-    }
+    chat_id = int(form.get("chat_id"))
+    title = form.get("title") or "Noma'lum"
+    username = form.get("username", "").strip("@")
+    bot_id = form.get("bot_id")
+    
+    # URL can be constructed from username or provided
+    url = f"https://t.me/{username}" if username else f"https://t.me/c/{str(chat_id).replace('-100', '')}"
 
     async with async_session_maker() as session:
-        chats = await get_required_chats(session)
-        chats.append(new_chat)
-        await set_required_chats(session, chats)
+        await add_required_chat(
+            session,
+            chat_id=chat_id,
+            title=title,
+            url=url,
+            bot_id=int(bot_id) if bot_id else None
+        )
 
     return RedirectResponse(url="/chats", status_code=302)
 
 
-@router.post("/chats/{chat_id}/remove")
-async def chat_remove(request: Request, chat_id: int, user: dict = Depends(require_auth)):
-    from app.services.settings_service import get_required_chats, set_required_chats
+@router.post("/chats/{chat_internal_id}/remove")
+async def chat_remove(request: Request, chat_internal_id: int, user: dict = Depends(require_auth)):
+    from app.services.settings_service import delete_required_chat
 
     async with async_session_maker() as session:
-        chats = await get_required_chats(session)
-        chats = [c for c in chats if c["id"] != chat_id]
-        await set_required_chats(session, chats)
+        await delete_required_chat(session, chat_internal_id)
 
     return RedirectResponse(url="/chats", status_code=302)
 
 
 @router.get("/bots", response_class=HTMLResponse)
 async def bots_page(request: Request, user: dict = Depends(require_auth)):
-    from app.db.models import Bot
+    from app.db.models import Bot, User, Contest, Business
+    from sqlalchemy import func
+    
     async with async_session_maker() as session:
         res = await session.execute(select(Bot).order_by(Bot.created_at.desc()))
         bots = res.scalars().all()
         
+        bots_with_stats = []
+        for bot in bots:
+            # Stats per bot
+            u_res = await session.execute(select(func.count(User.id)).where(User.bot_id == bot.id))
+            u_count = u_res.scalar() or 0
+            
+            c_res = await session.execute(select(func.count(Contest.id)).where(Contest.bot_id == bot.id))
+            c_count = c_res.scalar() or 0
+            
+            b_res = await session.execute(select(func.count(Business.id)).where(Business.bot_id == bot.id))
+            b_count = b_res.scalar() or 0
+            
+            bots_with_stats.append({
+                "obj": bot,
+                "users_count": u_count,
+                "contests_count": c_count,
+                "business_count": b_count
+            })
+        
     return templates.TemplateResponse(
         "pages/bots.html",
-        {"request": request, "user": user, "bots": bots}
+        {"request": request, "user": user, "bots_with_stats": bots_with_stats}
     )
 
 

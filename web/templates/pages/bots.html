@@ -41,7 +41,8 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-8">
-                {% for bot in bots %}
+                {% for bot_data in bots_with_stats %}
+                {% set bot = bot_data.obj %}
                 <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
                     <div class="flex items-start justify-between mb-6">
                         <div class="flex items-center gap-4">
@@ -65,6 +66,22 @@
                             <button onclick="openSettingsModal('{{ bot.id }}')" class="w-10 h-10 flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
                                 <i class="bi bi-gear-fill"></i>
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Bot Stats -->
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl text-center">
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Users</p>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white">{{ bot_data.users_count }}</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl text-center">
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Contests</p>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white">{{ bot_data.contests_count }}</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl text-center">
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">CRM</p>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white">{{ bot_data.business_count }}</p>
                         </div>
                     </div>
 

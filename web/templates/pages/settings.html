@@ -4,14 +4,36 @@
 {% block header_title %}{{ _('bot_settings') }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Bot Selector -->
+    <div class="ui-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Botni tanlang</h4>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Sozlamalarni botlar kesimida boshqarish</p>
+            </div>
+        </div>
+        <select onchange="window.location.href='/settings?bot_id=' + this.value" class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm dark:text-white min-w-[200px]">
+            <option value="">🌍 Umumiy sozlamalar (Global)</option>
+            {% for bot in bots %}
+            <option value="{{ bot.id }}" {% if current_bot_id|string == bot.id|string %}selected{% endif %}>@{{ bot.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
     <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ _('bot_messages') }}</h3>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">{{ _('edit_messages_info') }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">
+                {% if current_bot_id %}@{% for b in bots %}{% if b.id|string == current_bot_id|string %}{{ b.username }}{% endif %}{% endfor %}{% else %}Global{% endif %} uchun xabarlar
+            </p>
         </div>
         
         <form method="post" action="/settings" class="p-8 space-y-8">
+            <input type="hidden" name="bot_id" value="{{ current_bot_id or '' }}">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Registration Welcome -->
                 <div class="space-y-3">
@@ -54,9 +76,9 @@
                     
                     <select name="sub_success_media_type" 
                         class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm mt-2 dark:text-white appearance-none">
-                        <option value="">{{ _('no_media') }}</option>
-                        <option value="photo">{{ _('photo') }}</option>
-                        <option value="video">{{ _('video') }}</option>
+                        <option value="" {% if not sub_success_media_type %}selected{% endif %}>{{ _('no_media') }}</option>
+                        <option value="photo" {% if sub_success_media_type == 'photo' %}selected{% endif %}>{{ _('photo') }}</option>
+                        <option value="video" {% if sub_success_media_type == 'video' %}selected{% endif %}>{{ _('video') }}</option>
                     </select>
                 </div>
             </div>

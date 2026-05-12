@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DateTime as _DateTime
 
@@ -109,10 +109,17 @@ class Settings(Base):
     __tablename__ = "settings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    key: Mapped[str] = mapped_column(String(255), nullable=False)
     value: Mapped[str] = mapped_column(Text, nullable=False)
+    bot_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("bots.id", ondelete="CASCADE"), nullable=True
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+
+    __table_args__ = (
+        UniqueConstraint("key", "bot_id", name="uq_settings_key_bot"),
     )
 
 
@@ -255,3 +262,21 @@ class Bot(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+
+    required_chats: Mapped[list["RequiredChat"]] = relationship(
+        back_populates="bot", cascade="all, delete-orphan"
+    )
+
+
+class RequiredChat(Base):
+    __tablename__ = "required_chats"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    url: Mapped[str] = mapped_column(String(255), nullable=False)
+    bot_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("bots.id", ondelete="CASCADE"), nullable=True
+    )
+
+    bot: Mapped["Bot"] = relationship(back_populates="required_chats")

@@ -25,14 +25,16 @@ async def check_chat_subscription(bot: Bot, chat_id: int, user_id: int) -> bool:
 async def check_all_subscriptions(bot: Bot, user_id: int, session: AsyncSession) -> tuple[bool, list[dict]]:
     """Barcha majburiy obunalarni tekshirish.
     Returns: (all_subscribed: bool, unsubscribed_chats: list)"""
-    required_chats = await get_required_chats(session)
+    bot_db_id = getattr(bot, 'db_id', None)
+    required_chats = await get_required_chats(session, bot_id=bot_db_id)
     
     if not required_chats:
         return True, []
     
     unsubscribed = []
     for chat in required_chats:
-        is_subscribed = await check_chat_subscription(bot, chat["id"], user_id)
+        # Note: chat_id is the Telegram ID from the model
+        is_subscribed = await check_chat_subscription(bot, chat["chat_id"], user_id)
         if not is_subscribed:
             unsubscribed.append(chat)
     
