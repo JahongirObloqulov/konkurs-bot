@@ -13,7 +13,7 @@ from sqlalchemy import select
 
 from app.config import Config
 from app.db.engine import create_engine, create_session_pool, init_db
-from app.handlers import admin, start, user, events, registration
+from app.handlers import admin, start, user, events, registration, referral, shop
 from app.middlewares.db_middleware import DbSessionMiddleware
 from web.app import app as web_app
 
@@ -44,7 +44,7 @@ bot = Bot(
 dp = Dispatcher(storage=MemoryStorage())
 dp.update.middleware(DbSessionMiddleware(session_pool=session_pool))
 dp["config"] = config
-dp.include_routers(start.router, registration.router, admin.router, user.router, events.router)
+dp.include_routers(start.router, registration.router, referral.router, shop.router, admin.router, user.router, events.router)
 
 # Attach bot to web_app state for access in routes
 web_app.state.bot = bot
