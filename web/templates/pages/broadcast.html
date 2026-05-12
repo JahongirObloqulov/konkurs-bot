@@ -53,15 +53,24 @@
                                 <div class="w-full md:w-1/3">
                                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Tur</label>
                                     <select name="media_type" class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all dark:text-white text-sm">
-                                        <option value="photo">Rasm</option>
+                                        <option value="photo">Rasm (Photo)</option>
                                         <option value="video">Video</option>
+                                        <option value="voice">Ovozli xabar (Voice)</option>
+                                        <option value="video_note">Video Note (Dumaloq)</option>
+                                        <option value="document">Hujjat (Document)</option>
                                     </select>
                                 </div>
                                 <div class="w-full md:w-2/3">
                                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">File ID</label>
-                                    <input type="text" name="file_id" 
-                                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
-                                        placeholder="Telegram File ID">
+                                    <div class="relative">
+                                        <input type="text" name="file_id" oninput="detectMediaType(this)"
+                                            class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
+                                            placeholder="Telegram File ID">
+                                        <div class="absolute right-3 top-1/2 -translate-y-1/2 hidden media-loader">
+                                            <div class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <p class="media-status text-[9px] font-bold mt-1 ml-1 text-slate-500"></p>
                                 </div>
                                 <button type="button" onclick="this.parentElement.remove()" class="absolute -right-2 -top-2 md:opacity-0 md:group-hover:opacity-100 w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-rose-600 transition-all z-10">
                                     <i class="bi bi-x text-xl"></i>
@@ -368,21 +377,74 @@ function addMediaInput() {
         <div class="w-full md:w-1/3">
             <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Tur</label>
             <select name="media_type" class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all dark:text-white text-sm">
-                <option value="photo">Rasm</option>
+                <option value="photo">Rasm (Photo)</option>
                 <option value="video">Video</option>
+                <option value="voice">Ovozli xabar (Voice)</option>
+                <option value="video_note">Video Note (Dumaloq)</option>
+                <option value="document">Hujjat (Document)</option>
             </select>
         </div>
         <div class="w-full md:w-2/3">
             <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">File ID</label>
-            <input type="text" name="file_id" 
-                class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
-                placeholder="Telegram File ID">
+            <div class="relative">
+                <input type="text" name="file_id" oninput="detectMediaType(this)"
+                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
+                    placeholder="Telegram File ID">
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 hidden media-loader">
+                    <div class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                </div>
+            </div>
+            <p class="media-status text-[9px] font-bold mt-1 ml-1 text-slate-500"></p>
         </div>
         <button type="button" onclick="this.parentElement.remove()" class="absolute -right-2 -top-2 w-8 h-8 bg-white dark:bg-slate-800 text-rose-500 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center shadow-sm hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">
             <i class="bi bi-x text-xl"></i>
         </button>
     `;
     container.appendChild(div);
+}
+
+let mediaTimers = {};
+
+function detectMediaType(input) {
+    const row = input.closest('.flex');
+    const typeSelect = row.querySelector('select[name="media_type"]');
+    const loader = row.querySelector('.media-loader');
+    const status = row.querySelector('.media-status');
+    const val = input.value.trim();
+    
+    // Unique ID for timer based on input index or similar
+    const inputIdx = Array.from(document.querySelectorAll('input[name="file_id"]')).indexOf(input);
+    clearTimeout(mediaTimers[inputIdx]);
+    
+    if (val.length < 10) {
+        status.innerText = '';
+        return;
+    }
+
+    mediaTimers[inputIdx] = setTimeout(async () => {
+        loader.classList.remove('hidden');
+        status.innerText = 'Aniqlanmoqda...';
+        status.className = 'media-status text-[9px] font-bold mt-1 ml-1 text-slate-500';
+        
+        try {
+            const res = await fetch(`/api/media/info/${val}`);
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                typeSelect.value = data.file_type;
+                status.innerText = `✅ ${data.file_type.toUpperCase()}`;
+                status.className = 'media-status text-[9px] font-bold mt-1 ml-1 text-emerald-500';
+            } else {
+                status.innerText = `❌ Topilmadi`;
+                status.className = 'media-status text-[9px] font-bold mt-1 ml-1 text-rose-500';
+            }
+        } catch (e) {
+            status.innerText = '❌ Xatolik';
+            status.className = 'media-status text-[9px] font-bold mt-1 ml-1 text-rose-500';
+        } finally {
+            loader.classList.add('hidden');
+        }
+    }, 800);
 }
 
 function addFromGallery(fileId, fileType) {
@@ -395,8 +457,14 @@ function addFromGallery(fileId, fileType) {
     for (let input of inputs) {
         if (!input.value.trim()) {
             input.value = fileId;
-            const select = input.parentElement.previousElementSibling.querySelector('select');
+            const select = input.closest('.flex').querySelector('select[name="media_type"]');
             if (select) select.value = fileType;
+            // Trigger status update
+            const status = input.closest('.flex').querySelector('.media-status');
+            if (status) {
+                status.innerText = `✅ GALLEREYADAN`;
+                status.className = 'media-status text-[9px] font-bold mt-1 ml-1 text-emerald-500';
+            }
             filled = true;
             break;
         }
@@ -410,15 +478,24 @@ function addFromGallery(fileId, fileType) {
             <div class="w-full md:w-1/3">
                 <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Tur</label>
                 <select name="media_type" class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all dark:text-white text-sm">
-                    <option value="photo" ${fileType === 'photo' ? 'selected' : ''}>Rasm</option>
+                    <option value="photo" ${fileType === 'photo' ? 'selected' : ''}>Rasm (Photo)</option>
                     <option value="video" ${fileType === 'video' ? 'selected' : ''}>Video</option>
+                    <option value="voice" ${fileType === 'voice' ? 'selected' : ''}>Ovozli xabar (Voice)</option>
+                    <option value="video_note" ${fileType === 'video_note' ? 'selected' : ''}>Video Note (Dumaloq)</option>
+                    <option value="document" ${fileType === 'document' ? 'selected' : ''}>Hujjat (Document)</option>
                 </select>
             </div>
             <div class="w-full md:w-2/3">
                 <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">File ID</label>
-                <input type="text" name="file_id" value="${fileId}"
-                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
-                    placeholder="Telegram File ID">
+                <div class="relative">
+                    <input type="text" name="file_id" value="${fileId}" oninput="detectMediaType(this)"
+                        class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
+                        placeholder="Telegram File ID">
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 hidden media-loader">
+                        <div class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                </div>
+                <p class="media-status text-[9px] font-bold mt-1 ml-1 text-emerald-500">✅ GALLEREYADAN</p>
             </div>
             <button type="button" onclick="this.parentElement.remove()" class="absolute -right-2 -top-2 w-8 h-8 bg-white dark:bg-slate-800 text-rose-500 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center shadow-sm hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">
                 <i class="bi bi-x text-xl"></i>
