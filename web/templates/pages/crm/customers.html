@@ -12,10 +12,16 @@
             </span>
             <input type="text" placeholder="{{ _('search') }}" class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm dark:text-white transition-all">
         </div>
-        <a href="/crm/customers/new" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm">
-            <i class="bi bi-person-plus text-lg"></i>
-            {{ _('add_customer') }}
-        </a>
+        <div class="flex items-center gap-3">
+            <a href="/export/crm/customers/excel" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+                <i class="bi bi-download"></i>
+                Export Excel
+            </a>
+            <a href="/crm/customers/new" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm">
+                <i class="bi bi-person-plus text-lg"></i>
+                {{ _('add_customer') }}
+            </a>
+        </div>
     </div>
 
     <div class="ui-card rounded-xl overflow-hidden">

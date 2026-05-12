@@ -189,13 +189,18 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
     )
 
 
-@router.get("/export/dashboard/{format}")
-async def export_dashboard(format: str, user: dict = Depends(require_auth)):
+@router.get("/export/users/{format}")
+async def export_users(format: str, bot_id: Optional[int] = None, user: dict = Depends(require_auth)):
     from app.db.models import User
     from app.services.export_service import generate_excel, generate_pdf
+    from app.services.audit_service import log_action
     
     async with async_session_maker() as session:
-        users_res = await session.execute(select(User))
+        query = select(User)
+        if bot_id:
+            query = query.where(User.bot_id == bot_id)
+        
+        users_res = await session.execute(query.order_by(User.registered_at.desc()))
         users = users_res.scalars().all()
         
         data = []
@@ -204,12 +209,15 @@ async def export_dashboard(format: str, user: dict = Depends(require_auth)):
                 "User ID": u.user_id,
                 "Username": u.username or "N/A",
                 "Full Name": u.full_name or "N/A",
+                "Phone": u.phone or "N/A",
+                "Location": u.location or "N/A",
                 "Referrals": u.referral_count,
+                "Added Users": u.added_users_count,
+                "Bot ID": u.bot_id or "Master",
                 "Joined At": u.registered_at.strftime('%Y-%m-%d %H:%M') if u.registered_at else "N/A"
             })
             
-        from app.services.audit_service import log_action
-        await log_action(session, user['sub'], "Export Dashboard", f"Format: {format}")
+        await log_action(session, user['sub'], "Export Users", f"Format: {format}, Bot: {bot_id or 'All'}")
 
         if format == "excel":
             content, filename = await generate_excel(data, "users_report")
@@ -220,6 +228,95 @@ async def export_dashboard(format: str, user: dict = Depends(require_auth)):
             )
         else:
             content, filename = await generate_pdf(data, "Users Report")
+            return Response(
+                content=content,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+
+
+@router.get("/export/audit-logs/{format}")
+async def export_audit_logs(format: str, user: dict = Depends(require_auth)):
+    from app.db.models import AuditLog
+    from app.services.export_service import generate_excel, generate_pdf
+    from app.services.audit_service import log_action
+    
+    async with async_session_maker() as session:
+        res = await session.execute(select(AuditLog).order_by(AuditLog.created_at.desc()))
+        logs = res.scalars().all()
+        
+        data = []
+        for l in logs:
+            data.append({
+                "ID": l.id,
+                "Admin": l.admin_username,
+                "Action": l.action,
+                "Details": l.details or "",
+                "Date Time": l.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            })
+            
+        await log_action(session, user['sub'], "Export Audit Logs", f"Format: {format}")
+
+        if format == "excel":
+            content, filename = await generate_excel(data, "audit_logs")
+            return Response(
+                content=content,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:
+            content, filename = await generate_pdf(data, "Audit Logs")
+            return Response(
+                content=content,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+
+
+@router.get("/export/crm/customers/{format}")
+async def export_crm_customers(format: str, business_id: Optional[int] = None, user: dict = Depends(require_auth)):
+    from app.db.models import Customer, Business
+    from app.services.export_service import generate_excel, generate_pdf
+    from app.services.audit_service import log_action
+    
+    async with async_session_maker() as session:
+        query = select(Customer)
+        prefix = "crm_customers"
+        title = "CRM Customers"
+        
+        if business_id:
+            query = query.where(Customer.business_id == business_id)
+            biz = await session.get(Business, business_id)
+            if biz:
+                prefix = f"customers_{biz.name.lower().replace(' ', '_')}"
+                title = f"Customers: {biz.name}"
+        
+        res = await session.execute(query.order_by(Customer.created_at.desc()))
+        customers = res.scalars().all()
+        
+        data = []
+        for c in customers:
+            data.append({
+                "Customer ID": c.id,
+                "Name": c.name,
+                "Phone": c.phone or "N/A",
+                "Email": c.email or "N/A",
+                "Source": c.source or "Direct",
+                "Business ID": c.business_id or "Global",
+                "Created At": c.created_at.strftime('%Y-%m-%d %H:%M') if c.created_at else "N/A"
+            })
+            
+        await log_action(session, user['sub'], "Export CRM Customers", f"Format: {format}, Business: {business_id or 'All'}")
+
+        if format == "excel":
+            content, filename = await generate_excel(data, prefix)
+            return Response(
+                content=content,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:
+            content, filename = await generate_pdf(data, title)
             return Response(
                 content=content,
                 media_type="application/pdf",
@@ -493,7 +590,7 @@ async def contest_pick_winners(request: Request, contest_id: int, user: dict = D
 @router.get("/chats", response_class=HTMLResponse)
 async def chats_page(request: Request, user: dict = Depends(require_auth)):
     from app.services.settings_service import get_required_chats
-    from app.db.models import Media
+    from app.db.models import Media, Bot
 
     async with async_session_maker() as session:
         chats = await get_required_chats(session)

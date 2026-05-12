@@ -13,8 +13,12 @@
             </span>
             <input type="text" placeholder="{{ _('search_users_placeholder') }}" class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm dark:text-white transition-all">
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-4">
             <span class="text-sm font-bold text-slate-500">{{ _('total') }}: <span class="text-slate-900 dark:text-white font-bold">{{ users|length }}</span></span>
+            <a href="/export/users/excel" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2">
+                <i class="bi bi-download"></i>
+                Export Excel
+            </a>
         </div>
     </div>
 
