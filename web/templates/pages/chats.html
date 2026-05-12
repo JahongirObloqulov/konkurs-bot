@@ -16,17 +16,22 @@
                 <form method="post" action="/chats/add" class="space-y-6">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 ml-1">{{ _('chat_id') }} <span class="text-rose-500">*</span></label>
-                        <input type="text" name="chat_id" required 
-                            class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
-                            placeholder="-1001234567890">
-                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2 font-bold ml-1">ID ni olish uchun @username_to_id_bot dan foydalaning.</p>
+                        <div class="relative">
+                            <input type="text" id="chat_id_input" name="chat_id" required 
+                                class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
+                                placeholder="-1001234567890">
+                            <div id="loading_spinner" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
+                                <div class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                            </div>
+                        </div>
+                        <p id="chat_info_status" class="text-[10px] mt-2 font-bold ml-1 text-slate-500 dark:text-slate-400">ID ni olish uchun @username_to_id_bot dan foydalaning.</p>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 ml-1">{{ _('username_optional') }}</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-5 flex items-center text-primary font-bold">@</span>
-                            <input type="text" name="username" 
+                            <input type="text" id="username_input" name="username" 
                                 class="block w-full pl-10 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white text-sm"
                                 placeholder="kanal_nomi">
                         </div>
@@ -34,11 +39,60 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 ml-1">{{ _('chat_type') }}</label>
-                        <select name="type" class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all dark:text-white appearance-none text-sm">
+                        <select id="type_select" name="type" class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all dark:text-white appearance-none text-sm">
                             <option value="channel">📢 {{ _('channel') }}</option>
                             <option value="group">👥 {{ _('group') }}</option>
                         </select>
                     </div>
+
+<script>
+const chatInput = document.getElementById('chat_id_input');
+const usernameInput = document.getElementById('username_input');
+const typeSelect = document.getElementById('type_select');
+const loadingSpinner = document.getElementById('loading_spinner');
+const statusText = document.getElementById('chat_info_status');
+
+let debounceTimer;
+
+chatInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    const val = chatInput.value.trim();
+    
+    if (val.length < 5) {
+        statusText.innerText = 'ID ni olish uchun @username_to_id_bot dan foydalaning.';
+        statusText.classList.remove('text-emerald-500', 'text-rose-500');
+        statusText.classList.add('text-slate-500');
+        return;
+    }
+
+    debounceTimer = setTimeout(async () => {
+        loadingSpinner.classList.remove('hidden');
+        statusText.innerText = 'Ma\'lumotlar yuklanmoqda...';
+        statusText.classList.remove('text-rose-500', 'text-emerald-500');
+        
+        try {
+            const res = await fetch(`/api/chats/${val}`);
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                usernameInput.value = data.username || '';
+                typeSelect.value = data.type === 'supergroup' || data.type === 'group' ? 'group' : 'channel';
+                
+                statusText.innerText = `✅ Topildi: ${data.title}`;
+                statusText.classList.add('text-emerald-500');
+            } else {
+                statusText.innerText = `❌ ${data.message}`;
+                statusText.classList.add('text-rose-500');
+            }
+        } catch (e) {
+            statusText.innerText = '❌ Xatolik yuz berdi';
+            statusText.classList.add('text-rose-500');
+        } finally {
+            loadingSpinner.classList.add('hidden');
+        }
+    }, 800);
+});
+</script>
 
                     <button type="submit" class="w-full py-4 btn-primary rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                         <i class="bi bi-plus-lg"></i>

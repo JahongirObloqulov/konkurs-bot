@@ -725,6 +725,35 @@ async def chat_remove(request: Request, chat_id: int, user: dict = Depends(requi
     return RedirectResponse(url="/chats", status_code=302)
 
 
+@router.get("/api/chats/{chat_id}")
+async def api_get_chat_info(chat_id: str, request: Request, user: dict = Depends(require_auth)):
+    from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
+    bot = request.app.state.bot
+    
+    try:
+        # Convert to int if it's a numeric string
+        c_id = int(chat_id) if chat_id.replace("-", "").isdigit() else chat_id
+        chat = await bot.get_chat(c_id)
+        
+        return JSONResponse({
+            "status": "success",
+            "id": chat.id,
+            "title": chat.title or chat.full_name,
+            "username": chat.username,
+            "type": chat.type
+        })
+    except (TelegramBadRequest, TelegramForbiddenError) as e:
+        return JSONResponse({
+            "status": "error",
+            "message": f"Chat topilmadi yoki bot admin emas: {str(e)}"
+        }, status_code=400)
+    except Exception as e:
+        return JSONResponse({
+            "status": "error",
+            "message": str(e)
+        }, status_code=500)
+
+
 @router.get("/users", response_class=HTMLResponse)
 async def users_page(request: Request, user: dict = Depends(require_auth)):
     from app.db.models import User
