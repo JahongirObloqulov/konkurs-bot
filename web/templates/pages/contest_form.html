@@ -67,8 +67,14 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 ml-1">{{ _('file_id') }}</label>
-                    <input type="text" name="media_file_id" value="{{ contest.media_file_id if contest else '' }}" 
+                    <div class="flex items-center justify-between mb-2 ml-1">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{{ _('file_id') }}</label>
+                        <button type="button" onclick="showGalleryModal()" class="flex items-center gap-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest hover:opacity-80 transition-all">
+                            <i class="bi bi-images"></i>
+                            {{ _('select_from_gallery') }}
+                        </button>
+                    </div>
+                    <input type="text" id="contest_file_id" name="media_file_id" value="{{ contest.media_file_id if contest else '' }}" 
                         class="block w-full px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-mono text-xs dark:text-white"
                         placeholder="Telegram File ID">
                 </div>
@@ -112,4 +118,97 @@
         </form>
     </div>
 </div>
+
+<!-- Media Gallery Modal -->
+<div id="galleryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[85vh] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+                    <i class="bi bi-images text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-900 dark:text-white">Media Gallereya</h4>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Faylni tanlang</p>
+                </div>
+            </div>
+            <button onclick="hideGalleryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto flex-1">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="gallery-grid">
+                {% for item in media_gallery %}
+                <div onclick="selectMedia('{{ item.file_id }}', '{{ item.file_type }}')" 
+                    class="group relative aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-emerald-500/30 transition-all border-2 border-transparent hover:border-emerald-500">
+                    
+                    {% if item.file_type == 'photo' %}
+                    <div class="w-full h-full flex flex-col items-center justify-center gap-2">
+                        <i class="bi bi-image text-3xl text-slate-400"></i>
+                        <span class="text-[8px] font-bold text-slate-500 truncate px-2 w-full text-center">{{ item.file_id[:10] }}...</span>
+                    </div>
+                    {% else %}
+                    <div class="w-full h-full flex flex-col items-center justify-center gap-2">
+                        <i class="bi bi-play-circle-fill text-3xl text-slate-400"></i>
+                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Video</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                        <p class="text-[8px] text-white font-medium truncate w-full">{{ item.description or item.file_id }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not media_gallery %}
+                <div class="col-span-full py-12 text-center text-slate-500 font-bold text-xs">
+                    {{ _('no_media_yet') }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const galleryModal = document.getElementById('galleryModal');
+const fileIdInput = document.getElementById('contest_file_id');
+const mediaTypeSelect = document.querySelector('select[name="media_type"]');
+
+function showGalleryModal() {
+    galleryModal.classList.remove('hidden');
+    galleryModal.classList.add('flex');
+}
+
+function hideGalleryModal() {
+    galleryModal.classList.add('hidden');
+    galleryModal.classList.remove('flex');
+}
+
+function selectMedia(fileId, fileType) {
+    fileIdInput.value = fileId;
+    if (mediaTypeSelect) {
+        mediaTypeSelect.value = fileType;
+    }
+    hideGalleryModal();
+    
+    // Feedback
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-8 right-8 bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-2xl z-[200] animate-in slide-in-from-right duration-300';
+    toast.innerHTML = '<i class="bi bi-check-circle-fill mr-2"></i> Gallereyadan tanlandi';
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('animate-out', 'fade-out', 'slide-out-to-right');
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
+}
+
+// Close on escape
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideGalleryModal();
+});
+</script>
 {% endblock %}

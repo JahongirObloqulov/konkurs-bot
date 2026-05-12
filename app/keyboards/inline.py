@@ -363,3 +363,14 @@ def get_requirement_settings_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_create")
     )
     return builder.as_markup()
+
+
+def get_language_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="🇺🇿 O'zbekcha", callback_data="set_lang_uz"),
+        InlineKeyboardButton(text="🇷🇺 Русский", callback_data="set_lang_ru"),
+        InlineKeyboardButton(text="🇺🇸 English", callback_data="set_lang_en"),
+    )
+    return builder.as_markup()
+

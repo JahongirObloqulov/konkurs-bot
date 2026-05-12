@@ -334,9 +334,14 @@ async def export_contest_participants(contest_id: int, format: str, user: dict =
 
 @router.get("/contests/new", response_class=HTMLResponse)
 async def contest_new(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import Media
+    async with async_session_maker() as session:
+        res = await session.execute(select(Media).order_by(Media.created_at.desc()))
+        media_gallery = res.scalars().all()
+        
     return templates.TemplateResponse(
         "pages/contest_form.html",
-        {"request": request, "user": user, "contest": None}
+        {"request": request, "user": user, "contest": None, "media_gallery": media_gallery}
     )
 
 
@@ -789,30 +794,46 @@ async def api_stats(user: dict = Depends(require_auth)):
 
 @router.get("/broadcast", response_class=HTMLResponse)
 async def broadcast_page(request: Request, user: dict = Depends(require_auth)):
-    from app.db.models import BroadcastLog
+    from app.db.models import BroadcastLog, Media
     success = request.query_params.get("success")
     error = request.query_params.get("error")
     
     async with async_session_maker() as session:
+        # Get broadcast logs
         res = await session.execute(
             select(BroadcastLog).order_by(BroadcastLog.created_at.desc()).limit(10)
         )
         logs = res.scalars().all()
         
+        # Get media items for selection
+        media_res = await session.execute(select(Media).order_by(Media.created_at.desc()))
+        media_gallery = media_res.scalars().all()
+        
     return templates.TemplateResponse(
         "pages/broadcast.html",
-        {"request": request, "user": user, "success": success, "error": error, "logs": logs}
+        {
+            "request": request, 
+            "user": user, 
+            "success": success, 
+            "error": error, 
+            "logs": logs,
+            "media_gallery": media_gallery
+        }
     )
 
 
 @router.post("/broadcast")
 async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
-    from app.services.user_service import get_all_user_ids
+    from app.db.models import User, BroadcastLog, AuditLog
     bot = request.app.state.bot
     import asyncio
+    import json
     
     form = await request.form()
-    message_text = form.get("message")
+    message_uz = form.get("message_uz")
+    message_ru = form.get("message_ru") or message_uz
+    message_en = form.get("message_en") or message_uz
+    
     media_types = form.getlist("media_type")
     file_ids_raw = form.getlist("file_id")
     
@@ -823,16 +844,25 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
             if fid.strip():
                 media_items.append({"type": mtype, "id": fid.strip()})
     
-    import json
+    messages = {
+        "uz": message_uz,
+        "ru": message_ru,
+        "en": message_en
+    }
+    
     async with async_session_maker() as session:
-        from app.db.models import BroadcastLog, AuditLog
+        # Get all users with their language
+        res = await session.execute(select(User.user_id, User.language_code))
+        users_data = res.all() # list of tuples (user_id, language_code)
         
-        user_ids = await get_all_user_ids(session)
-        
-        # Save to BroadcastLog
+        if not users_data:
+            return RedirectResponse(url="/broadcast?error=Foydalanuvchilar topilmadi", status_code=302)
+
+        # Save to BroadcastLog (storing as JSON for history)
+        blog_msg = json.dumps(messages)
         blog = BroadcastLog(
             admin_username=user['sub'],
-            message=message_text,
+            message=blog_msg,
             media_data=json.dumps(media_items),
         )
         session.add(blog)
@@ -841,49 +871,56 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
         audit = AuditLog(
             admin_username=user['sub'],
             action="Broadcast",
-            details=f"Users: {len(user_ids)}, Media: {len(media_items)} files"
+            details=f"Users: {len(users_data)}, Multi-lang: {', '.join(messages.keys())}"
         )
         session.add(audit)
         await session.commit()
-    
-    if not user_ids:
-        return RedirectResponse(url="/broadcast?error=Foydalanuvchilar topilmadi", status_code=302)
 
-    # Build media group once if needed
-    album = None
-    if len(media_items) > 1:
+    # Background task for sending
+    async def send_broadcast():
         from aiogram.utils.media_group import MediaGroupBuilder
-        album_builder = MediaGroupBuilder(caption=message_text)
-        for item in media_items:
-            if item["type"] == "photo":
-                album_builder.add_photo(media=item["id"])
-            elif item["type"] == "video":
-                album_builder.add_video(media=item["id"])
-        album = album_builder.build()
-
-    # Run broadcast in background
-    async def run_web_broadcast():
-        count = 0
-        for uid in user_ids:
+        from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
+        
+        success_count = 0
+        fail_count = 0
+        
+        for user_id, lang_code in users_data:
             try:
-                if album:
-                    await bot.send_media_group(uid, media=album)
+                lang = lang_code or "uz"
+                text = messages.get(lang, message_uz)
+                
+                if not media_items:
+                    await bot.send_message(user_id, text, parse_mode="HTML")
                 elif len(media_items) == 1:
-                    item = media_items[0]
-                    if item["type"] == "photo":
-                        await bot.send_photo(uid, item["id"], caption=message_text, parse_mode="HTML")
-                    elif item["type"] == "video":
-                        await bot.send_video(uid, item["id"], caption=message_text, parse_mode="HTML")
+                    m = media_items[0]
+                    if m['type'] == 'photo':
+                        await bot.send_photo(user_id, m['id'], caption=text, parse_mode="HTML")
+                    else:
+                        await bot.send_video(user_id, m['id'], caption=text, parse_mode="HTML")
                 else:
-                    await bot.send_message(uid, message_text, parse_mode="HTML")
-                count += 1
-                await asyncio.sleep(0.05)
+                    # Media group (max 10)
+                    album_builder = MediaGroupBuilder(caption=text)
+                    for m in media_items[:10]:
+                        if m['type'] == 'photo':
+                            album_builder.add_photo(media=m['id'])
+                        else:
+                            album_builder.add_video(media=m['id'])
+                    await bot.send_media_group(user_id, media=album_builder.build())
+                
+                success_count += 1
+                await asyncio.sleep(0.05) # Rate limiting
+            except TelegramForbiddenError:
+                fail_count += 1
+            except TelegramRetryAfter as e:
+                await asyncio.sleep(e.retry_after)
             except Exception:
-                pass
+                fail_count += 1
+        
+        print(f"Broadcast finished: {success_count} success, {fail_count} failed")
+
+    asyncio.create_task(send_broadcast())
     
-    asyncio.create_task(run_web_broadcast())
-    
-    return RedirectResponse(url=f"/broadcast?success={len(user_ids)} ta foydalanuvchiga yuborish boshlandi", status_code=302)
+    return RedirectResponse(url=f"/broadcast?success={len(users_data)} ta foydalanuvchiga yuborish boshlandi", status_code=302)
 
 @router.get("/api/contests")
 async def api_contests(user: dict = Depends(require_auth)):

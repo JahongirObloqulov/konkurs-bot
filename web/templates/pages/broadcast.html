@@ -16,16 +16,36 @@
                 <div class="p-8">
                     <form method="post" action="/broadcast" class="space-y-6">
                         <div>
-                            <div class="flex items-center justify-between mb-2 ml-1">
+                            <div class="flex items-center justify-between mb-4 ml-1">
                                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{{ _('message_text') }} <span class="text-rose-500">*</span></label>
                                 <button type="button" onclick="showAIModal()" class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest hover:opacity-80 transition-all">
                                     <i class="bi bi-stars"></i>
                                     AI Yordamchi
                                 </button>
                             </div>
-                            <textarea id="broadcast_message" name="message" rows="6" required 
-                                class="block w-full px-5 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white text-sm leading-relaxed"
-                                placeholder="{{ _('message_text') }}..."></textarea>
+                            
+                            <!-- Language Tabs -->
+                            <div class="flex gap-2 mb-4 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl w-fit">
+                                <button type="button" onclick="switchLang('uz')" id="tab-uz" class="px-4 py-2 text-[10px] font-bold rounded-lg transition-all bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm">UZBEK</button>
+                                <button type="button" onclick="switchLang('ru')" id="tab-ru" class="px-4 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">RUSSIAN</button>
+                                <button type="button" onclick="switchLang('en')" id="tab-en" class="px-4 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">ENGLISH</button>
+                            </div>
+
+                            <div id="content-uz" class="lang-content">
+                                <textarea id="broadcast_message_uz" name="message_uz" rows="6" required 
+                                    class="block w-full px-5 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white text-sm leading-relaxed"
+                                    placeholder="O'zbekcha xabar..."></textarea>
+                            </div>
+                            <div id="content-ru" class="lang-content hidden">
+                                <textarea id="broadcast_message_ru" name="message_ru" rows="6" 
+                                    class="block w-full px-5 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white text-sm leading-relaxed"
+                                    placeholder="Текст на русском..."></textarea>
+                            </div>
+                            <div id="content-en" class="lang-content hidden">
+                                <textarea id="broadcast_message_en" name="message_en" rows="6" 
+                                    class="block w-full px-5 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white text-sm leading-relaxed"
+                                    placeholder="English message..."></textarea>
+                            </div>
                         </div>
 
                         <div id="media-inputs" class="space-y-4">
@@ -49,10 +69,14 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-start">
-                            <button type="button" onclick="addMediaInput()" class="mt-2 px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center gap-2 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all shadow-sm">
+                        <div class="flex flex-wrap gap-3">
+                            <button type="button" onclick="addMediaInput()" class="mt-2 px-4 py-2.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center gap-2 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all shadow-sm border border-indigo-100 dark:border-indigo-500/20">
                                 <i class="bi bi-plus-circle-fill"></i>
-                                Yana fayl qo'shish
+                                Yangi maydon
+                            </button>
+                            <button type="button" onclick="showGalleryModal()" class="mt-2 px-4 py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center gap-2 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all shadow-sm border border-emerald-100 dark:border-emerald-500/20">
+                                <i class="bi bi-images"></i>
+                                Gallereyadan tanlash
                             </button>
                         </div>
 
@@ -119,7 +143,12 @@
                             <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{{ log.admin_username }}</span>
                         </div>
                         <p class="text-sm text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed font-medium">
-                            {{ log.message }}
+                            {% if log.message.startswith('{') %}
+                                {% set msg_data = log.message|from_json %}
+                                {{ msg_data.uz }}
+                            {% else %}
+                                {{ log.message }}
+                            {% endif %}
                         </p>
                     </div>
                     <div class="shrink-0 flex flex-col items-end gap-2">
@@ -149,6 +178,64 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Media Gallery Modal -->
+<div id="galleryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[85vh] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+                    <i class="bi bi-images text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-900 dark:text-white">Media Gallereya</h4>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Broadcast uchun fayl tanlang</p>
+                </div>
+            </div>
+            <button onclick="hideGalleryModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto grow">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for item in media_gallery %}
+                <div class="group relative bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 hover:border-emerald-500 transition-all cursor-pointer overflow-hidden" 
+                     onclick="addFromGallery('{{ item.file_id }}', '{{ item.file_type }}')">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-700">
+                            {% if item.file_type == 'photo' %}<i class="bi bi-image text-lg"></i>
+                            {% elif item.file_type == 'video' %}<i class="bi bi-play-circle text-lg"></i>
+                            {% else %}<i class="bi bi-file-earmark-text text-lg"></i>{% endif %}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-slate-900 dark:text-white text-xs truncate">{{ item.description or 'Nomsiz fayl' }}</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase">{{ item.file_type }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/50 font-mono text-[9px] text-slate-500 break-all line-clamp-1">
+                        {{ item.file_id }}
+                    </div>
+                    
+                    <div class="absolute inset-0 bg-emerald-600/0 group-hover:bg-emerald-600/5 flex items-center justify-center transition-all">
+                        <span class="opacity-0 group-hover:opacity-100 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transform translate-y-2 group-hover:translate-y-0 transition-all shadow-lg">Tanlash</span>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not media_gallery %}
+                <div class="col-span-full py-12 text-center">
+                    <div class="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-3">
+                        <i class="bi bi-images text-2xl"></i>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-xs font-bold">Gallereyada fayllar yo'q</p>
+                    <a href="/media-gallery" class="inline-block mt-4 text-emerald-600 text-[10px] font-bold uppercase tracking-widest border-b border-emerald-600/30 hover:border-emerald-600 transition-all">Gallereyaga o'tish</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- AI Assistant Modal -->
 <div id="aiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
@@ -187,7 +274,23 @@
 const aiModal = document.getElementById('aiModal');
 const aiPrompt = document.getElementById('aiPrompt');
 const generateBtn = document.getElementById('generateBtn');
-const messageArea = document.getElementById('broadcast_message');
+let currentLang = 'uz';
+
+function switchLang(lang) {
+    currentLang = lang;
+    // Update tabs
+    ['uz', 'ru', 'en'].forEach(l => {
+        const btn = document.getElementById(`tab-${l}`);
+        const content = document.getElementById(`content-${l}`);
+        if (l === lang) {
+            btn.className = 'px-4 py-2 text-[10px] font-bold rounded-lg transition-all bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm';
+            content.classList.remove('hidden');
+        } else {
+            btn.className = 'px-4 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300';
+            content.classList.add('hidden');
+        }
+    });
+}
 
 function showAIModal() {
     aiModal.classList.remove('hidden');
@@ -208,11 +311,13 @@ async function generateDraft() {
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin"></i> Tayyorlanmoqda...';
 
+    const messageArea = document.getElementById(`broadcast_message_${currentLang}`);
+
     try {
         const res = await fetch('/api/ai/draft', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt, lang: 'uz' })
+            body: JSON.stringify({ prompt, lang: currentLang })
         });
         const data = await res.json();
         
@@ -237,8 +342,23 @@ async function generateDraft() {
 
 // Close on escape
 window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hideAIModal();
+    if (e.key === 'Escape') {
+        hideAIModal();
+        hideGalleryModal();
+    }
 });
+
+const galleryModal = document.getElementById('galleryModal');
+
+function showGalleryModal() {
+    galleryModal.classList.remove('hidden');
+    galleryModal.classList.add('flex');
+}
+
+function hideGalleryModal() {
+    galleryModal.classList.add('hidden');
+    galleryModal.classList.remove('flex');
+}
 
 function addMediaInput() {
     const container = document.getElementById('media-inputs');
@@ -263,6 +383,61 @@ function addMediaInput() {
         </button>
     `;
     container.appendChild(div);
+}
+
+function addFromGallery(fileId, fileType) {
+    const container = document.getElementById('media-inputs');
+    
+    // Check if we can just fill an empty input
+    const inputs = container.querySelectorAll('input[name="file_id"]');
+    let filled = false;
+    
+    for (let input of inputs) {
+        if (!input.value.trim()) {
+            input.value = fileId;
+            const select = input.parentElement.previousElementSibling.querySelector('select');
+            if (select) select.value = fileType;
+            filled = true;
+            break;
+        }
+    }
+    
+    if (!filled) {
+        // Create new input row
+        const div = document.createElement('div');
+        div.className = 'flex flex-col md:flex-row gap-3 p-4 bg-emerald-50/30 dark:bg-emerald-500/5 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 transition-all animate-in slide-in-from-top-2 duration-200 relative group';
+        div.innerHTML = `
+            <div class="w-full md:w-1/3">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Tur</label>
+                <select name="media_type" class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all dark:text-white text-sm">
+                    <option value="photo" ${fileType === 'photo' ? 'selected' : ''}>Rasm</option>
+                    <option value="video" ${fileType === 'video' ? 'selected' : ''}>Video</option>
+                </select>
+            </div>
+            <div class="w-full md:w-2/3">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">File ID</label>
+                <input type="text" name="file_id" value="${fileId}"
+                    class="block w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:text-white font-mono text-sm"
+                    placeholder="Telegram File ID">
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="absolute -right-2 -top-2 w-8 h-8 bg-white dark:bg-slate-800 text-rose-500 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center shadow-sm hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">
+                <i class="bi bi-x text-xl"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    }
+    
+    hideGalleryModal();
+    
+    // Feedback
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-8 right-8 bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-2xl z-[200] animate-in slide-in-from-right duration-300';
+    toast.innerHTML = '<i class="bi bi-check-circle-fill mr-2"></i> Gallereyadan qo\'shildi';
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('animate-out', 'fade-out', 'slide-out-to-right');
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
 }
 </script>
 {% endblock %}

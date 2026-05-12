@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-async def get_ai_response(prompt: str, user_id: int = None) -> str:
+async def get_ai_response(prompt: str, user_id: int = None, lang: str = 'uz') -> str:
     """
     Calls OpenRouter to get an AI response for the bot user.
     """
@@ -12,7 +12,8 @@ async def get_ai_response(prompt: str, user_id: int = None) -> str:
     model = os.getenv("OPENROUTER_MODEL", "openrouter/free")
     
     if not api_key:
-        return "⚠️ AI xizmati vaqtinchalik o'chirilgan (API key topilmadi)."
+        msg = "⚠️ AI xizmati vaqtinchalik o'chirilgan (API key topilmadi)." if lang == 'uz' else "⚠️ AI service is temporarily disabled."
+        return msg
         
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -20,11 +21,13 @@ async def get_ai_response(prompt: str, user_id: int = None) -> str:
         "HTTP-Referer": "https://github.com/JahongirObloqulov/konkurs-bot",
     }
     
-    system_instruction = (
-        "Siz Konkurs Botining yordamchisisiz. Foydalanuvchilarga botdan foydalanish, "
-        "konkurslarda qatnashish va boshqa savollar bo'yicha yordam berasiz. "
-        "Javoblaringiz qisqa, do'stona va o'zbek tilida bo'lsin."
-    )
+    instructions = {
+        "uz": "Siz Konkurs Botining yordamchisisiz. Foydalanuvchilarga botdan foydalanish, konkurslarda qatnashish va boshqa savollar bo'yicha yordam berasiz. Javoblaringiz qisqa, do'stona va o'zbek tilida bo'lsin.",
+        "ru": "Вы помощник Konkurs Bot. Вы помогаете пользователям использовать бота, участвовать в конкурсах и отвечать на другие вопросы. Ваши ответы должны быть короткими, дружелюбными и на русском языке.",
+        "en": "You are the Konkurs Bot assistant. You help users with using the bot, participating in contests, and other questions. Your answers should be short, friendly, and in English."
+    }
+    
+    system_instruction = instructions.get(lang, instructions["uz"])
     
     payload = {
         "model": model,

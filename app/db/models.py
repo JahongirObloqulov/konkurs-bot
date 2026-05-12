@@ -93,6 +93,7 @@ class User(Base):
     referred_by_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     referral_count: Mapped[int] = mapped_column(Integer, default=0)
     added_users_count: Mapped[int] = mapped_column(Integer, default=0)
+    language_code: Mapped[str] = mapped_column(String(5), default="uz")
     registered_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )

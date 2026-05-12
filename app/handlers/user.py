@@ -26,6 +26,8 @@ from app.services.contest_service import (
 )
 from app.services.subscription_service import check_all_subscriptions
 from app.utils.formatting import format_contest_view, format_results_view
+from app.utils.translations import translate
+
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -327,28 +329,44 @@ class AIState(StatesGroup):
     chatting = State()
 
 @router.message(F.text == "🤖 AI Yordamchi")
-async def start_ai_chat(message: Message, state: FSMContext):
+async def start_ai_chat(message: Message, state: FSMContext, session: AsyncSession):
+    from app.services.user_service import get_user_by_id
+    user_obj = await get_user_by_id(session, message.from_user.id)
+    lang = user_obj.language_code if user_obj else 'uz'
+
     await state.set_state(AIState.chatting)
     kb = ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="❌ Chatni yakunlash")]],
+        keyboard=[[KeyboardButton(text=translate('cancel', lang))]],
         resize_keyboard=True
     )
+    
+    welcome_msg = "🤖 <b>AI Yordamchi ishga tushdi!</b>\n\nMenga bot haqida savollaringizni yozishingiz mumkin." if lang == 'uz' else \
+                  "🤖 <b>AI Assistant is active!</b>\n\nYou can ask me questions about the bot." if lang == 'en' else \
+                  "🤖 <b>AI Помощник активен!</b>\n\nВы можете задавать вопросы о боте."
+                  
     await message.answer(
-        "🤖 <b>AI Yordamchi ishga tushdi!</b>\n\n"
-        "Menga bot haqida yoki boshqa savollaringizni yozishingiz mumkin. "
-        "Chatni to'xtatish uchun pastdagi tugmani bosing.",
+        welcome_msg,
         reply_markup=kb,
         parse_mode="HTML"
     )
 
-@router.message(AIState.chatting, F.text == "❌ Chatni yakunlash")
-async def end_ai_chat(message: Message, state: FSMContext):
+@router.message(AIState.chatting, F.text.in_(["❌ Chatni yakunlash", "Cancel", "Отмена", "Bekor qilish"]))
+async def end_ai_chat(message: Message, state: FSMContext, session: AsyncSession):
+    from app.services.user_service import get_user_by_id
+    user_obj = await get_user_by_id(session, message.from_user.id)
+    lang = user_obj.language_code if user_obj else 'uz'
+    
     await state.clear()
-    await message.answer("Chat yakunlandi. Asosiy menyuga qaytamiz.", reply_markup=get_main_reply_kb())
+    msg = "Chat yakunlandi." if lang == 'uz' else "Chat ended." if lang == 'en' else "Чат завершен."
+    await message.answer(msg, reply_markup=get_main_reply_kb())
 
 @router.message(AIState.chatting)
-async def process_ai_chat(message: Message):
+async def process_ai_chat(message: Message, session: AsyncSession):
     from app.services.ai_service import get_ai_response
+    from app.services.user_service import get_user_by_id
+    
+    user_obj = await get_user_by_id(session, message.from_user.id)
+    lang = user_obj.language_code if user_obj else 'uz'
     
     # Show typing status
     try:
@@ -356,5 +374,5 @@ async def process_ai_chat(message: Message):
     except:
         pass
     
-    response = await get_ai_response(message.text, message.from_user.id)
+    response = await get_ai_response(message.text, message.from_user.id, lang=lang)
     await message.answer(response)

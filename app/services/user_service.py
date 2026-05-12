@@ -91,3 +91,21 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
     except Exception as e:
         logger.error(f"Failed to get user by id {user_id}: {e}")
         return None
+
+
+async def update_user_language(session: AsyncSession, user_id: int, lang_code: str):
+    """Foydalanuvchi tilini yangilash."""
+    try:
+        from sqlalchemy import update
+        await session.execute(
+            update(User)
+            .where(User.user_id == user_id)
+            .values(language_code=lang_code)
+        )
+        await session.commit()
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update language for {user_id}: {e}")
+        await session.rollback()
+        return False
+
