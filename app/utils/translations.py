@@ -190,6 +190,8 @@ TRANSLATIONS = {
         'distribution': 'Taqsimot',
         'new_users': 'Yangi foydalanuvchilar',
         'additions': 'Qo\'shilganlar',
+        'select_from_gallery': 'Gallereyadan tanlash',
+        'no_media_yet': 'Gallereyada fayllar yo\'q',
     },
     'ru': {
         # Bot specific
@@ -381,6 +383,8 @@ TRANSLATIONS = {
         'distribution': 'Распределение',
         'new_users': 'Новые пользователи',
         'additions': 'Добавления',
+        'select_from_gallery': 'Выбрать из галереи',
+        'no_media_yet': 'В галерее нет файлов',
     },
     'en': {
         # Bot specific
@@ -572,6 +576,8 @@ TRANSLATIONS = {
         'distribution': 'Distribution',
         'new_users': 'New Users',
         'additions': 'Additions',
+        'select_from_gallery': 'Select from gallery',
+        'no_media_yet': 'No files in gallery',
     },
 }
 
