@@ -528,6 +528,31 @@ async def media_gallery_page(request: Request, user: dict = Depends(require_auth
     )
 
 
+@router.get("/api/media/info/{file_id}")
+async def api_media_info(request: Request, file_id: str, user: dict = Depends(require_auth)):
+    bot = request.app.state.bot
+    try:
+        file = await bot.get_file(file_id)
+        path = file.file_path.lower()
+        
+        file_type = "document"
+        if "photos/" in path: file_type = "photo"
+        elif "videos/" in path: file_type = "video"
+        elif "voice/" in path: file_type = "voice"
+        elif "video_notes/" in path: file_type = "video_note"
+        elif any(ext in path for ext in [".jpg", ".jpeg", ".png"]): file_type = "photo"
+        elif any(ext in path for ext in [".mp4", ".mov", ".avi"]): file_type = "video"
+        
+        return JSONResponse({
+            "status": "success",
+            "file_id": file_id,
+            "file_type": file_type,
+            "file_size": file.file_size
+        })
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=400)
+
+
 @router.post("/api/media/add")
 async def api_media_add(request: Request, user: dict = Depends(require_auth)):
     from app.db.models import Media

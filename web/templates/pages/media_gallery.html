@@ -15,13 +15,19 @@
         <form action="/api/media/add" method="POST" class="p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="space-y-2">
                 <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">File ID</label>
-                <input type="text" name="file_id" required 
-                    class="block w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white font-mono"
-                    placeholder="AgACAgIAAxkBAA...">
+                <div class="relative">
+                    <input type="text" id="file_id_input" name="file_id" required 
+                        class="block w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white font-mono"
+                        placeholder="AgACAgIAAxkBAA...">
+                    <div id="media_loading" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                        <div class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                </div>
+                <p id="media_status" class="text-[10px] font-bold mt-1 ml-1 text-slate-500"></p>
             </div>
             <div class="space-y-2">
                 <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Tur</label>
-                <select name="file_type" required 
+                <select id="file_type_select" name="file_type" required 
                     class="block w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white appearance-none">
                     <option value="photo">Rasm (Photo)</option>
                     <option value="video">Video</option>
@@ -91,5 +97,47 @@ function copyToClipboard(text) {
         alert("File ID nusxalandi!");
     });
 }
+
+const fileInput = document.getElementById('file_id_input');
+const typeSelect = document.getElementById('file_type_select');
+const loading = document.getElementById('media_loading');
+const status = document.getElementById('media_status');
+
+let mediaTimer;
+
+fileInput.addEventListener('input', () => {
+    clearTimeout(mediaTimer);
+    const val = fileInput.value.trim();
+    
+    if (val.length < 10) {
+        status.innerText = '';
+        return;
+    }
+
+    mediaTimer = setTimeout(async () => {
+        loading.classList.remove('hidden');
+        status.innerText = 'Fayl turi aniqlanmoqda...';
+        status.className = 'text-[10px] font-bold mt-1 ml-1 text-slate-500';
+        
+        try {
+            const res = await fetch(`/api/media/info/${val}`);
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                typeSelect.value = data.file_type;
+                status.innerText = `✅ Aniqlangan tur: ${data.file_type.toUpperCase()}`;
+                status.className = 'text-[10px] font-bold mt-1 ml-1 text-emerald-500';
+            } else {
+                status.innerText = `❌ Aniqlab bo'lmadi`;
+                status.className = 'text-[10px] font-bold mt-1 ml-1 text-rose-500';
+            }
+        } catch (e) {
+            status.innerText = '❌ Xatolik yuz berdi';
+            status.className = 'text-[10px] font-bold mt-1 ml-1 text-rose-500';
+        } finally {
+            loading.classList.add('hidden');
+        }
+    }, 800);
+});
 </script>
 {% endblock %}
