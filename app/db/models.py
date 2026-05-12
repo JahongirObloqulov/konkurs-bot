@@ -230,3 +230,14 @@ class BroadcastLog(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+class Bot(Base):
+    __tablename__ = "bots"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    username: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    bot_id: Mapped[int | None] = mapped_column(BigInteger, unique=True, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )

@@ -754,6 +754,74 @@ async def chat_remove(request: Request, chat_id: int, user: dict = Depends(requi
     return RedirectResponse(url="/chats", status_code=302)
 
 
+@router.get("/bots", response_class=HTMLResponse)
+async def bots_page(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import Bot
+    async with async_session_maker() as session:
+        res = await session.execute(select(Bot).order_by(Bot.created_at.desc()))
+        bots = res.scalars().all()
+        
+    return templates.TemplateResponse(
+        "pages/bots.html",
+        {"request": request, "user": user, "bots": bots}
+    )
+
+
+@router.post("/bots/add")
+async def bot_add(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import Bot
+    from aiogram import Bot as TelegramBot
+    from aiogram.exceptions import TelegramUnauthorizedError
+    
+    form = await request.form()
+    token = form.get("token", "").strip()
+    
+    if not token:
+        return RedirectResponse(url="/bots?error=Token kiritilmadi", status_code=302)
+        
+    try:
+        # Verify token and get bot info
+        temp_bot = TelegramBot(token=token)
+        me = await temp_bot.get_me()
+        await temp_bot.session.close()
+        
+        async with async_session_maker() as session:
+            # Check if exists
+            res = await session.execute(select(Bot).where(Bot.token == token))
+            if res.scalar():
+                return RedirectResponse(url="/bots?error=Ushbu bot allaqachon qo'shilgan", status_code=302)
+                
+            new_bot = Bot(
+                token=token,
+                username=me.username,
+                bot_id=me.id,
+                is_active=True
+            )
+            session.add(new_bot)
+            await session.commit()
+            
+    except TelegramUnauthorizedError:
+        return RedirectResponse(url="/bots?error=Noto'g'ri bot tokeni", status_code=302)
+    except Exception as e:
+        return RedirectResponse(url=f"/bots?error={str(e)}", status_code=302)
+        
+    return RedirectResponse(url="/bots?success=Bot muvaffaqiyatli qo'shildi", status_code=302)
+
+
+@router.post("/bots/{bot_id}/remove")
+async def bot_remove(bot_id: int, user: dict = Depends(require_auth)):
+    from app.db.models import Bot
+    async with async_session_maker() as session:
+        res = await session.execute(select(Bot).where(Bot.id == bot_id))
+        bot = res.scalar()
+        if bot:
+            await session.delete(bot)
+            await session.commit()
+            
+    return RedirectResponse(url="/bots", status_code=302)
+
+
+
 @router.get("/api/chats/{chat_id}")
 async def api_get_chat_info(chat_id: str, request: Request, user: dict = Depends(require_auth)):
     from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError

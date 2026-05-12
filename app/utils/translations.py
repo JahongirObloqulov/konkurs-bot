@@ -98,6 +98,7 @@ TRANSLATIONS = {
         'useful_tips': 'Foydali maslahatlar',
         'html_support': 'HTML formatlashdan foydalanishingiz mumkin.',
         'bot_settings': 'Bot sozlamalari',
+        'bots_management': 'Botlar boshqaruvi',
         'bot_messages': 'Bot xabarlari',
         'edit_messages_info': 'Ro\'yxatdan o\'tish va obuna jarayonidagi xabarlarni tahrirlash',
         'reg_welcome': 'Ro\'yxatdan o\'tish (Xush kelibsiz)',
