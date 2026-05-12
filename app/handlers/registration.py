@@ -17,10 +17,8 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 class RegistrationState(StatesGroup):
-    first_name = State()
-    last_name = State()
+    full_name = State()
     phone = State()
-    location = State()
     check_sub = State()
 
 async def send_sub_success_message(target: Message | CallbackQuery, session: AsyncSession, bot: Bot):
@@ -58,26 +56,20 @@ async def send_sub_success_message(target: Message | CallbackQuery, session: Asy
 @router.callback_query(F.data == "start_registration")
 async def start_registration_cb(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
     bot_db_id = getattr(callback.bot, "db_id", None)
-    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:", bot_id=bot_db_id)
-    await state.set_state(RegistrationState.first_name)
+    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nF.I.O. (To'liq ismingiz) ni kiriting:", bot_id=bot_db_id)
+    await state.set_state(RegistrationState.full_name)
     await callback.message.answer(welcome_text, reply_markup=ReplyKeyboardRemove())
     await callback.message.delete()
 
 async def start_registration(message: Message, state: FSMContext, session: AsyncSession):
     bot_db_id = getattr(message.bot, "db_id", None)
-    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nIsmingizni kiriting:", bot_id=bot_db_id)
-    await state.set_state(RegistrationState.first_name)
+    welcome_text = await get_setting(session, "registration_welcome", "Xush kelibsiz! Ro'yxatdan o'tishni boshlaymiz.\n\nF.I.O. (To'liq ismingiz) ni kiriting:", bot_id=bot_db_id)
+    await state.set_state(RegistrationState.full_name)
     await message.answer(welcome_text, reply_markup=ReplyKeyboardRemove())
 
-@router.message(RegistrationState.first_name)
-async def process_first_name(message: Message, state: FSMContext):
-    await state.update_data(first_name=message.text.strip())
-    await state.set_state(RegistrationState.last_name)
-    await message.answer("Familiyangizni kiriting:")
-
-@router.message(RegistrationState.last_name)
-async def process_last_name(message: Message, state: FSMContext):
-    await state.update_data(last_name=message.text.strip())
+@router.message(RegistrationState.full_name)
+async def process_full_name(message: Message, state: FSMContext):
+    await state.update_data(full_name=message.text.strip())
     await state.set_state(RegistrationState.phone)
     
     kb = ReplyKeyboardMarkup(
@@ -88,30 +80,21 @@ async def process_last_name(message: Message, state: FSMContext):
     await message.answer("Telefon raqamingizni yuboring (tugmani bosing):", reply_markup=kb)
 
 @router.message(RegistrationState.phone, F.contact | F.text)
-async def process_phone(message: Message, state: FSMContext):
+async def process_phone(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     if message.contact:
         phone = message.contact.phone_number
     else:
         phone = message.text.strip()
     
-    await state.update_data(phone=phone)
-    await state.set_state(RegistrationState.location)
-    await message.answer("Yashash joyingizni kiriting (Viloyat, tuman):", reply_markup=ReplyKeyboardRemove())
-
-@router.message(RegistrationState.location)
-async def process_location(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     data = await state.get_data()
-    location = message.text.strip()
     
     # Update user in DB
     await session.execute(
         update(User)
         .where(User.user_id == message.from_user.id)
         .values(
-            first_name=data["first_name"],
-            last_name=data["last_name"],
-            phone=data["phone"],
-            location=location,
+            full_name=data["full_name"],
+            phone=phone,
             is_registered=True
         )
     )
@@ -137,6 +120,7 @@ async def process_location(message: Message, state: FSMContext, session: AsyncSe
     else:
         await state.clear()
         await send_sub_success_message(message, session, bot)
+    
 
 @router.callback_query(RegistrationState.check_sub, F.data == "check_sub")
 async def process_check_sub(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
