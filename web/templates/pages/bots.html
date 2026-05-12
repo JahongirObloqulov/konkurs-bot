@@ -4,10 +4,10 @@
 {% block header_title %}{{ _('bots_management') }}{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
     <!-- Add Bot Form -->
     <div class="lg:col-span-1">
-        <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden sticky top-8">
             <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yangi bot qo'shish</h3>
                 <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Token orqali ulanish</p>
@@ -19,7 +19,6 @@
                         <input type="text" name="token" required 
                             class="block w-full px-5 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white font-mono"
                             placeholder="1234567890:ABCdef...">
-                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-1">@BotFather dan olingan tokenni kiriting.</p>
                     </div>
 
                     <button type="submit" class="w-full py-4 btn-primary rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2">
@@ -32,82 +31,156 @@
     </div>
 
     <!-- Bots List -->
-    <div class="lg:col-span-2">
+    <div class="lg:col-span-3">
         <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/50 flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">Qo'shilgan botlar</h3>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Tizimdagi barcha botlar ro'yxati</p>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Barcha botlar ro'yxati va holati</p>
                 </div>
-                <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-lg">Jami: {{ bots|length }}</span>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                        <tr>
-                            <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Bot</th>
-                            <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Bot ID</th>
-                            <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Status</th>
-                            <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Sana</th>
-                            <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Amal</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        {% for bot in bots %}
-                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                                        <i class="bi bi-robot text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-bold text-slate-900 dark:text-white">@{{ bot.username or "Noma'lum" }}</p>
-                                        <p class="text-[10px] font-mono text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{{ bot.token[:10] }}...</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <code class="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{{ bot.bot_id or "N/A" }}</code>
-                            </td>
-                            <td class="px-6 py-4">
-                                {% if bot.is_active %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    Faol
-                                </span>
-                                {% else %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase bg-slate-50 dark:bg-slate-500/10 text-slate-500 dark:text-slate-400">
-                                    Noactive
-                                </span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-8">
+                {% for bot in bots %}
+                <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 relative">
+                                <i class="bi bi-robot text-3xl"></i>
+                                {% if bot.is_running %}
+                                <span class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full animate-pulse"></span>
                                 {% endif %}
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ bot.created_at|datetime }}</span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <form method="post" action="/bots/{{ bot.id }}/remove" onsubmit="return confirm('Haqiqatan ham ushbu botni o\'chirib tashlamoqchimisiz?');">
-                                    <button type="submit" class="w-9 h-9 flex items-center justify-center bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% if not bots %}
-                        <tr>
-                            <td colspan="5" class="px-6 py-20 text-center">
-                                <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
-                                    <i class="bi bi-robot text-3xl"></i>
-                                </div>
-                                <p class="text-slate-500 dark:text-slate-400 font-bold text-sm">Hozircha botlar qo'shilmagan</p>
-                            </td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white">@{{ bot.username or "Noma'lum" }}</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ bot.bot_id }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <form method="post" action="/bots/{{ bot.id }}/toggle">
+                                <button type="submit" class="w-10 h-10 flex items-center justify-center rounded-xl {% if bot.is_active %}bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600{% else %}bg-slate-50 dark:bg-slate-500/10 text-slate-400{% endif %} hover:opacity-80 transition-all">
+                                    <i class="bi {% if bot.is_active %}bi-toggle-on{% else %}bi-toggle-off{% endif %} text-xl"></i>
+                                </button>
+                            </form>
+                            <button onclick="openSettingsModal('{{ bot.id }}')" class="w-10 h-10 flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
+                                <i class="bi bi-gear-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
+                            <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 tracking-widest mb-2">
+                                <span>Ma'lumotlar</span>
+                                <i class="bi bi-info-circle"></i>
+                            </div>
+                            <p class="text-xs text-slate-600 dark:text-slate-300 font-medium line-clamp-2">
+                                {{ bot.about or "Ma'lumot kiritilmagan" }}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ bot.created_at|datetime }}</span>
+                            <form method="post" action="/bots/{{ bot.id }}/remove" onsubmit="return confirm('O\'chirilsinmi?');">
+                                <button type="submit" class="text-rose-500 hover:text-rose-600 text-xs font-bold uppercase tracking-widest">
+                                    O'chirish
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not bots %}
+                <div class="col-span-full py-20 text-center">
+                    <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
+                        <i class="bi bi-robot text-3xl"></i>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 font-bold text-sm">Hozircha botlar qo'shilmagan</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Bot Settings Modal -->
+<div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <form id="settingsForm" method="post" action="">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 dark:text-white">Bot Sozlamalari</h4>
+                        <p id="modal-bot-username" class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Bot Ismi (Display Name)</label>
+                    <input type="text" name="name" id="modal-bot-name" class="block w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm dark:text-white">
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Qisqa tavsif (Short Bio)</label>
+                    <textarea name="about" id="modal-bot-about" rows="2" class="block w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm dark:text-white"></textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Batafsil tavsif (Description)</label>
+                    <textarea name="description" id="modal-bot-desc" rows="4" class="block w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm dark:text-white"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-4 btn-primary rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-lg shadow-primary/20">
+                    Saqlash va Telegramda yangilash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function openSettingsModal(botId) {
+    const modal = document.getElementById('settingsModal');
+    const form = document.getElementById('settingsForm');
+    
+    // Fetch current info
+    try {
+        const res = await fetch(`/api/bots/${botId}/info`);
+        const data = await res.json();
+        
+        if (data.status === 'error') return alert(data.message);
+        
+        document.getElementById('modal-bot-username').innerText = '@' + data.username;
+        document.getElementById('modal-bot-name').value = data.name || '';
+        document.getElementById('modal-bot-about').value = data.about || '';
+        document.getElementById('modal-bot-desc').value = data.description || '';
+        
+        form.action = `/bots/${botId}/update-profile`;
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } catch (e) {
+        alert('Ma\'lumotlarni yuklashda xatolik');
+    }
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.add('hidden');
+    document.getElementById('settingsModal').classList.remove('flex');
+}
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSettingsModal();
+});
+</script>
 {% endblock %}

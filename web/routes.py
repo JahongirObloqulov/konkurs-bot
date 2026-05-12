@@ -821,6 +821,75 @@ async def bot_remove(bot_id: int, user: dict = Depends(require_auth)):
     return RedirectResponse(url="/bots", status_code=302)
 
 
+@router.post("/bots/{bot_id}/toggle")
+async def bot_toggle(bot_id: int, user: dict = Depends(require_auth)):
+    from app.db.models import Bot
+    async with async_session_maker() as session:
+        res = await session.execute(select(Bot).where(Bot.id == bot_id))
+        bot = res.scalar()
+        if bot:
+            bot.is_active = not bot.is_active
+            await session.commit()
+            
+    return RedirectResponse(url="/bots", status_code=302)
+
+
+@router.post("/bots/{bot_id}/update-profile")
+async def bot_update_profile(bot_id: int, request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import Bot
+    from aiogram import Bot as TelegramBot
+    
+    form = await request.form()
+    name = form.get("name")
+    about = form.get("about")
+    description = form.get("description")
+    
+    async with async_session_maker() as session:
+        res = await session.execute(select(Bot).where(Bot.id == bot_id))
+        bot_db = res.scalar()
+        if not bot_db:
+            return RedirectResponse(url="/bots?error=Bot topilmadi", status_code=302)
+            
+        try:
+            temp_bot = TelegramBot(token=bot_db.token)
+            
+            if name: 
+                await temp_bot.set_my_name(name)
+                bot_db.name = name
+            if about: 
+                await temp_bot.set_my_short_description(about)
+                bot_db.about = about
+            if description: 
+                await temp_bot.set_my_description(description)
+                bot_db.description = description
+                
+            await temp_bot.session.close()
+            await session.commit()
+            return RedirectResponse(url="/bots?success=Bot profili yangilandi", status_code=302)
+        except Exception as e:
+            return RedirectResponse(url=f"/bots?error={str(e)}", status_code=302)
+
+
+@router.get("/api/bots/{bot_id}/info")
+async def api_bot_info(bot_id: int, user: dict = Depends(require_auth)):
+    from app.db.models import Bot
+    async with async_session_maker() as session:
+        res = await session.execute(select(Bot).where(Bot.id == bot_id))
+        bot = res.scalar()
+        if not bot:
+            return JSONResponse({"status": "error", "message": "Bot topilmadi"}, status_code=404)
+            
+        return JSONResponse({
+            "id": bot.id,
+            "name": bot.name,
+            "username": bot.username,
+            "about": bot.about,
+            "description": bot.description,
+            "is_active": bot.is_active,
+            "is_running": bot.is_running
+        })
+
+
 
 @router.get("/api/chats/{chat_id}")
 async def api_get_chat_info(chat_id: str, request: Request, user: dict = Depends(require_auth)):

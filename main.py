@@ -9,6 +9,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 import uvicorn
 from dotenv import load_dotenv
+from sqlalchemy import select
 
 from app.config import Config
 from app.db.engine import create_engine, create_session_pool, init_db
@@ -49,20 +50,51 @@ dp.include_routers(start.router, registration.router, admin.router, user.router,
 web_app.state.bot = bot
 
 async def run_bot():
-    # Load settings from database for the bot config
+    from app.db.models import Bot as BotModel
+    
+    # Initialize list of bots
+    bots = []
+    
+    # 1. Add Master Bot from .env
+    master_bot = bot # already initialized at line 39
+    bots.append(master_bot)
+    
+    # 2. Add Active Bots from Database
     async with session_pool() as session:
         from app.services.settings_service import get_required_chats
         db_chats = await get_required_chats(session)
         if db_chats:
             config.required_chats = db_chats
             logger.info(f"Loaded {len(db_chats)} required chats from database")
+            
+        res = await session.execute(select(BotModel).where(BotModel.is_active == True))
+        db_bots = res.scalars().all()
+        
+        for b_db in db_bots:
+            if b_db.token != config.bot_token:
+                try:
+                    new_bot = Bot(token=b_db.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+                    bots.append(new_bot)
+                    b_db.is_running = True
+                    logger.info(f"Adding extra bot: @{b_db.username}")
+                except Exception as e:
+                    b_db.last_error = str(e)
+                    b_db.is_active = False
+                    logger.error(f"Error initializing bot {b_db.username}: {e}")
+        
+        await session.commit()
 
-    logger.info("Telegram bot ishga tushdi!")
+    logger.info(f"Telegram botlar ishga tushdi! (Jami: {len(bots)})")
     try:
-        await bot.delete_webhook(drop_pending_updates=True)
-        await dp.start_polling(bot)
+        # Delete webhooks for all bots
+        for b in bots:
+            await b.delete_webhook(drop_pending_updates=True)
+            
+        # Start polling for all bots concurrently
+        await dp.start_polling(*bots)
     finally:
-        await bot.session.close()
+        for b in bots:
+            await b.session.close()
         await engine.dispose()
 
 async def run_web():
