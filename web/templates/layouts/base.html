@@ -261,7 +261,14 @@
                 </div>
             </nav>
 
-            <div class="p-4 mt-auto">
+            <div class="px-4 py-2 mt-auto space-y-4">
+                <!-- Language Switcher (Mobile) -->
+                <div class="lg:hidden p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-3 gap-1">
+                    <button onclick="setLanguage('uz')" class="px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all {% if current_lang == 'uz' %}bg-white dark:bg-slate-700 text-primary shadow-sm{% else %}text-slate-500{% endif %}">UZ</button>
+                    <button onclick="setLanguage('ru')" class="px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all {% if current_lang == 'ru' %}bg-white dark:bg-slate-700 text-primary shadow-sm{% else %}text-slate-500{% endif %}">RU</button>
+                    <button onclick="setLanguage('en')" class="px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all {% if current_lang == 'en' %}bg-white dark:bg-slate-700 text-primary shadow-sm{% else %}text-slate-500{% endif %}">EN</button>
+                </div>
+
                 <a href="/logout" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 transition-all text-sm font-medium">
                     <i class="bi bi-box-arrow-right text-lg"></i>
                     <span>{{ _('sign_out') }}</span>
