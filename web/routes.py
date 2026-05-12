@@ -925,16 +925,31 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
                     m = media_items[0]
                     if m['type'] == 'photo':
                         await bot.send_photo(user_id, m['id'], caption=text, parse_mode="HTML")
-                    else:
+                    elif m['type'] == 'video':
                         await bot.send_video(user_id, m['id'], caption=text, parse_mode="HTML")
+                    elif m['type'] == 'voice':
+                        await bot.send_voice(user_id, m['id'], caption=text, parse_mode="HTML")
+                    elif m['type'] == 'video_note':
+                        await bot.send_video_note(user_id, m['id']) # video_note doesn't support caption
+                        if text: await bot.send_message(user_id, text, parse_mode="HTML")
+                    elif m['type'] == 'document':
+                        await bot.send_document(user_id, m['id'], caption=text, parse_mode="HTML")
+                    else:
+                        await bot.send_document(user_id, m['id'], caption=text, parse_mode="HTML")
                 else:
                     # Media group (max 10)
                     album_builder = MediaGroupBuilder(caption=text)
                     for m in media_items[:10]:
                         if m['type'] == 'photo':
                             album_builder.add_photo(media=m['id'])
-                        else:
+                        elif m['type'] == 'video':
                             album_builder.add_video(media=m['id'])
+                        elif m['type'] == 'voice':
+                            album_builder.add_voice(media=m['id'])
+                        elif m['type'] == 'document':
+                            album_builder.add_document(media=m['id'])
+                        # Note: video_note is not supported in media groups by Telegram
+                    
                     await bot.send_media_group(user_id, media=album_builder.build())
                 
                 success_count += 1

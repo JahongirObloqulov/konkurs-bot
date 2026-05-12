@@ -25,6 +25,8 @@
                     class="block w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm dark:text-white appearance-none">
                     <option value="photo">Rasm (Photo)</option>
                     <option value="video">Video</option>
+                    <option value="voice">Ovozli xabar (Voice)</option>
+                    <option value="video_note">Video Note (Dumaloq)</option>
                     <option value="document">Hujjat (Document)</option>
                 </select>
             </div>
@@ -52,6 +54,8 @@
                         <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400">
                             {% if item.file_type == 'photo' %}<i class="bi bi-image text-xl"></i>
                             {% elif item.file_type == 'video' %}<i class="bi bi-play-circle text-xl"></i>
+                            {% elif item.file_type == 'voice' %}<i class="bi bi-mic text-xl"></i>
+                            {% elif item.file_type == 'video_note' %}<i class="bi bi-camera-reels text-xl"></i>
                             {% else %}<i class="bi bi-file-earmark-text text-xl"></i>{% endif %}
                         </div>
                         <div>
