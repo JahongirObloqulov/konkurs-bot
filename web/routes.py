@@ -701,6 +701,7 @@ async def chat_add(request: Request, user: dict = Depends(require_auth)):
     form = await request.form()
     new_chat = {
         "id": int(form.get("chat_id")),
+        "title": form.get("title") or "Noma'lum",
         "username": form.get("username", "").strip("@"),
         "type": form.get("type", "channel"),
     }
