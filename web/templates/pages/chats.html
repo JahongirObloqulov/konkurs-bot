@@ -186,8 +186,7 @@ chatInput.addEventListener('input', () => {
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
+        </div>    </div>
 </div>
 
 <!-- Send Message Modal -->
@@ -277,7 +276,8 @@ chatInput.addEventListener('input', () => {
                 </div>
                 {% endfor %}
             </div>
-       </div>
+        </div>
+    </div>
 </div>
 
 <!-- AI Assistant Modal -->
@@ -313,8 +313,63 @@ chatInput.addEventListener('input', () => {
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
+// Chat management logic
+const chatInput = document.getElementById('chat_id_input');
+const usernameInput = document.getElementById('username_input');
+const titleInput = document.getElementById('title_input');
+const typeSelect = document.getElementById('type_select');
+const loadingSpinner = document.getElementById('loading_spinner');
+const statusText = document.getElementById('chat_info_status');
+
+let debounceTimer;
+
+if (chatInput) {
+    chatInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const val = chatInput.value.trim();
+        
+        if (val.length < 5) {
+            statusText.innerText = 'ID ni olish uchun @username_to_id_bot dan foydalaning.';
+            statusText.classList.remove('text-emerald-500', 'text-rose-500');
+            statusText.classList.add('text-slate-500');
+            return;
+        }
+
+        debounceTimer = setTimeout(async () => {
+            loadingSpinner.classList.remove('hidden');
+            statusText.innerText = 'Ma\'lumotlar yuklanmoqda...';
+            statusText.classList.remove('text-rose-500', 'text-emerald-500');
+            
+            try {
+                const res = await fetch(`/api/chats/${val}`);
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    usernameInput.value = data.username || '';
+                    titleInput.value = data.title || '';
+                    typeSelect.value = data.type === 'supergroup' || data.type === 'group' ? 'group' : 'channel';
+                    
+                    statusText.innerText = `✅ Topildi: ${data.title}`;
+                    statusText.classList.add('text-emerald-500');
+                } else {
+                    statusText.innerText = `❌ ${data.message}`;
+                    statusText.classList.add('text-rose-500');
+                }
+            } catch (e) {
+                statusText.innerText = '❌ Xatolik yuz berdi';
+                statusText.classList.add('text-rose-500');
+            } finally {
+                loadingSpinner.classList.add('hidden');
+            }
+        }, 800);
+    });
+}
+
+// AI Modal logic
 function showAIModal() {
     document.getElementById('aiModal').classList.remove('hidden');
     document.getElementById('aiModal').classList.add('flex');
@@ -357,15 +412,7 @@ async function generateDraftChat() {
     }
 }
 
-// Global escape key listener
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeSendModal();
-        hideGalleryModal();
-        hideAIModal();
-    }
-});
-
+// Send Message logic
 function openSendModal(chatId) {
     const title = document.getElementById(`chat-title-${chatId}`).innerText;
     document.getElementById('modal-chat-name').innerText = title;
@@ -382,6 +429,7 @@ function closeSendModal() {
     clearMedia();
 }
 
+// Gallery logic
 function showGalleryModal() {
     document.getElementById('galleryModal').classList.remove('hidden');
     document.getElementById('galleryModal').classList.add('flex');
@@ -463,5 +511,14 @@ async function sendMessage() {
         btn.innerHTML = originalContent;
     }
 }
+
+// Global escape key listener
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeSendModal();
+        hideGalleryModal();
+        hideAIModal();
+    }
+});
 </script>
 {% endblock %}
