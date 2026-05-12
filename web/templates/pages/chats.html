@@ -213,7 +213,13 @@ chatInput.addEventListener('input', () => {
             <input type="hidden" id="send-media-type">
             
             <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Xabar matni</label>
+                <div class="flex items-center justify-between mb-1 ml-1">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Xabar matni</label>
+                    <button type="button" onclick="showAIModal()" class="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-widest hover:opacity-80 transition-all">
+                        <i class="bi bi-stars"></i>
+                        AI Yordamchi
+                    </button>
+                </div>
                 <textarea id="send-message" rows="5" class="block w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all dark:text-white text-sm" placeholder="Xabaringizni yozing... (HTML teglar ruxsat etilgan)"></textarea>
             </div>
 
@@ -271,11 +277,95 @@ chatInput.addEventListener('input', () => {
                 </div>
                 {% endfor %}
             </div>
+       </div>
+</div>
+
+<!-- AI Assistant Modal -->
+<div id="aiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                        <i class="bi bi-stars text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 dark:text-white">AI Yordamchi</h4>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Xabar matnini tayyorlash</p>
+                    </div>
+                </div>
+                <button onclick="hideAIModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-8 space-y-6">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest ml-1">Mavzu yoki kalit so'zlar</label>
+                <input type="text" id="aiPrompt" 
+                    class="block w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm dark:text-white"
+                    placeholder="Masalan: Kanalga yangi azo bo'lganlarni tabriklash...">
+            </div>
+            <button onclick="generateDraftChat()" id="generateBtn" class="w-full py-4 btn-primary rounded-2xl font-bold text-sm transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                <span>Generatsiya qilish</span>
+                <i class="bi bi-magic"></i>
+            </button>
         </div>
     </div>
 </div>
 
 <script>
+function showAIModal() {
+    document.getElementById('aiModal').classList.remove('hidden');
+    document.getElementById('aiModal').classList.add('flex');
+    document.getElementById('aiPrompt').focus();
+}
+
+function hideAIModal() {
+    document.getElementById('aiModal').classList.add('hidden');
+    document.getElementById('aiModal').classList.remove('flex');
+}
+
+async function generateDraftChat() {
+    const prompt = document.getElementById('aiPrompt').value.trim();
+    const btn = document.getElementById('generateBtn');
+    if (!prompt) return;
+
+    const originalBtnText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin"></i> Tayyorlanmoqda...';
+
+    try {
+        const res = await fetch('/api/ai/draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, lang: 'uz' })
+        });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            document.getElementById('send-message').value = data.draft;
+            hideAIModal();
+        } else {
+            alert("Xatolik: " + data.message);
+        }
+    } catch (e) {
+        alert("Texnik xatolik yuz berdi.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnText;
+    }
+}
+
+// Global escape key listener
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeSendModal();
+        hideGalleryModal();
+        hideAIModal();
+    }
+});
+
 function openSendModal(chatId) {
     const title = document.getElementById(`chat-title-${chatId}`).innerText;
     document.getElementById('modal-chat-name').innerText = title;
