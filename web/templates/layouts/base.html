@@ -184,6 +184,36 @@
         .animate-bounce-slow {
             animation: bounce-slow 3s infinite;
         }
+
+        /* Sidebar Collapse Styles */
+        #sidebar {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        main {
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-collapsed #sidebar {
+            width: 5rem;
+        }
+        .sidebar-collapsed #sidebar .sidebar-text {
+            display: none;
+        }
+        .sidebar-collapsed #sidebar .p-6,
+        .sidebar-collapsed #sidebar .px-3,
+        .sidebar-collapsed #sidebar .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .sidebar-collapsed #sidebar .flex.items-center.gap-3 {
+            gap: 0;
+            justify-content: center;
+        }
+        .sidebar-collapsed main {
+            margin-left: 5rem;
+        }
+        .sidebar-collapsed #desktop-sidebar-toggle i {
+            transform: rotate(180deg);
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -197,10 +227,10 @@
         <aside id="sidebar" class="w-64 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col fixed h-full z-50 transition-transform duration-300 -translate-x-full lg:translate-x-0">
             <div class="p-6">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white shrink-0">
                         <i class="bi bi-rocket-takeoff-fill"></i>
                     </div>
-                    <span class="font-bold text-slate-900 dark:text-white text-lg tracking-tight">{{ _('admin_console') }}</span>
+                    <span class="font-bold text-slate-900 dark:text-white text-lg tracking-tight sidebar-text truncate">{{ _('admin_console') }}</span>
                 </div>
             </div>
 
@@ -208,55 +238,55 @@
                 <div class="space-y-1">
                     <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/dashboard' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-grid text-lg"></i>
-                        <span>{{ _('dashboard') }}</span>
+                        <span class="sidebar-text truncate">{{ _('dashboard') }}</span>
                     </a>
                     <a href="/contests" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/contests' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-trophy text-lg"></i>
-                        <span>{{ _('contests') }}</span>
+                        <span class="sidebar-text truncate">{{ _('contests') }}</span>
                     </a>
                     <a href="/chats" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/chats' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-megaphone text-lg"></i>
-                        <span>{{ _('channels') }}</span>
+                        <span class="sidebar-text truncate">{{ _('channels') }}</span>
                     </a>
                     <a href="/users" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/users' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-people text-lg"></i>
-                        <span>{{ _('users') }}</span>
+                        <span class="sidebar-text truncate">{{ _('users') }}</span>
                     </a>
                     <a href="/broadcast" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/broadcast' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-broadcast text-lg"></i>
-                        <span>{{ _('broadcast') }}</span>
+                        <span class="sidebar-text truncate">{{ _('broadcast') }}</span>
                     </a>
                     <a href="/audit-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/audit-logs' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-journal-text text-lg"></i>
-                        <span>{{ _('audit_logs') }}</span>
+                        <span class="sidebar-text truncate">{{ _('audit_logs') }}</span>
                     </a>
                     <a href="/media-gallery" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/media-gallery' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-images text-lg"></i>
-                        <span>Media Gallery</span>
+                        <span class="sidebar-text truncate">Media Gallery</span>
                     </a>
                     <a href="/settings" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/settings' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-sliders text-lg"></i>
-                        <span>{{ _('settings') }}</span>
+                        <span class="sidebar-text truncate">{{ _('settings') }}</span>
                     </a>
                 </div>
 
                 <div class="pt-6">
-                    <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{{ _('crm_modules') }}</p>
+                    <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 sidebar-text">{{ _('crm_modules') }}</p>
                     <a href="/crm" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if request.url.path == '/crm' %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-pie-chart text-lg"></i>
-                        <span>{{ _('analytics') }}</span>
+                        <span class="sidebar-text truncate">{{ _('analytics') }}</span>
                     </a>
                     <a href="/crm/businesses" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/crm/businesses' in request.url.path and not '/crm/businesses/' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-building text-lg"></i>
-                        <span>{{ _('businesses') }}</span>
+                        <span class="sidebar-text truncate">{{ _('businesses') }}</span>
                     </a>
                     <a href="/crm/customers" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/crm/customers' in request.url.path and not '/crm/customers/' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-person-badge text-lg"></i>
-                        <span>{{ _('customers') }}</span>
+                        <span class="sidebar-text truncate">{{ _('customers') }}</span>
                     </a>
                     <a href="/crm/tags" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group {% if '/crm/tags' in request.url.path %}sidebar-item-active font-semibold{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
                         <i class="bi bi-tags text-lg"></i>
-                        <span>{{ _('tags') }}</span>
+                        <span class="sidebar-text truncate">{{ _('tags') }}</span>
                     </a>
                 </div>
             </nav>
@@ -283,7 +313,7 @@
 
                 <a href="/logout" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 transition-all text-sm font-medium">
                     <i class="bi bi-box-arrow-right text-lg"></i>
-                    <span>{{ _('sign_out') }}</span>
+                    <span class="sidebar-text truncate">{{ _('sign_out') }}</span>
                 </a>
             </div>
         </aside>
@@ -295,6 +325,9 @@
                     <div class="flex items-center gap-3 min-w-0">
                         <button id="mobile-menu-toggle" class="p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-all shrink-0">
                             <i class="bi bi-list text-2xl"></i>
+                        </button>
+                        <button id="desktop-sidebar-toggle" class="hidden lg:flex p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shrink-0">
+                            <i class="bi bi-text-indent-left text-xl"></i>
                         </button>
                         <div class="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                             {% block header_title %}{{ _('overview') }}{% endblock %}
@@ -450,6 +483,23 @@
 
         if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleMobileMenu);
         if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleMobileMenu);
+
+        // Desktop Sidebar Collapse
+        const desktopSidebarToggle = document.getElementById('desktop-sidebar-toggle');
+        function toggleDesktopSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+            localStorage.setItem('sidebar-collapsed', isCollapsed);
+        }
+
+        if (desktopSidebarToggle) {
+            desktopSidebarToggle.addEventListener('click', toggleDesktopSidebar);
+        }
+
+        // Initialize collapsed state
+        if (localStorage.getItem('sidebar-collapsed') === 'true') {
+            document.body.classList.add('sidebar-collapsed');
+        }
 
         // Close mobile menu on resize if screen is large
         window.addEventListener('resize', () => {
