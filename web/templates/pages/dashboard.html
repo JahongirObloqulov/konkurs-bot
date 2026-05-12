@@ -42,7 +42,7 @@ async function initCharts() {
             data: {
                 labels: data.labels,
                 datasets: [{
-                    label: 'New Users',
+                    label: '{{ _('new_users') }}',
                     data: data.values,
                     borderColor: '#4f46e5',
                     backgroundColor: 'rgba(79, 70, 229, 0.1)',
@@ -85,7 +85,7 @@ async function initCharts() {
         new Chart(dctx, {
             type: 'doughnut',
             data: {
-                labels: ['Users', 'Referrals', 'Additions'],
+                labels: ['{{ _('users') }}', '{{ _('total_referrals') }}', '{{ _('additions') }}'],
                 datasets: [{
                     data: [{{ total_users }}, {{ total_referrals }}, {{ total_additions }}],
                     backgroundColor: ['#4f46e5', '#f59e0b', '#10b981'],

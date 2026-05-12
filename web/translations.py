@@ -190,6 +190,11 @@ TRANSLATIONS = {
         'no_audit_logs': 'Hozircha amallar jurnali bo\'sh',
         'date_time': 'Sana va vaqt',
         'details': 'Tafsilotlar',
+        'user_growth': 'Foydalanuvchilar o\'sishi',
+        'last_7_days': 'Oxirgi 7 kun',
+        'distribution': 'Taqsimot',
+        'new_users': 'Yangi foydalanuvchilar',
+        'additions': 'Qo\'shilganlar',
     },
     'ru': {
         # Sidebar & Common
@@ -381,6 +386,11 @@ TRANSLATIONS = {
         'no_audit_logs': 'Журнал действий пуст',
         'date_time': 'Дата и время',
         'details': 'Детали',
+        'user_growth': 'Рост пользователей',
+        'last_7_days': 'Последние 7 дней',
+        'distribution': 'Распределение',
+        'new_users': 'Новые пользователи',
+        'additions': 'Добавления',
     },
     'en': {
         # Sidebar & Common
@@ -572,7 +582,12 @@ TRANSLATIONS = {
         'no_audit_logs': 'Action log is empty',
         'date_time': 'Date & Time',
         'details': 'Details',
-    }
+        'user_growth': 'User Growth',
+        'last_7_days': 'Last 7 Days',
+        'distribution': 'Distribution',
+        'new_users': 'New Users',
+        'additions': 'Additions',
+    },
 }
 
 def translate(key, lang='uz'):
