@@ -93,18 +93,21 @@
             <div class="px-8 py-6 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
                 <div class="flex items-center gap-5">
                     <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm
-                        {% if item.type == 'business' %}bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400{% elif item.type == 'customer' %}bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400{% else %}bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400{% endif %}">
-                        <i class="bi {% if item.type == 'business' %}bi-building{% elif item.type == 'customer' %}bi-person{% else %}bi-clock{% endif %} text-xl"></i>
+                        {% if 'Create' in item.action %}bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400
+                        {% elif 'Delete' in item.action %}bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400
+                        {% elif 'Export' in item.action %}bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400
+                        {% else %}bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400{% endif %}">
+                        <i class="bi {% if 'Create' in item.action %}bi-plus-lg{% elif 'Delete' in item.action %}bi-trash{% elif 'Export' in item.action %}bi-download{% else %}bi-lightning-fill{% endif %} text-xl"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-1">{{ item.description }}</p>
-                        <p class="text-[10px] text-slate-400 font-medium">{{ item.created_at.strftime('%H:%M, %d-%m-%Y') }}</p>
+                        <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-1">{{ item.action }}</p>
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ item.details or '' }}</p>
                     </div>
                 </div>
-                <span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-lg
-                    {% if item.type == 'business' %}bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400{% elif item.type == 'customer' %}bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400{% else %}bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400{% endif %}">
-                    {{ item.type }}
-                </span>
+                <div class="text-right">
+                    <p class="text-xs font-bold text-slate-900 dark:text-white mb-0.5">{{ item.admin_username }}</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ item.created_at.strftime('%H:%M') }}</p>
+                </div>
             </div>
             {% endfor %}
             {% if not recent_activity %}

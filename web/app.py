@@ -22,7 +22,12 @@ async_session_maker = create_session_pool(engine)
 
 from web.translations import translate
 
+import json
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+# Register filters
+templates.env.filters["from_json"] = json.loads
+templates.env.filters["datetime"] = lambda dt: dt.strftime('%Y-%m-%d %H:%M') if dt else ""
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

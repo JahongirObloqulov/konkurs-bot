@@ -32,22 +32,18 @@ router = APIRouter()
 @router.get("/crm", response_class=HTMLResponse)
 async def crm_dashboard(request: Request, user: dict = Depends(require_auth)):
     async with async_session_maker() as session:
+        from app.db.models import AuditLog
+        
         businesses = await get_all_businesses(session)
         customers_count = await get_customers_count(session)
         businesses_count = await get_businesses_count(session)
         tags = await get_all_tags(session)
         
-        # Simple recent activity simulation
-        recent_activity = []
-        for b in businesses[:3]:
-            recent_activity.append({"type": "business", "description": f"Yangi biznes: {b.name}", "created_at": b.created_at})
-        
-        from app.db.models import Business
-        res = await session.execute(select(Customer).order_by(Customer.created_at.desc()).limit(3))
-        for c in res.scalars().all():
-            recent_activity.append({"type": "customer", "description": f"Yangi mijoz: {c.full_name}", "created_at": c.created_at})
-        
-        recent_activity.sort(key=lambda x: x["created_at"], reverse=True)
+        # Real activity from AuditLog
+        res = await session.execute(
+            select(AuditLog).order_by(AuditLog.created_at.desc()).limit(5)
+        )
+        recent_activity = res.scalars().all()
 
     return templates.TemplateResponse(
         "pages/crm/dashboard.html",
@@ -58,7 +54,7 @@ async def crm_dashboard(request: Request, user: dict = Depends(require_auth)):
             "customers_count": customers_count,
             "businesses_count": businesses_count,
             "tags_count": len(tags),
-            "recent_activity": recent_activity[:5]
+            "recent_activity": recent_activity
         }
     )
 

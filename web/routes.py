@@ -106,9 +106,31 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
     from app.services.user_service import get_users_count
 
     async with async_session_maker() as session:
-        active_contests = await get_active_contests(session)
-        all_contests = await session.execute(select(Contest))
-        all_contests = all_contests.scalars().all()
+        from sqlalchemy.orm import selectinload
+        
+        # Get active contests with participant counts
+        res = await session.execute(
+            select(Contest)
+            .order_by(Contest.created_at.desc())
+            .limit(5)
+        )
+        recent_contests = res.scalars().all()
+        
+        # Fetch counts for each contest for display
+        contests_data = []
+        for c in recent_contests:
+            p_count = await session.execute(select(func.count(Participant.id)).where(Participant.contest_id == c.id))
+            contests_data.append({
+                "id": c.id,
+                "title": c.title,
+                "prize": c.prize,
+                "participants_count": p_count.scalar() or 0,
+                "created_at": c.created_at,
+                "is_active": c.is_active
+            })
+
+        active_contests_count_res = await session.execute(select(func.count(Contest.id)).where(Contest.is_active == True))
+        active_contests_count = active_contests_count_res.scalar() or 0
         
         users_count = await get_users_count(session)
         
@@ -124,6 +146,26 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
         total_additions = await session.execute(select(func.sum(User.added_users_count)))
         total_additions = total_additions.scalar() or 0
         
+        # Growth calculation (today vs yesterday)
+        today = datetime.now(timezone.utc).date()
+        yesterday = today - timedelta(days=1)
+        
+        today_users = await session.execute(
+            select(func.count(User.id)).where(func.date(User.registered_at) == today)
+        )
+        today_users_count = today_users.scalar_one() or 0
+        
+        yesterday_users = await session.execute(
+            select(func.count(User.id)).where(func.date(User.registered_at) == yesterday)
+        )
+        yesterday_users_count = yesterday_users.scalar_one() or 0
+        
+        growth_pct = 0
+        if yesterday_users_count > 0:
+            growth_pct = ((today_users_count - yesterday_users_count) / yesterday_users_count) * 100
+        elif today_users_count > 0:
+            growth_pct = 100
+
         recent_participants = await session.execute(
             select(Participant).order_by(Participant.joined_at.desc()).limit(10)
         )
@@ -134,15 +176,15 @@ async def dashboard(request: Request, user: dict = Depends(require_auth)):
         {
             "request": request,
             "user": user,
-            "active_contests_count": len(active_contests),
-            "total_contests": len(all_contests),
-            "contests": all_contests,
+            "active_contests_count": active_contests_count,
+            "contests": contests_data,
             "total_users": users_count,
             "total_participants": total_participants,
             "total_winners": total_winners,
             "total_referrals": total_referrals,
             "total_additions": total_additions,
             "recent_participants": recent_participants,
+            "growth_pct": growth_pct,
         }
     )
 
@@ -183,6 +225,21 @@ async def export_dashboard(format: str, user: dict = Depends(require_auth)):
                 media_type="application/pdf",
                 headers={"Content-Disposition": f"attachment; filename={filename}"}
             )
+
+
+@router.get("/audit-logs", response_class=HTMLResponse)
+async def audit_logs_page(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import AuditLog
+    async with async_session_maker() as session:
+        res = await session.execute(
+            select(AuditLog).order_by(AuditLog.created_at.desc()).limit(100)
+        )
+        logs = res.scalars().all()
+        
+    return templates.TemplateResponse(
+        "pages/audit_logs.html",
+        {"request": request, "user": user, "logs": logs}
+    )
 
 
 @router.get("/api/stats/growth")
@@ -732,11 +789,19 @@ async def api_stats(user: dict = Depends(require_auth)):
 
 @router.get("/broadcast", response_class=HTMLResponse)
 async def broadcast_page(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import BroadcastLog
     success = request.query_params.get("success")
     error = request.query_params.get("error")
+    
+    async with async_session_maker() as session:
+        res = await session.execute(
+            select(BroadcastLog).order_by(BroadcastLog.created_at.desc()).limit(10)
+        )
+        logs = res.scalars().all()
+        
     return templates.TemplateResponse(
         "pages/broadcast.html",
-        {"request": request, "user": user, "success": success, "error": error}
+        {"request": request, "user": user, "success": success, "error": error, "logs": logs}
     )
 
 
@@ -758,10 +823,28 @@ async def broadcast_send(request: Request, user: dict = Depends(require_auth)):
             if fid.strip():
                 media_items.append({"type": mtype, "id": fid.strip()})
     
+    import json
     async with async_session_maker() as session:
+        from app.db.models import BroadcastLog, AuditLog
+        
         user_ids = await get_all_user_ids(session)
-        from app.services.audit_service import log_action
-        await log_action(session, user['sub'], "Broadcast", f"Users: {len(user_ids)}, Media: Mixed ({len(media_items)} files)")
+        
+        # Save to BroadcastLog
+        blog = BroadcastLog(
+            admin_username=user['sub'],
+            message=message_text,
+            media_data=json.dumps(media_items),
+        )
+        session.add(blog)
+        
+        # Log in AuditLog
+        audit = AuditLog(
+            admin_username=user['sub'],
+            action="Broadcast",
+            details=f"Users: {len(user_ids)}, Media: {len(media_items)} files"
+        )
+        session.add(audit)
+        await session.commit()
     
     if not user_ids:
         return RedirectResponse(url="/broadcast?error=Foydalanuvchilar topilmadi", status_code=302)

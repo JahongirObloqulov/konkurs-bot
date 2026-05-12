@@ -1,43 +1,61 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Audit Logs{% endblock %}
-{% block header_title %}Audit Logs{% endblock %}
+{% block header_title %}{{ _('audit_logs') }}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-8">
     <div class="ui-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Tizim Amallari Tarixi</h3>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Adminlar tomonidan amalga oshirilgan oxirgi 100 ta amal</p>
+        <div class="p-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ _('audit_logs') }}</h3>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-widest">Tizimdagi barcha administrator harakatlari jurnali</p>
+            </div>
+            <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-lg">{{ logs|length }} {{ _('entries') }}</span>
         </div>
         
         <div class="overflow-x-auto">
             <table class="w-full text-left">
-                <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                     <tr>
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Vaqt</th>
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Admin</th>
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Amal</th>
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Tafsilotlar</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('date_time') }}</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Admin</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('action') }}</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{{ _('details') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                     {% for log in logs %}
-                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                        <td class="px-6 py-4 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                            {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                        <td class="px-8 py-5 whitespace-nowrap">
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ log.created_at.strftime('%Y-%m-%d') }}</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{{ log.created_at.strftime('%H:%M:%S') }}</p>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase">
-                                <i class="bi bi-person-badge"></i>
-                                {{ log.admin_username }}
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-7 h-7 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                    {{ log.admin_username[:1]|upper }}
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ log.admin_username }}</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
+                                {% if 'Create' in log.action or 'Add' in log.action %}bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400
+                                {% elif 'Delete' in log.action or 'Remove' in log.action %}bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400
+                                {% elif 'Export' in log.action %}bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400
+                                {% elif 'Update' in log.action or 'Edit' in log.action %}bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400
+                                {% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400{% endif %}">
+                                <i class="bi {% if 'Create' in log.action or 'Add' in log.action %}bi-plus-circle
+                                            {% elif 'Delete' in log.action or 'Remove' in log.action %}bi-trash
+                                            {% elif 'Export' in log.action %}bi-download
+                                            {% elif 'Update' in log.action or 'Edit' in log.action %}bi-pencil-square
+                                            {% else %}bi-info-circle{% endif %}"></i>
+                                {{ log.action }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ log.action }}</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <p class="text-xs text-slate-600 dark:text-slate-400 max-w-md truncate" title="{{ log.details }}">
+                        <td class="px-8 py-5">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-md truncate hover:whitespace-normal transition-all" title="{{ log.details }}">
                                 {{ log.details or '-' }}
                             </p>
                         </td>
@@ -46,8 +64,11 @@
                     
                     {% if not logs %}
                     <tr>
-                        <td colspan="4" class="px-6 py-20 text-center">
-                            <p class="text-slate-500 dark:text-slate-400 font-bold">Hozircha amallar tarixi bo'sh</p>
+                        <td colspan="4" class="px-8 py-20 text-center">
+                            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 mx-auto mb-4">
+                                <i class="bi bi-journal-text text-3xl"></i>
+                            </div>
+                            <p class="text-slate-500 dark:text-slate-400 font-bold">Hozircha amallar jurnali bo'sh</p>
                         </td>
                     </tr>
                     {% endif %}
