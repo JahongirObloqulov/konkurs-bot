@@ -149,7 +149,7 @@ chatInput.addEventListener('input', () => {
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm font-bold text-slate-900 dark:text-white">{{ chat.title or "Noma'lum" }}</span>
+                                <span id="chat-title-{{ chat.id }}" class="text-sm font-bold text-slate-900 dark:text-white">{{ chat.title or "Noma'lum" }}</span>
                             </td>
                             <td class="px-6 py-4">
                                 <code class="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{{ chat.id }}</code>
@@ -161,7 +161,10 @@ chatInput.addEventListener('input', () => {
                                 <span class="text-xs text-slate-400 italic">{{ _('unassigned') }}</span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                <button onclick="openSendModal('{{ chat.id }}')" class="w-9 h-9 flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
+                                    <i class="bi bi-chat-right-text"></i>
+                                </button>
                                 <form method="post" action="/chats/{{ chat.id }}/remove" onsubmit="return confirm('{{ _('manage') }}?');">
                                     <button type="submit" class="w-9 h-9 flex items-center justify-center bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all">
                                         <i class="bi bi-trash"></i>
@@ -186,4 +189,189 @@ chatInput.addEventListener('input', () => {
         </div>
     </div>
 </div>
+
+<!-- Send Message Modal -->
+<div id="sendModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <i class="bi bi-send-fill"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-900 dark:text-white" id="modal-chat-name">Xabar yuborish</h4>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Kanal yoki guruhga</p>
+                </div>
+            </div>
+            <button onclick="closeSendModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-6">
+            <input type="hidden" id="send-chat-id">
+            <input type="hidden" id="send-media-id">
+            <input type="hidden" id="send-media-type">
+            
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Xabar matni</label>
+                <textarea id="send-message" rows="5" class="block w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all dark:text-white text-sm" placeholder="Xabaringizni yozing... (HTML teglar ruxsat etilgan)"></textarea>
+            </div>
+
+            <div class="space-y-2">
+                <div class="flex items-center justify-between mb-2 ml-1">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Media (Ixtiyoriy)</label>
+                    <button onclick="showGalleryModal()" class="text-[10px] font-bold text-primary uppercase tracking-widest hover:opacity-80 transition-all flex items-center gap-1">
+                        <i class="bi bi-images"></i>
+                        {{ _('select_from_gallery') }}
+                    </button>
+                </div>
+                <div id="selected-media-preview" class="hidden p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i id="preview-icon" class="bi bi-image text-2xl text-primary"></i>
+                        <span id="preview-id" class="text-[10px] font-mono text-slate-500 truncate max-w-[150px]"></span>
+                    </div>
+                    <button onclick="clearMedia()" class="text-rose-500 hover:text-rose-600">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button id="send-btn" onclick="sendMessage()" class="w-full py-4 btn-primary rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                <span>Yuborish</span>
+                <i class="bi bi-send"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Media Gallery Modal -->
+<div id="galleryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[85vh] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+            <h4 class="font-bold text-slate-900 dark:text-white">Media Gallereya</h4>
+            <button onclick="hideGalleryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for item in media_gallery %}
+                <div onclick="selectMedia('{{ item.file_id }}', '{{ item.file_type }}')" class="group relative aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-primary/30 transition-all border-2 border-transparent hover:border-primary">
+                    <div class="w-full h-full flex flex-col items-center justify-center gap-2">
+                        {% if item.file_type == 'photo' %}<i class="bi bi-image text-3xl text-slate-400"></i>
+                        {% elif item.file_type == 'video' %}<i class="bi bi-play-circle text-3xl text-slate-400"></i>
+                        {% elif item.file_type == 'voice' %}<i class="bi bi-mic text-3xl text-slate-400"></i>
+                        {% elif item.file_type == 'video_note' %}<i class="bi bi-camera-reels text-3xl text-slate-400"></i>
+                        {% else %}<i class="bi bi-file-earmark-text text-3xl text-slate-400"></i>{% endif %}
+                        <span class="text-[8px] font-bold text-slate-500 uppercase">{{ item.file_type }}</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                        <p class="text-[8px] text-white font-medium truncate w-full">{{ item.description or item.file_id }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openSendModal(chatId) {
+    const title = document.getElementById(`chat-title-${chatId}`).innerText;
+    document.getElementById('modal-chat-name').innerText = title;
+    document.getElementById('send-chat-id').value = chatId;
+    document.getElementById('sendModal').classList.remove('hidden');
+    document.getElementById('sendModal').classList.add('flex');
+}
+
+function closeSendModal() {
+    document.getElementById('sendModal').classList.add('hidden');
+    document.getElementById('sendModal').classList.remove('flex');
+    // Clear form
+    document.getElementById('send-message').value = '';
+    clearMedia();
+}
+
+function showGalleryModal() {
+    document.getElementById('galleryModal').classList.remove('hidden');
+    document.getElementById('galleryModal').classList.add('flex');
+}
+
+function hideGalleryModal() {
+    document.getElementById('galleryModal').classList.add('hidden');
+    document.getElementById('galleryModal').classList.remove('flex');
+}
+
+function selectMedia(fileId, fileType) {
+    document.getElementById('send-media-id').value = fileId;
+    document.getElementById('send-media-type').value = fileType;
+    
+    const preview = document.getElementById('selected-media-preview');
+    const icon = document.getElementById('preview-icon');
+    const idText = document.getElementById('preview-id');
+    
+    preview.classList.remove('hidden');
+    idText.innerText = fileId;
+    
+    icon.className = 'bi text-2xl text-primary ';
+    if (fileType === 'photo') icon.classList.add('bi-image');
+    else if (fileType === 'video') icon.classList.add('bi-play-circle');
+    else if (fileType === 'voice') icon.classList.add('bi-mic');
+    else if (fileType === 'video_note') icon.classList.add('bi-camera-reels');
+    else icon.classList.add('bi-file-earmark-text');
+    
+    hideGalleryModal();
+}
+
+function clearMedia() {
+    document.getElementById('send-media-id').value = '';
+    document.getElementById('send-media-type').value = '';
+    document.getElementById('selected-media-preview').classList.add('hidden');
+}
+
+async function sendMessage() {
+    const chatId = document.getElementById('send-chat-id').value;
+    const message = document.getElementById('send-message').value;
+    const mediaId = document.getElementById('send-media-id').value;
+    const mediaType = document.getElementById('send-media-type').value;
+    const btn = document.getElementById('send-btn');
+    
+    if (!message && !mediaId) return alert('Xabar matni yoki media kiriting');
+    
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>';
+    
+    try {
+        const res = await fetch('/api/chats/send', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                chat_id: chatId,
+                message: message,
+                media_id: mediaId,
+                media_type: mediaType
+            })
+        });
+        
+        const data = await res.json();
+        if (data.status === 'success') {
+            closeSendModal();
+            // Show toast
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 right-8 bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-2xl z-[200] animate-in slide-in-from-right duration-300';
+            toast.innerHTML = '<i class="bi bi-check-circle-fill mr-2"></i> Xabar yuborildi';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        } else {
+            alert('Xatolik: ' + data.message);
+        }
+    } catch (e) {
+        alert('Xatolik yuz berdi');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    }
+}
+</script>
 {% endblock %}

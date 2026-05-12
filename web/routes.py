@@ -489,13 +489,16 @@ async def contest_pick_winners(request: Request, contest_id: int, user: dict = D
 @router.get("/chats", response_class=HTMLResponse)
 async def chats_page(request: Request, user: dict = Depends(require_auth)):
     from app.services.settings_service import get_required_chats
+    from app.db.models import Media
 
     async with async_session_maker() as session:
         chats = await get_required_chats(session)
+        res = await session.execute(select(Media).order_by(Media.created_at.desc()))
+        media_gallery = res.scalars().all()
 
     return templates.TemplateResponse(
         "pages/chats.html",
-        {"request": request, "user": user, "chats": chats}
+        {"request": request, "user": user, "chats": chats, "media_gallery": media_gallery}
     )
 
 
@@ -753,6 +756,45 @@ async def api_get_chat_info(chat_id: str, request: Request, user: dict = Depends
             "status": "error",
             "message": str(e)
         }, status_code=500)
+
+
+@router.post("/api/chats/send")
+async def api_chats_send(request: Request, user: dict = Depends(require_auth)):
+    from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
+    bot = request.app.state.bot
+    
+    try:
+        data = await request.json()
+        chat_id = data.get("chat_id")
+        message = data.get("message")
+        media_id = data.get("media_id")
+        media_type = data.get("media_type")
+        
+        if not chat_id or (not message and not media_id):
+            return JSONResponse({"status": "error", "message": "Chat ID va xabar yoki media bo'lishi shart"}, status_code=400)
+            
+        if not media_id:
+            await bot.send_message(chat_id, message, parse_mode="HTML")
+        else:
+            if media_type == 'photo':
+                await bot.send_photo(chat_id, media_id, caption=message, parse_mode="HTML")
+            elif media_type == 'video':
+                await bot.send_video(chat_id, media_id, caption=message, parse_mode="HTML")
+            elif media_type == 'voice':
+                await bot.send_voice(chat_id, media_id, caption=message, parse_mode="HTML")
+            elif media_type == 'video_note':
+                await bot.send_video_note(chat_id, media_id)
+                if message: await bot.send_message(chat_id, message, parse_mode="HTML")
+            else:
+                await bot.send_document(chat_id, media_id, caption=message, parse_mode="HTML")
+                
+        return JSONResponse({"status": "success", "message": "Xabar yuborildi"})
+    except TelegramForbiddenError:
+        return JSONResponse({"status": "error", "message": "Bot ushbu chatda admin emas yoki bloklangan"}, status_code=403)
+    except TelegramBadRequest as e:
+        return JSONResponse({"status": "error", "message": f"Telegram BadRequest: {str(e)}"}, status_code=400)
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
 
 
 @router.get("/users", response_class=HTMLResponse)
