@@ -71,26 +71,83 @@
             color: #818cf8;
         }
 
-        .ui-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        .dark .ui-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        /* Global Button Styles */
         .btn-primary {
             background-color: #4f46e5;
-            color: #ffffff !important;
-            transition: all 0.2s ease;
+            color: white !important;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         .btn-primary:hover {
             background-color: #4338ca;
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .dark .btn-secondary {
+            background-color: #1e293b;
+            color: #f1f5f9;
+            border-color: #334155;
+        }
+        .btn-secondary:hover {
+            background-color: #f8fafc;
+        }
+        .dark .btn-secondary:hover {
+            background-color: #334155;
+        }
+
+        .ui-card {
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+        }
+        .dark .ui-card {
+            background-color: #1e293b;
+            border-color: #334155;
+        }
+        
+        /* Mobile specific fixes */
+        @media (max-width: 640px) {
+            .mobile-full { width: 100% !important; }
+            .action-btn { 
+                padding: 0.75rem !important;
+                min-width: 2.75rem;
+                min-height: 2.75rem;
+            }
         }
 
         .btn-primary-gradient {
@@ -214,19 +271,29 @@
 
         <!-- Main Content -->
         <main class="flex-1 lg:ml-64 flex flex-col min-w-0 overflow-hidden">
-            <header class="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border sticky top-0 z-40">
-                <div class="px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <button id="mobile-menu-toggle" class="p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-all">
+            <header class="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border sticky top-0 z-40 transition-colors duration-300">
+                <div class="px-4 sm:px-6 py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <button id="mobile-menu-toggle" class="p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-all shrink-0">
                             <i class="bi bi-list text-2xl"></i>
                         </button>
-                        <div class="text-lg font-semibold text-slate-900 dark:text-white flex-1 min-w-0">
+                        <div class="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                             {% block header_title %}{{ _('overview') }}{% endblock %}
                         </div>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <!-- Language Switcher -->
-                        <div class="relative group">
+                    <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                        <!-- Theme Toggle (Always visible) -->
+                        <div class="flex items-center gap-0.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <button onclick="setTheme('light')" id="header-theme-light" class="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 text-slate-500 hover:text-primary">
+                                <i class="bi bi-sun text-sm"></i>
+                            </button>
+                            <button onclick="setTheme('dark')" id="header-theme-dark" class="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 text-slate-500 hover:text-primary">
+                                <i class="bi bi-moon-stars text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- Language Switcher (Hidden on mobile, move to sidebar) -->
+                        <div class="relative group hidden sm:block">
                             <button class="flex items-center gap-2 p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                                 <span class="text-xs font-bold uppercase">{{ current_lang }}</span>
                                 <i class="bi bi-chevron-down text-[10px]"></i>
@@ -238,21 +305,12 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                            <button onclick="setTheme('light')" id="header-theme-light" class="px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-500 hover:text-primary">
-                                <i class="bi bi-sun text-sm"></i>
-                            </button>
-                            <button onclick="setTheme('dark')" id="header-theme-dark" class="px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-500 hover:text-primary">
-                                <i class="bi bi-moon-stars text-sm"></i>
-                            </button>
-                        </div>
-
-                        <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center gap-3 sm:pl-4 sm:border-l sm:border-slate-200 sm:dark:border-slate-700">
                             <div class="text-right hidden sm:block">
                                 <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ user.sub if user else 'Admin' }}</p>
                                 <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{{ _('super_admin') }}</p>
                             </div>
-                            <div class="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-700">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold border border-primary/20 shrink-0">
                                 {{ (user.sub[:1] if user and user.sub else 'A') | upper }}
                             </div>
                         </div>
