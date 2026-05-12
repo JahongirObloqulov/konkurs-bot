@@ -27,6 +27,9 @@ class Contest(Base):
     )
     ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_by: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    bot_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("bots.id", ondelete="SET NULL"), nullable=True
+    )
     
     # Media support
     media_type: Mapped[str | None] = mapped_column(String(20))  # photo or video
@@ -97,6 +100,9 @@ class User(Base):
     registered_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+    bot_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("bots.id", ondelete="SET NULL"), nullable=True
+    )
 
 
 class Settings(Base):
@@ -123,6 +129,9 @@ class Business(Base):
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
     created_by: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    bot_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("bots.id", ondelete="SET NULL"), nullable=True
+    )
 
     customers: Mapped[list["Customer"]] = relationship(
         back_populates="business", cascade="all, delete-orphan"

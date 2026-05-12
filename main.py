@@ -67,6 +67,13 @@ async def run_bot():
             config.required_chats = db_chats
             logger.info(f"Loaded {len(db_chats)} required chats from database")
             
+        # Add db_id to Master Bot
+        res_master = await session.execute(select(BotModel).where(BotModel.token == config.bot_token))
+        master_db = res_master.scalar_one_or_none()
+        if master_db:
+            master_bot.db_id = master_db.id
+            logger.info(f"Master bot DB ID: {master_db.id}")
+            
         res = await session.execute(select(BotModel).where(BotModel.is_active == True))
         db_bots = res.scalars().all()
         
@@ -74,9 +81,10 @@ async def run_bot():
             if b_db.token != config.bot_token:
                 try:
                     new_bot = Bot(token=b_db.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+                    new_bot.db_id = b_db.id # Inject DB ID
                     bots.append(new_bot)
                     b_db.is_running = True
-                    logger.info(f"Adding extra bot: @{b_db.username}")
+                    logger.info(f"Adding extra bot: @{b_db.username} (DB ID: {b_db.id})")
                 except Exception as e:
                     b_db.last_error = str(e)
                     b_db.is_active = False

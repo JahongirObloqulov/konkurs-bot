@@ -22,6 +22,7 @@ async def create_contest(
     min_additions: int = 0,
     media_type: str | None = None,
     file_id: str | None = None,
+    bot_id: int | None = None,
 ) -> Contest | None:
     try:
         contest = Contest(
@@ -35,6 +36,7 @@ async def create_contest(
             min_additions=min_additions,
             media_type=media_type,
             file_id=file_id,
+            bot_id=bot_id,
         )
         session.add(contest)
         await session.commit()
@@ -73,11 +75,13 @@ async def check_requirements(
         return False, "Texnik xatolik yuz berdi."
 
 
-async def get_active_contests(session: AsyncSession) -> list[Contest]:
+async def get_active_contests(session: AsyncSession, bot_id: int | None = None) -> list[Contest]:
     try:
-        result = await session.execute(
-            select(Contest).where(Contest.is_active.is_(True)).order_by(Contest.created_at.desc())
-        )
+        query = select(Contest).where(Contest.is_active.is_(True))
+        if bot_id:
+            query = query.where(Contest.bot_id == bot_id)
+        
+        result = await session.execute(query.order_by(Contest.created_at.desc()))
         return list(result.scalars().all())
     except Exception as e:
         logger.error(f"Failed to get active contests: {e}")

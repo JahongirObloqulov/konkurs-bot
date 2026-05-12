@@ -334,14 +334,17 @@ async def export_contest_participants(contest_id: int, format: str, user: dict =
 
 @router.get("/contests/new", response_class=HTMLResponse)
 async def contest_new(request: Request, user: dict = Depends(require_auth)):
-    from app.db.models import Media
+    from app.db.models import Media, Bot
     async with async_session_maker() as session:
-        res = await session.execute(select(Media).order_by(Media.created_at.desc()))
-        media_gallery = res.scalars().all()
+        res_media = await session.execute(select(Media).order_by(Media.created_at.desc()))
+        media_gallery = res_media.scalars().all()
+        
+        res_bots = await session.execute(select(Bot).where(Bot.is_active == True))
+        bots = res_bots.scalars().all()
         
     return templates.TemplateResponse(
         "pages/contest_form.html",
-        {"request": request, "user": user, "contest": None, "media_gallery": media_gallery}
+        {"request": request, "user": user, "contest": None, "media_gallery": media_gallery, "bots": bots}
     )
 
 
@@ -363,6 +366,7 @@ async def contest_create(request: Request, user: dict = Depends(require_auth)):
             file_id=form.get("file_id") or None,
             min_referrals=int(form.get("min_referrals", 0)),
             min_additions=int(form.get("min_additions", 0)),
+            bot_id=int(form.get("bot_id")) if form.get("bot_id") else None,
         )
         if not contest:
             return templates.TemplateResponse(

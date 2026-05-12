@@ -158,9 +158,14 @@ async def crm_businesses(request: Request, user: dict = Depends(require_auth)):
 
 @router.get("/crm/businesses/new", response_class=HTMLResponse)
 async def crm_business_new(request: Request, user: dict = Depends(require_auth)):
+    from app.db.models import Bot
+    async with async_session_maker() as session:
+        res = await session.execute(select(Bot).where(Bot.is_active == True))
+        bots = res.scalars().all()
+        
     return templates.TemplateResponse(
         "pages/crm/business_form.html",
-        {"request": request, "user": user, "business": None}
+        {"request": request, "user": user, "business": None, "bots": bots}
     )
 
 
@@ -176,6 +181,7 @@ async def crm_business_create(request: Request, user: dict = Depends(require_aut
             address=form.get("address"),
             description=form.get("description"),
             created_by=user.get("user_id", 0),
+            bot_id=int(form.get("bot_id")) if form.get("bot_id") else None,
         )
         from app.services.audit_service import log_action
         await log_action(session, user['sub'], "Create Business", f"Name: {form.get('name')}")

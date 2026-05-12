@@ -13,6 +13,7 @@ async def get_or_create_user(
     username: str | None,
     full_name: str,
     referred_by_id: int | None = None,
+    bot_id: int | None = None,
 ) -> User | None:
     try:
         result = await session.execute(select(User).where(User.user_id == user_id))
@@ -28,7 +29,8 @@ async def get_or_create_user(
             user_id=user_id, 
             username=username, 
             full_name=full_name,
-            referred_by_id=referred_by_id if referred_by_id != user_id else None
+            referred_by_id=referred_by_id if referred_by_id != user_id else None,
+            bot_id=bot_id
         )
         session.add(user)
         

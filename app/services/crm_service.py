@@ -14,6 +14,7 @@ async def create_business(
     address: Optional[str] = None,
     description: Optional[str] = None,
     created_by: int = 0,
+    bot_id: Optional[int] = None,
 ) -> Business:
     business = Business(
         name=name,
@@ -22,6 +23,7 @@ async def create_business(
         address=address,
         description=description,
         created_by=created_by,
+        bot_id=bot_id,
     )
     session.add(business)
     await session.commit()
@@ -29,8 +31,11 @@ async def create_business(
     return business
 
 
-async def get_all_businesses(session: AsyncSession) -> list[Business]:
-    result = await session.execute(select(Business).order_by(Business.created_at.desc()))
+async def get_all_businesses(session: AsyncSession, bot_id: Optional[int] = None) -> list[Business]:
+    query = select(Business)
+    if bot_id:
+        query = query.where(Business.bot_id == bot_id)
+    result = await session.execute(query.order_by(Business.created_at.desc()))
     return result.scalars().all()
 
 
