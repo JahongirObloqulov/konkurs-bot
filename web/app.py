@@ -61,6 +61,10 @@ async def add_translation_helper(request: Request, call_next):
     response = await call_next(request)
     return response
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 from web import routes, crm_routes
